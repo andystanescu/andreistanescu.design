@@ -34,9 +34,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${inter.variable}`}
     >
       <body>
+        <script dangerouslySetInnerHTML={{ __html: `try{const theme=localStorage.getItem("conscept-theme");if(theme==="light"||theme==="dark"){document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme}}catch{}` }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org", "@type": "WebSite", name: "Andrei Stanescu", url: SITE_URL,
           description: "Design systems, product architecture and AI-enabled design operations.",

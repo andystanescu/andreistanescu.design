@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "@/components/Logo/Logo";
 import { Button } from "@/components/Button/Button";
 import { ArrowIcon } from "@/components/Icon/ArrowIcon";
+import { ThemeSwitch } from "@/components/ThemeSwitch/ThemeSwitch";
 import type { NavLink } from "@/lib/pages";
 import styles from "./Nav.module.css";
 
@@ -116,29 +117,32 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
                 </Link>
               ))}
             </nav>
-            <div className={styles.desktopCta}>
-              <Button href="/contact" icon={<ArrowIcon size={16} />}>
-                Let&apos;s talk
-              </Button>
+            <div className={styles.controls}>
+              <div className={styles.desktopCta}>
+                <Button href="/contact" icon={<ArrowIcon size={16} />}>
+                  Let&apos;s talk
+                </Button>
+              </div>
+              <ThemeSwitch />
+              <button
+                type="button"
+                className={styles.menuToggle}
+                aria-expanded={menuOpen}
+                aria-controls="mobile-menu"
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+                onClick={() => setMenuOpen((open) => !open)}
+              >
+                <span
+                  className={`${styles.bar} ${menuOpen ? styles.barTop : ""}`}
+                />
+                <span
+                  className={`${styles.bar} ${menuOpen ? styles.barMiddle : ""}`}
+                />
+                <span
+                  className={`${styles.bar} ${menuOpen ? styles.barBottom : ""}`}
+                />
+              </button>
             </div>
-            <button
-              type="button"
-              className={styles.menuToggle}
-              aria-expanded={menuOpen}
-              aria-controls="mobile-menu"
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-              onClick={() => setMenuOpen((open) => !open)}
-            >
-              <span
-                className={`${styles.bar} ${menuOpen ? styles.barTop : ""}`}
-              />
-              <span
-                className={`${styles.bar} ${menuOpen ? styles.barMiddle : ""}`}
-              />
-              <span
-                className={`${styles.bar} ${menuOpen ? styles.barBottom : ""}`}
-              />
-            </button>
           </div>
         </div>
       </header>

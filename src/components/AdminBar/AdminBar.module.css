@@ -18,3 +18,20 @@
 .bar:focus-visible {
   opacity: 0.85;
 }
+
+@media (max-width: 900px) {
+  .bar {
+    right: auto;
+    left: 50%;
+    bottom: calc(var(--nav-height) + var(--space-300));
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 640px) {
+  .bar {
+    right: var(--space-300);
+    left: auto;
+    transform: none;
+  }
+}

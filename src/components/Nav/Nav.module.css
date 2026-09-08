@@ -30,6 +30,12 @@
   gap: var(--space-600);
 }
 
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-300);
+}
+
 .links {
   display: flex;
   align-items: center;
