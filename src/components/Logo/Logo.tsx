@@ -1,4 +1,5 @@
 import styles from "./Logo.module.css";
+import { PersonalLogoMark } from "./PersonalLogoMark";
 
 type LogoProps = {
   /** compact = nav/header strips under 48px tall. primary = everywhere else (min width 160px). */
@@ -21,12 +22,7 @@ export function Logo({ variant = "compact", theme = "default", identity = "busin
   if (identity === "personal") {
     return (
       <span className={`${styles.logo} ${styles.personal}`}>
-        <img
-          src={theme === "inverted" ? "/assets/logo-icon-personal-footer.svg" : variant === "compact" ? "/assets/logo-icon-personal-nav.svg" : "/assets/logo-icon-personal.svg"}
-          alt=""
-          width={icon}
-          height={icon}
-        />
+        <PersonalLogoMark size={icon} />
         <span className={styles.wordmark} style={{ fontSize: text, letterSpacing: -text * 0.02 }}>AndreiStanescu</span>
       </span>
     );

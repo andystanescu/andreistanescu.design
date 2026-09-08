@@ -24,7 +24,7 @@
   border: 1px solid var(--border-field);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   background: var(--bg-surface);
-  box-shadow: 0 4px 14px rgba(17, 22, 31, 0.08);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--text-primary) 8%, transparent);
   width: 100%;
   max-width: 100%;
     overflow: visible;
@@ -125,7 +125,7 @@
   border: 1px solid var(--border-field);
   border-radius: var(--radius-md);
   background: var(--bg-surface);
-  box-shadow: 0 4px 14px rgba(17, 22, 31, 0.12);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
 .insertMenu button {
@@ -148,7 +148,7 @@
   border: 1px solid var(--border-field);
   border-radius: var(--radius-md);
   background: var(--bg-surface);
-  box-shadow: 0 4px 14px rgba(17, 22, 31, 0.08);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 .comparisonWidgetHeader,
@@ -297,7 +297,7 @@
   border: 1px solid var(--border-field);
   border-radius: var(--radius-md);
   background: var(--bg-field);
-  box-shadow: 0 8px 20px rgba(17, 22, 31, 0.14);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--text-primary) 14%, transparent);
   min-width: 140px;
   white-space: nowrap;
 }
@@ -486,7 +486,7 @@
    palette is duplicated in RichContent.module.css to match. */
 .content :global(.hljs-comment),
 .content :global(.hljs-quote) {
-  color: #7f848e;
+  color: var(--text-tertiary);
   font-style: italic;
 }
 
@@ -494,25 +494,25 @@
 .content :global(.hljs-selector-tag),
 .content :global(.hljs-literal),
 .content :global(.hljs-section) {
-  color: #e8441c;
+  color: var(--accent-foundation);
 }
 
 .content :global(.hljs-string),
 .content :global(.hljs-attr),
 .content :global(.hljs-regexp),
 .content :global(.hljs-addition) {
-  color: #98c379;
+  color: var(--text-success);
 }
 
 .content :global(.hljs-number),
 .content :global(.hljs-meta) {
-  color: #d19a66;
+  color: var(--text-warning);
 }
 
 .content :global(.hljs-title),
 .content :global(.hljs-title.function_),
 .content :global(.hljs-built_in) {
-  color: #61afef;
+  color: var(--text-info);
 }
 
 .content :global(.hljs-variable),
@@ -521,18 +521,18 @@
 .content :global(.hljs-tag),
 .content :global(.hljs-name),
 .content :global(.hljs-deletion) {
-  color: #e06c75;
+  color: var(--text-error);
 }
 
 .content :global(.hljs-type),
 .content :global(.hljs-class .hljs-title) {
-  color: #e5c07b;
+  color: var(--text-warning);
 }
 
 .content :global(.hljs-symbol),
 .content :global(.hljs-bullet),
 .content :global(.hljs-link) {
-  color: #56b6c2;
+  color: var(--text-info);
 }
 
 .content :global(.hljs-emphasis) {

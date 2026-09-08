@@ -6,7 +6,7 @@
 .heroDescription { max-width: 60vw; }
 .heroDescription :global(.content) { max-width: none; }
 .heroLattice { display: flex; justify-content: center; align-items: center; }
-.principle { padding-block: var(--space-800); background: var(--bg-deep); color: #fff; }
+.principle { padding-block: var(--space-800); background: var(--bg-deep); color: var(--text-on-deep-primary); }
 .principleInner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-800); align-items: center; }
 .principle h2 { color: var(--text-inverse); margin-top: var(--space-200); max-width: 520px; }
 .principleInner > p { max-width: 500px; }
@@ -27,7 +27,7 @@
 .shared > h2 { max-width: 500px; }
 .shared > p { max-width: 540px; margin-top: var(--space-300); }
 .audienceGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-600); margin-top: var(--space-800); }
-.audienceCard { min-height: 190px; padding: var(--space-400); background: var(--bg-surface); border-top: 2px solid var(--accent-foundation); border-radius: var(--radius-md); box-shadow: 0 8px 20px rgba(10, 18, 31, .08); }
+.audienceCard { min-height: 190px; padding: var(--space-400); background: var(--bg-surface); border-top: 2px solid var(--accent-foundation); border-radius: var(--radius-md); box-shadow: 0 8px 20px color-mix(in srgb, var(--text-primary) 8%, transparent); }
 .audienceCard p { margin-top: var(--space-300); }
 @media (max-width: 900px) { .heroInner, .principleInner { grid-template-columns: 1fr; } .heroInner { min-height: 0; } .heroCopy { padding-block: var(--space-800); } .heroLattice { padding-bottom: var(--space-800); } .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .heroLattice { justify-content: flex-start; } .steps, .leaveGrid, .audienceGrid { grid-template-columns: 1fr; } }

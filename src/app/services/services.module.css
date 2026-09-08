@@ -62,19 +62,19 @@
   border: 2px solid transparent;
   border-radius: var(--radius-lg);
   background: var(--bg-surface);
-  box-shadow: 0 8px 24px rgba(10, 18, 31, 0.08);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--text-primary) 8%, transparent);
   color: var(--text-primary);
   transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
 }
 
 .cardLarge { min-height: 300px; }
-.cardLarge { background: #11161f; color: #fff; }
-.cardLarge h2 { color: #fff; }
+.cardLarge { background: var(--bg-deep); color: var(--text-on-deep-primary); }
+.cardLarge h2 { color: var(--text-on-deep-primary); }
 
 .card:hover,
 .card:focus-visible {
   border: 2px solid var(--accent-foundation);
-  box-shadow: 0 12px 28px rgba(10, 18, 31, 0.14);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--text-primary) 14%, transparent);
   transform: translateY(-2px);
 }
 
@@ -88,7 +88,7 @@
 .iconOnDark { filter: none; }
 
 .card p { color: var(--text-secondary) !important; }
-.cardLarge p { color: #c8ccd0 !important; }
+.cardLarge p { color: var(--text-on-deep-secondary) !important; }
 
 .cardLink {
   display: inline-flex;
@@ -101,7 +101,7 @@
 
 .card:hover .cardLink,
 .card:focus-visible .cardLink { color: var(--text-accent); }
-.cardLarge .cardLink { color: #fff; }
+.cardLarge .cardLink { color: var(--text-on-deep-primary); }
 
 @media (max-width: 900px) {
   .hero { min-height: 520px; }

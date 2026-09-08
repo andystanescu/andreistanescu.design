@@ -6,7 +6,7 @@
 .copy h1 { max-width: 620px; }
 .copy > p:not(.code) { max-width: 520px; }
 .lattice { display: flex; justify-content: center; align-items: center; }
-.reassurance { padding-block: var(--space-800); background: #11161f; }
-.reassurance h2 { color: #fff; margin-bottom: var(--space-200); }
+.reassurance { padding-block: var(--space-800); background: var(--bg-deep); }
+.reassurance h2 { color: var(--text-on-deep-primary); margin-bottom: var(--space-200); }
 @media (max-width: 800px) { .heroInner { grid-template-columns: 1fr; min-height: 0; } .lattice { justify-content: flex-start; } }
 @media (max-width: 560px) { .heroInner { padding-block: var(--space-800); } .code { font-size: 112px; } }

@@ -62,13 +62,13 @@
 .card:focus, .card:focus-visible {
   border-color: var(--accent-foundation);
   box-shadow:
-    0 12px 24px rgba(17, 22, 31, 0.1),
-    0 4px 8px rgba(17, 22, 31, 0.12);
+    0 12px 24px color-mix(in srgb, var(--text-primary) 10%, transparent),
+    0 4px 8px color-mix(in srgb, var(--text-primary) 12%, transparent);
   transform: translateY(-2px);
 }
 
 .card:focus, .card:focus-visible {
-  outline: 2px solid #e8441c;
+  outline: 2px solid var(--border-focus);
   outline-offset: 2px;
   box-shadow: none;
 }

@@ -111,5 +111,5 @@
 .submit:hover,
 .submit:focus-visible {
   background: var(--accent-foundation);
-  color: #11161f;
+  color: var(--action-primary-hover-text);
 }

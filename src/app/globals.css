@@ -1,33 +1,121 @@
-:root {
-  /* Color */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Primitive palette: semantic tokens below are the application API. */
+  --colour-neutral-000: #ffffff;
+  --colour-neutral-50: #faf9f7;
+  --colour-neutral-100: #f1efec;
+  --colour-neutral-200: #e2e0dc;
+  --colour-neutral-300: #c8ccd0;
+  --colour-neutral-400: #98a0ac;
+  --colour-neutral-450: #828994;
+  --colour-neutral-500: #6b7280;
+  --colour-neutral-550: #5c646f;
+  --colour-neutral-600: #3e4650;
+  --colour-neutral-700: #2a313b;
+  --colour-neutral-800: #1b212b;
+  --colour-neutral-900: #11161f;
+  --colour-neutral-950: #0a0e16;
+  --colour-orange-300: #ff8a66;
+  --colour-orange-400: #ff6a42;
+  --colour-orange-500: #e8441c;
+  --colour-orange-600: #c73815;
+  --colour-orange-700: #b8330f;
+  --colour-orange-800: #8f260a;
+  --colour-orange-900: #6b1c07;
+  --colour-navy-900: #0a1020;
+  --colour-red-100: #fce9ec;
+  --colour-red-300: #ff8fa3;
+  --colour-red-600: #9b1c31;
+  --colour-green-100: #e6f4ec;
+  --colour-green-400: #4ade80;
+  --colour-green-700: #146b45;
+  --colour-blue-100: #e8f0fd;
+  --colour-blue-400: #5b9df0;
+  --colour-blue-700: #1d4ed8;
+  --colour-amber-100: #fef3e0;
+  --colour-amber-400: #f0a91e;
+  --colour-amber-700: #8a5a00;
+
+  /* Semantic colour tokens: backgrounds */
   --bg-canvas: #faf9f7;
   --bg-surface: #ffffff;
   --bg-subtle: #f1efec;
   --bg-inset: #f1efec;
+  --bg-inverse: #11161f;
+  --bg-field: #ffffff;
+  --bg-deep: #0a1020;
+  --bg-error: #fce9ec;
+  --bg-success: #e6f4ec;
+  --bg-warning: #fef3e0;
+  --bg-info: #e8f0fd;
+
+  /* Semantic colour tokens: text */
   --text-primary: #11161f;
   --text-secondary: #3e4650;
   --text-tertiary: #5c646f;
-  --text-accent: #e8441c;
-  --accent-foundation: #e8441c;
+  --text-inverse: #ffffff;
+  --text-accent: #8f260a;
+  --text-placeholder: #5c646f;
+  --text-error: #9b1c31;
+  --text-success: #146b45;
+  --text-warning: #8a5a00;
+  --text-info: #1d4ed8;
+
+  /* Semantic colour tokens: borders */
   --border-default: #e2e0dc;
-  --action-link-text: #11161f;
+  --border-strong: #c8ccd0;
+  --border-field: #5c646f;
+  --border-field-hover: #3e4650;
+  --border-focus: #11161f;
+  --border-error: #9b1c31;
+  --border-success: #146b45;
+  --border-warning: #8a5a00;
+  --border-info: #1d4ed8;
+
+  /* Semantic colour tokens: actions */
   --action-primary-bg: #11161f;
   --action-primary-text: #ffffff;
+  --action-primary-hover: #e8441c;
+  --action-primary-hover-text: #0a0e16;
+  --action-primary-pressed: #ff6a42;
+  --action-secondary-bg: #faf9f7;
   --action-secondary-text: #11161f;
   --action-secondary-border: #11161f;
-  --focus-ring: #11161f;
+  --action-secondary-hover: #f1efec;
+  --action-secondary-pressed: #e2e0dc;
+  --action-tertiary-bg: #f1efec;
+  --action-tertiary-text: #11161f;
+  --action-tertiary-border: #828994;
+  --action-tertiary-hover: #e2e0dc;
+  --action-tertiary-pressed: #c8ccd0;
+  --action-ghost-hover: #f1efec;
+  --action-ghost-pressed: #e2e0dc;
+  --action-link-text: #11161f;
+  --action-link-hover: #8f260a;
+  --action-link-pressed: #6b1c07;
+
+  /* The deep plane is theme-independent. */
+  --text-on-deep-primary: #ffffff;
+  --text-on-deep-secondary: #c8ccd0;
+  --text-on-deep-tertiary: #98a0ac;
+  --text-on-deep-accent: #ff8a66;
+  --border-on-deep: #98a0ac;
+  --border-on-deep-strong: #c8ccd0;
+  --action-on-deep-bg: #ffffff;
+  --action-on-deep-text: #11161f;
+  --action-on-deep-hover: #ff8a66;
+  --action-on-deep-hover-text: #11161f;
+  --action-on-deep-pressed: #ff6a42;
+
+  /* Brand accents */
+  --accent-foundation: #e8441c;
+  --accent-system: #c8ccd0;
+
+  /* Compatibility alias for existing focus styles. */
+  --focus-ring: var(--border-focus);
   --nav-height: 97px;
-
-  /* The deep plane — reserved for the closing CTA band, one per page at
-     most. Distinct from .section-dark's --bg-canvas (#11161f), which can
-     repeat as needed. */
-  --bg-deep: #11161f;
-
-  /* Form fields */
-  --bg-field: #ffffff;
-  --border-field: #5c646f;
-  --text-placeholder: #5c646f;
-  --border-error: #d92d20;
 
   /* Radius */
   --radius-sm: 2px;
@@ -60,49 +148,232 @@
   }
 }
 
-/* Dark sections invert the same token names rather than a global dark mode */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]),
+  [data-theme="dark"] {
+    color-scheme: dark;
+    --bg-canvas: #11161f;
+    --bg-surface: #1b212b;
+    --bg-subtle: #0a0e16;
+    --bg-inset: #1b212b;
+    --bg-inverse: #faf9f7;
+    --bg-field: #1b212b;
+    --bg-error: #1b212b;
+    --bg-success: #1b212b;
+    --bg-warning: #1b212b;
+    --bg-info: #1b212b;
+    --text-primary: #ffffff;
+    --text-secondary: #c8ccd0;
+    --text-tertiary: #98a0ac;
+    --text-inverse: #11161f;
+    --text-accent: #ff8a66;
+    --text-placeholder: #98a0ac;
+    --text-error: #ff8fa3;
+    --text-success: #4ade80;
+    --text-warning: #f0a91e;
+    --text-info: #5b9df0;
+    --border-default: #2a313b;
+    --border-strong: #3e4650;
+    --border-field: #98a0ac;
+    --border-field-hover: #c8ccd0;
+    --border-focus: #ffffff;
+    --border-error: #ff8fa3;
+    --border-success: #4ade80;
+    --border-warning: #f0a91e;
+    --border-info: #5b9df0;
+    --action-primary-bg: #ffffff;
+    --action-primary-text: #11161f;
+    --action-primary-hover: #e8441c;
+    --action-primary-hover-text: #0a0e16;
+    --action-primary-pressed: #ff6a42;
+    --action-secondary-bg: #11161f;
+    --action-secondary-text: #ffffff;
+    --action-secondary-border: #ffffff;
+    --action-secondary-hover: #1b212b;
+    --action-secondary-pressed: #2a313b;
+    --action-tertiary-bg: #1b212b;
+    --action-tertiary-text: #ffffff;
+    --action-tertiary-border: #6b7280;
+    --action-tertiary-hover: #2a313b;
+    --action-tertiary-pressed: #3e4650;
+    --action-ghost-hover: #1b212b;
+    --action-ghost-pressed: #2a313b;
+    --action-link-text: #ffffff;
+    --action-link-hover: #ff8a66;
+    --action-link-pressed: #ff6a42;
+    --accent-foundation: #ff6a42;
+    --accent-system: #2a313b;
+  }
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-canvas: #11161f;
+  --bg-surface: #1b212b;
+  --bg-subtle: #0a0e16;
+  --bg-inset: #1b212b;
+  --bg-inverse: #faf9f7;
+  --bg-field: #1b212b;
+  --bg-error: #1b212b;
+  --bg-success: #1b212b;
+  --bg-warning: #1b212b;
+  --bg-info: #1b212b;
+  --text-primary: #ffffff;
+  --text-secondary: #c8ccd0;
+  --text-tertiary: #98a0ac;
+  --text-inverse: #11161f;
+  --text-accent: #ff8a66;
+  --text-placeholder: #98a0ac;
+  --text-error: #ff8fa3;
+  --text-success: #4ade80;
+  --text-warning: #f0a91e;
+  --text-info: #5b9df0;
+  --border-default: #2a313b;
+  --border-strong: #3e4650;
+  --border-field: #98a0ac;
+  --border-field-hover: #c8ccd0;
+  --border-focus: #ffffff;
+  --border-error: #ff8fa3;
+  --border-success: #4ade80;
+  --border-warning: #f0a91e;
+  --border-info: #5b9df0;
+  --action-primary-bg: #ffffff;
+  --action-primary-text: #11161f;
+  --action-primary-hover: #e8441c;
+  --action-primary-hover-text: #0a0e16;
+  --action-primary-pressed: #ff6a42;
+  --action-secondary-bg: #11161f;
+  --action-secondary-text: #ffffff;
+  --action-secondary-border: #ffffff;
+  --action-secondary-hover: #1b212b;
+  --action-secondary-pressed: #2a313b;
+  --action-tertiary-bg: #1b212b;
+  --action-tertiary-text: #ffffff;
+  --action-tertiary-border: #6b7280;
+  --action-tertiary-hover: #2a313b;
+  --action-tertiary-pressed: #3e4650;
+  --action-ghost-hover: #1b212b;
+  --action-ghost-pressed: #2a313b;
+  --action-link-text: #ffffff;
+  --action-link-hover: #ff8a66;
+  --action-link-pressed: #ff6a42;
+  --accent-foundation: #ff6a42;
+  --accent-system: #2a313b;
+}
+
+/* Explicit dark regions use the dark semantic context in either system mode. */
 .section-dark {
   --bg-canvas: #11161f;
+  --bg-surface: #1b212b;
+  --bg-subtle: #0a0e16;
+  --bg-inset: #1b212b;
+  --bg-inverse: #faf9f7;
+  --bg-field: #1b212b;
+  --bg-error: #1b212b;
+  --bg-success: #1b212b;
+  --bg-warning: #1b212b;
+  --bg-info: #1b212b;
   --text-primary: #ffffff;
   --text-secondary: #c8ccd0;
   --text-tertiary: #98a0ac;
+  --text-inverse: #11161f;
   --text-accent: #ff8a66;
+  --text-placeholder: #98a0ac;
+  --text-error: #ff8fa3;
+  --text-success: #4ade80;
+  --text-warning: #f0a91e;
+  --text-info: #5b9df0;
   --border-default: #2a313b;
+  --border-strong: #3e4650;
+  --border-field: #98a0ac;
+  --border-field-hover: #c8ccd0;
+  --border-error: #ff8fa3;
+  --border-success: #4ade80;
+  --border-warning: #f0a91e;
+  --border-info: #5b9df0;
   --action-primary-bg: #ffffff;
   --action-primary-text: #11161f;
+  --action-primary-hover: #e8441c;
+  --action-primary-hover-text: #0a0e16;
+  --action-primary-pressed: #ff6a42;
+  --action-secondary-bg: #11161f;
   --action-secondary-text: #ffffff;
   --action-secondary-border: #ffffff;
-  --focus-ring: #ffffff;
+  --action-secondary-hover: #1b212b;
+  --action-secondary-pressed: #2a313b;
+  --action-tertiary-bg: #1b212b;
+  --action-tertiary-text: #ffffff;
+  --action-tertiary-border: #6b7280;
+  --action-tertiary-hover: #2a313b;
+  --action-tertiary-pressed: #3e4650;
+  --action-ghost-hover: #1b212b;
+  --action-ghost-pressed: #2a313b;
+  --action-link-text: #ffffff;
+  --action-link-hover: #ff8a66;
+  --action-link-pressed: #ff6a42;
+  --border-focus: #ffffff;
+  --accent-foundation: #ff6a42;
+  --accent-system: #2a313b;
 }
 
-/* The deep plane (see --bg-deep above) — same dark-mode token set as
-   .section-dark, just a darker --bg-canvas. Reserved for the CTA band. */
-.section-deep {
-  --bg-canvas: #11161f;
-  --text-primary: #ffffff;
-  --text-secondary: #c8ccd0;
-  --text-tertiary: #98a0ac;
-  --text-accent: #ff8a66;
-  --border-default: #2a313b;
-  --action-primary-bg: #ffffff;
-  --action-primary-text: #11161f;
-  --action-secondary-text: #ffffff;
-  --action-secondary-border: #ffffff;
-  --focus-ring: #ffffff;
-}
-
-/* A light "island" nested inside a .section-dark context — e.g. a light
-   card sitting on a dark section — re-declares the same tokens back to
-   their root values, rather than a third distinct palette. */
+/* Explicit light regions stay light in either system mode. */
 .section-light {
   --bg-canvas: #faf9f7;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1efec;
+  --bg-inset: #f1efec;
+  --bg-inverse: #11161f;
+  --bg-field: #ffffff;
+  --bg-error: #fce9ec;
+  --bg-success: #e6f4ec;
+  --bg-warning: #fef3e0;
+  --bg-info: #e8f0fd;
   --text-primary: #11161f;
   --text-secondary: #3e4650;
   --text-tertiary: #5c646f;
+  --text-inverse: #ffffff;
+  --text-accent: #8f260a;
+  --text-placeholder: #5c646f;
+  --text-error: #9b1c31;
+  --text-success: #146b45;
+  --text-warning: #8a5a00;
+  --text-info: #1d4ed8;
   --border-default: #e2e0dc;
+  --border-strong: #c8ccd0;
+  --border-field: #5c646f;
+  --border-field-hover: #3e4650;
+  --border-error: #9b1c31;
+  --border-success: #146b45;
+  --border-warning: #8a5a00;
+  --border-info: #1d4ed8;
   --action-primary-bg: #11161f;
   --action-primary-text: #ffffff;
-  --focus-ring: #11161f;
+  --action-primary-hover: #e8441c;
+  --action-primary-hover-text: #0a0e16;
+  --action-primary-pressed: #ff6a42;
+  --action-secondary-bg: #faf9f7;
+  --action-secondary-text: #11161f;
+  --action-secondary-border: #11161f;
+  --action-secondary-hover: #f1efec;
+  --action-secondary-pressed: #e2e0dc;
+  --action-tertiary-bg: #f1efec;
+  --action-tertiary-text: #11161f;
+  --action-tertiary-border: #828994;
+  --action-tertiary-hover: #e2e0dc;
+  --action-tertiary-pressed: #c8ccd0;
+  --action-ghost-hover: #f1efec;
+  --action-ghost-pressed: #e2e0dc;
+  --action-link-text: #11161f;
+  --action-link-hover: #8f260a;
+  --action-link-pressed: #6b1c07;
+  --border-focus: #11161f;
+  --accent-foundation: #e8441c;
+  --accent-system: #c8ccd0;
+}
+
+.section-deep {
+  background: var(--bg-deep);
+  color: var(--text-on-deep-primary);
 }
 
 html {

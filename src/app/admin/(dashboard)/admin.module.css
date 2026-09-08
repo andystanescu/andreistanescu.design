@@ -99,7 +99,7 @@
 .newLink:hover,
 .newLink:focus-visible {
   background: var(--accent-foundation);
-  color: #11161f;
+  color: var(--action-primary-hover-text);
 }
 
 .newLink:active {
@@ -115,7 +115,7 @@
 
 .newLink:hover::after,
 .newLink:focus-visible::after {
-  color: #11161f;
+  color: var(--action-primary-hover-text);
 }
 
 .list {
@@ -202,7 +202,7 @@
 }
 
 .publishSwitchOn .publishSwitchKnob {
-  background: #ffffff;
+  background: var(--bg-surface);
   transform: translateX(16px);
 }
 
@@ -218,7 +218,7 @@
 .listItemActions .publishSwitch:not(.publishSwitchOn) { background: var(--bg-subtle); border-color: var(--border-field); }
 .listItemActions .publishSwitch:not(.publishSwitchOn) .publishSwitchKnob { transform: translateX(0); background: var(--text-tertiary); }
 .listItemActions .publishSwitchKnob { position: absolute; top: 2px; left: 2px; margin: 0; }
-.listItemActions .publishSwitch.publishSwitchOn .publishSwitchKnob { transform: translateX(16px); background: #fff; }
+.listItemActions .publishSwitch.publishSwitchOn .publishSwitchKnob { transform: translateX(16px); background: var(--action-on-deep-bg); }
 .listItemActions .publishSwitch:not(.publishSwitchOn):hover,
 .listItemActions .publishSwitch:not(.publishSwitchOn):focus-visible { background: var(--bg-subtle); }
 .listItemActions .publishSwitch.publishSwitchOn:hover,
@@ -403,7 +403,7 @@
 }
 
 .checkboxField input:checked + .switch::after {
-  background: #ffffff;
+  background: var(--bg-surface);
   transform: translateX(18px);
 }
 
@@ -446,7 +446,7 @@
 .submit:hover,
 .submit:focus-visible {
   background: var(--accent-foundation);
-  color: #11161f;
+  color: var(--action-primary-hover-text);
 }
 
 .submit:active {

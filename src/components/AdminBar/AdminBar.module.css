@@ -5,12 +5,12 @@
   z-index: 1000;
   padding: var(--space-150) var(--space-300);
   border-radius: var(--radius-lg);
-  background: #11161f;
-  color: #fff;
+  background: var(--bg-deep);
+  color: var(--text-on-deep-primary);
   font-family: var(--font-family-body);
   font-size: 14px;
   font-weight: 500;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--bg-deep) 24%, transparent);
   transition: opacity 0.15s ease;
 }
 

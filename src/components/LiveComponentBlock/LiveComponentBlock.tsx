@@ -68,8 +68,9 @@ function prepareHtmlPreview(source: string): string {
   const code = source.trim();
   if (/<!doctype\s+html|<html(?:\s|>)/i.test(code)) return code;
   return `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>
+    :root { --bg-deep: #0a1020; --text-on-deep-primary: #ffffff; }
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 24px; color: #f5f2ea; background: #111; font: 16px/1.5 system-ui, sans-serif; }
+    body { margin: 0; padding: 24px; color: var(--text-on-deep-primary); background: var(--bg-deep); font: 16px/1.5 system-ui, sans-serif; }
     button, input, select, textarea { font: inherit; }
   </style></head><body>${code}</body></html>`;
 }

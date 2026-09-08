@@ -26,10 +26,10 @@ export function LatticeBenefitIcon({ index }: { index: number }) {
       {selected.length > 1 && selected.slice(0, -1).map((pointIndex, i) => {
         const [x1, y1] = points[pointIndex];
         const [x2, y2] = points[selected[i + 1]];
-        return <line key={`${pointIndex}-${selected[i + 1]}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--benefit-line, #77818d)" strokeWidth="1.2" />;
+        return <line key={`${pointIndex}-${selected[i + 1]}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--border-on-deep)" strokeWidth="1.2" />;
       })}
       {points.map(([cx, cy], pointIndex) => (
-        <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={selected.includes(pointIndex) ? 3.4 : 2.1} fill={selected.includes(pointIndex) ? "var(--benefit-accent, #ff8a66)" : "var(--benefit-dot, #f7f6f2)"} />
+        <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={selected.includes(pointIndex) ? 3.4 : 2.1} fill={selected.includes(pointIndex) ? "var(--text-on-deep-accent)" : "var(--text-on-deep-primary)"} />
       ))}
     </svg>
   );
