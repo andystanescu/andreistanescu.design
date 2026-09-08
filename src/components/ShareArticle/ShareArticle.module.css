@@ -39,7 +39,7 @@
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   background: var(--bg-surface);
-  box-shadow: 0 8px 20px rgba(17, 22, 31, 0.12);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
 .menu a,

@@ -4,6 +4,7 @@ import { LatticeInteractive } from "@/components/home/Hero/LatticeInteractive";
 import { getVisibleSection } from "@/lib/about";
 import { getSettings } from "@/lib/settings";
 import { Button } from "@/components/Button/Button";
+import { PersonalLogoMark } from "@/components/Logo/PersonalLogoMark";
 import styles from "./AboutHero.module.css";
 
 export function AboutHero() {
@@ -19,7 +20,7 @@ export function AboutHero() {
           {heroImage ? (
             <img className={styles.personalPhoto} src={heroImage} alt={settings.author_name} />
           ) : (
-            <img className={styles.personalLogoPlaceholder} src="/assets/logo-icon-personal.svg" alt="" />
+            <PersonalLogoMark className={styles.personalLogoPlaceholder} size={120} />
           )}
         </div>
       )}

@@ -58,7 +58,7 @@
 .viewSiteLink:hover,
 .viewSiteLink:focus-visible {
   background: var(--accent-foundation);
-  color: #11161f;
+  color: var(--action-primary-hover-text);
 }
 
 .logout {

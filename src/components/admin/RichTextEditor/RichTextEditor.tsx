@@ -439,13 +439,13 @@ export function RichTextEditor({
     const comparisonCode = `function BeforeAfterComparison() {
   const [position, setPosition] = useState(50);
   return (
-    <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", overflow: "hidden", background: "#11161F" }}>
+    <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", overflow: "hidden", background: "var(--bg-deep)" }}>
       <img src={${JSON.stringify(afterUrl)}} alt="After" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       <img src={${JSON.stringify(beforeUrl)}} alt="Before" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block", clipPath: "inset(0 " + (100 - position) + "% 0 0)" }} />
-      <span style={{ position: "absolute", top: "12px", left: "12px", padding: "6px 8px", background: "#11161F", color: "#FFF", fontSize: "11px", fontWeight: 700 }}>BEFORE</span>
-      <span style={{ position: "absolute", top: "12px", right: "12px", padding: "6px 8px", background: "#FF8A66", color: "#11161F", fontSize: "11px", fontWeight: 700 }}>AFTER</span>
+      <span style={{ position: "absolute", top: "12px", left: "12px", padding: "6px 8px", background: "var(--bg-deep)", color: "var(--text-on-deep-primary)", fontSize: "11px", fontWeight: 700 }}>BEFORE</span>
+      <span style={{ position: "absolute", top: "12px", right: "12px", padding: "6px 8px", background: "var(--action-on-deep-hover)", color: "var(--action-on-deep-hover-text)", fontSize: "11px", fontWeight: 700 }}>AFTER</span>
       <input aria-label="Compare before and after images" type="range" min="0" max="100" value={position} onChange={(event) => setPosition(Number(event.target.value))} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "ew-resize" }} />
-      <span aria-hidden="true" style={{ position: "absolute", top: "50%", left: "calc(" + position + "% - 18px)", width: "36px", height: "36px", borderRadius: "50%", background: "#FF8A66", color: "#11161F", display: "grid", placeItems: "center", fontWeight: 700, pointerEvents: "none" }}>↔</span>
+      <span aria-hidden="true" style={{ position: "absolute", top: "50%", left: "calc(" + position + "% - 18px)", width: "36px", height: "36px", borderRadius: "50%", background: "var(--action-on-deep-hover)", color: "var(--action-on-deep-hover-text)", display: "grid", placeItems: "center", fontWeight: 700, pointerEvents: "none" }}>↔</span>
     </div>
   );
 }

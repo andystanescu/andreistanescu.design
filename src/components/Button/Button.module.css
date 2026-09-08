@@ -26,7 +26,7 @@
 }
 
 /* Primary: neutral at rest, brand orange fill on hover/focus. White on
-   #E8441C is 3.98:1 and fails, so the label AND icon flip to near-black
+   var(--accent-foundation) is 3.98:1 and fails, so the label AND icon flip to near-black
    there instead — not the (also failing) inherited light/dark text token. */
 .primary {
   background: var(--action-primary-bg);
@@ -35,59 +35,55 @@
 
 .primary:hover,
 .primary:focus-visible {
-  background: var(--accent-foundation);
-  color: #11161f;
+  background: var(--action-primary-hover);
+  color: var(--action-primary-hover-text);
 }
 
 .primary:hover svg,
 .primary:focus-visible svg {
-  color: #11161f;
+  color: var(--action-primary-hover-text);
 }
 
 .primary:active {
-  background: var(--accent-foundation);
-  color: #11161f;
-  filter: brightness(0.92);
+  background: var(--action-primary-pressed);
+  color: var(--action-primary-hover-text);
 }
 
 .primary:active svg {
-  color: #11161f;
+  color: var(--action-primary-hover-text);
 }
 
 /* Secondary: outlined, hover adds orange to the border */
 .secondary {
-  background: transparent;
-  color: var(--text-primary);
-  border: 1px solid var(--border-default);
+  background: var(--action-secondary-bg);
+  color: var(--action-secondary-text);
+  border: 1px solid var(--action-secondary-border);
 }
 
 .secondary:hover,
 .secondary:focus-visible {
-  border-color: var(--accent-foundation);
+  background: var(--action-secondary-hover);
 }
 
 .secondary:active {
-  background: var(--bg-subtle);
-  border-color: var(--accent-foundation);
+  background: var(--action-secondary-pressed);
 }
 
 /* Tertiary: quiet filled control, boundary required, hover adds orange to
    the border */
 .tertiary {
-  background: var(--bg-subtle);
-  color: var(--text-primary);
-  border: 1px solid var(--border-default);
+  background: var(--action-tertiary-bg);
+  color: var(--action-tertiary-text);
+  border: 1px solid var(--action-tertiary-border);
 }
 
 .tertiary:hover,
 .tertiary:focus-visible {
-  background: var(--bg-inset);
-  border-color: var(--accent-foundation);
+  background: var(--action-tertiary-hover);
 }
 
 .tertiary:active {
-  background: var(--border-default);
-  border-color: var(--accent-foundation);
+  background: var(--action-tertiary-pressed);
 }
 
 /* Ghost: transparent until hover */
@@ -98,11 +94,11 @@
 
 .ghost:hover,
 .ghost:focus-visible {
-  background: var(--bg-subtle);
+  background: var(--action-ghost-hover);
 }
 
 .ghost:active {
-  background: var(--bg-inset);
+  background: var(--action-ghost-pressed);
 }
 
 /* Link: inline text, always underlined, hover adds orange to the label */
@@ -116,10 +112,10 @@
 
 .link:hover,
 .link:focus-visible {
-  color: var(--accent-foundation);
+  color: var(--action-link-hover);
 }
 
 .link:active {
-  color: var(--text-accent);
+  color: var(--action-link-pressed);
   transform: none;
 }

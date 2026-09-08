@@ -36,7 +36,7 @@
   height: auto;
   place-items: center;
   border-radius: 24px;
-  background: #11161f;
+  background: var(--bg-deep);
   overflow: hidden;
 }
 
@@ -52,7 +52,7 @@
 }
 
 .personalLogoPlaceholder {
-  object-fit: contain;
+  color: var(--text-on-deep-primary);
 }
 
 .personal .lattice {

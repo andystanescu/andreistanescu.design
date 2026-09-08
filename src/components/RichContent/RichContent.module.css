@@ -115,7 +115,7 @@
    in the admin editor's RichTextEditor.module.css. */
 .content :global(.hljs-comment),
 .content :global(.hljs-quote) {
-  color: #7f848e;
+  color: var(--text-tertiary);
   font-style: italic;
 }
 
@@ -123,25 +123,25 @@
 .content :global(.hljs-selector-tag),
 .content :global(.hljs-literal),
 .content :global(.hljs-section) {
-  color: #e8441c;
+  color: var(--accent-foundation);
 }
 
 .content :global(.hljs-string),
 .content :global(.hljs-attr),
 .content :global(.hljs-regexp),
 .content :global(.hljs-addition) {
-  color: #98c379;
+  color: var(--text-success);
 }
 
 .content :global(.hljs-number),
 .content :global(.hljs-meta) {
-  color: #d19a66;
+  color: var(--text-warning);
 }
 
 .content :global(.hljs-title),
 .content :global(.hljs-title.function_),
 .content :global(.hljs-built_in) {
-  color: #61afef;
+  color: var(--text-info);
 }
 
 .content :global(.hljs-variable),
@@ -150,18 +150,18 @@
 .content :global(.hljs-tag),
 .content :global(.hljs-name),
 .content :global(.hljs-deletion) {
-  color: #e06c75;
+  color: var(--text-error);
 }
 
 .content :global(.hljs-type),
 .content :global(.hljs-class .hljs-title) {
-  color: #e5c07b;
+  color: var(--text-warning);
 }
 
 .content :global(.hljs-symbol),
 .content :global(.hljs-bullet),
 .content :global(.hljs-link) {
-  color: #56b6c2;
+  color: var(--text-info);
 }
 
 .content :global(.hljs-emphasis) {

@@ -20,7 +20,7 @@
   width: 100%;
   min-height: 260px;
   border: 0;
-  background: #111;
+  background: var(--bg-deep);
 }
 
 .frame {
@@ -99,7 +99,7 @@
   margin: 0;
   padding: var(--space-300);
   border-top: 1px solid var(--border-error);
-  background: rgba(217, 45, 32, 0.08);
+  background: color-mix(in srgb, var(--text-error) 8%, transparent);
   color: var(--border-error);
   font-family: var(--font-family-mono);
   font-size: 13px;
