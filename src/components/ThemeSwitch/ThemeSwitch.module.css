@@ -49,3 +49,9 @@
     transition: none;
   }
 }
+
+@media (max-width: 900px) {
+  .switch {
+    min-width: 44px;
+  }
+}
