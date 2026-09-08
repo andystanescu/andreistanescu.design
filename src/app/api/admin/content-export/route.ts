@@ -35,7 +35,7 @@ export async function GET() {
      FROM about_experiences ORDER BY position, id`
   ).all();
   const configuration = {
-    settings: db.prepare("SELECT key, value FROM settings WHERE key != 'admin_credentials' ORDER BY key").all(),
+    settings: db.prepare("SELECT key, value FROM settings WHERE key NOT IN ('admin_credentials', 'session_secret') ORDER BY key").all(),
     homepageSections: db.prepare("SELECT * FROM homepage_sections ORDER BY position, key").all(),
     services: db.prepare("SELECT * FROM service_items ORDER BY position, id").all(),
     approachSteps: db.prepare("SELECT * FROM approach_steps ORDER BY position, id").all(),

@@ -52,7 +52,20 @@ export default function ContentTransfer() {
       const form = new FormData();
       form.append("file", file);
       const response = await fetch("/api/admin/content-import", { method: "POST", body: form });
-      const result = (await response.json()) as { error?: string; imported?: { caseStudies: number; insights: number } };
+      const responseText = await response.text();
+      let result: { error?: string; imported?: { caseStudies: number; insights: number } } = {};
+      try {
+        result = JSON.parse(responseText) as typeof result;
+      } catch {
+        if (!response.ok) {
+          throw new Error(
+            response.status === 413
+              ? "This export is too large to import. The server upload limit must be increased."
+              : `Import failed with server response ${response.status}.`
+          );
+        }
+        throw new Error("The import completed with an unreadable server response.");
+      }
       if (!response.ok) throw new Error(result.error ?? "Import failed.");
       setMessage(`Imported ${result.imported?.caseStudies ?? 0} case studies and ${result.imported?.insights ?? 0} insights.`);
       if (inputRef.current) inputRef.current.value = "";
