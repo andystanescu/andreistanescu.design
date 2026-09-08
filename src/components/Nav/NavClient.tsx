@@ -101,12 +101,9 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
         className={`${styles.navOuter} ${scrolled ? styles.scrolled : ""}`}
       >
         <div className={`container ${styles.nav} ${logoIdentity === "personal" ? styles.personal : ""}`}>
-          <div className={styles.logoArea}>
-            <Link href="/" aria-label="ConScept home" onClick={closeMenu}>
-              <Logo variant="compact" identity={logoIdentity} />
-            </Link>
-            <ThemeSwitch />
-          </div>
+          <Link href="/" aria-label="ConScept home" onClick={closeMenu}>
+            <Logo variant="compact" identity={logoIdentity} />
+          </Link>
           <div className={styles.right}>
             <nav className={styles.links} aria-label="Primary">
               {links.map((link) => (
@@ -120,29 +117,32 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
                 </Link>
               ))}
             </nav>
-            <div className={styles.desktopCta}>
-              <Button href="/contact" icon={<ArrowIcon size={16} />}>
-                Let&apos;s talk
-              </Button>
+            <div className={styles.controls}>
+              <div className={styles.desktopCta}>
+                <Button href="/contact" icon={<ArrowIcon size={16} />}>
+                  Let&apos;s talk
+                </Button>
+              </div>
+              <ThemeSwitch />
+              <button
+                type="button"
+                className={styles.menuToggle}
+                aria-expanded={menuOpen}
+                aria-controls="mobile-menu"
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+                onClick={() => setMenuOpen((open) => !open)}
+              >
+                <span
+                  className={`${styles.bar} ${menuOpen ? styles.barTop : ""}`}
+                />
+                <span
+                  className={`${styles.bar} ${menuOpen ? styles.barMiddle : ""}`}
+                />
+                <span
+                  className={`${styles.bar} ${menuOpen ? styles.barBottom : ""}`}
+                />
+              </button>
             </div>
-            <button
-              type="button"
-              className={styles.menuToggle}
-              aria-expanded={menuOpen}
-              aria-controls="mobile-menu"
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-              onClick={() => setMenuOpen((open) => !open)}
-            >
-              <span
-                className={`${styles.bar} ${menuOpen ? styles.barTop : ""}`}
-              />
-              <span
-                className={`${styles.bar} ${menuOpen ? styles.barMiddle : ""}`}
-              />
-              <span
-                className={`${styles.bar} ${menuOpen ? styles.barBottom : ""}`}
-              />
-            </button>
           </div>
         </div>
       </header>
