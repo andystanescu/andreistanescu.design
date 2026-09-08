@@ -27,3 +27,11 @@
     transform: translateX(-50%);
   }
 }
+
+@media (max-width: 640px) {
+  .bar {
+    right: var(--space-300);
+    left: auto;
+    transform: none;
+  }
+}
