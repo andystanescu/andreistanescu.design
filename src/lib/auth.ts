@@ -1,22 +1,31 @@
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
 export const SESSION_COOKIE_NAME = "conscept_admin_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-function getSecret(): string {
+export function getSessionSecret(): string {
   const secret = process.env.SESSION_SECRET;
-  if (!secret) {
-    throw new Error(
-      "SESSION_SECRET is not set — required for the admin panel. See .env.example."
-    );
-  }
-  return secret;
+  if (secret) return secret;
+
+  const stored = db
+    .prepare("SELECT value FROM settings WHERE key = 'session_secret'")
+    .get() as { value?: string } | undefined;
+  if (stored?.value) return stored.value;
+
+  const generated = randomBytes(32).toString("base64url");
+  db.prepare(
+    "INSERT OR IGNORE INTO settings (key, value) VALUES ('session_secret', ?)"
+  ).run(generated);
+  const saved = db
+    .prepare("SELECT value FROM settings WHERE key = 'session_secret'")
+    .get() as { value: string };
+  return saved.value;
 }
 
 function sign(value: string): string {
-  return createHmac("sha256", getSecret()).update(value).digest("base64url");
+  return createHmac("sha256", getSessionSecret()).update(value).digest("base64url");
 }
 
 export function createSessionToken(): string {

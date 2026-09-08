@@ -1,17 +1,12 @@
 import { createHmac, timingSafeEqual } from "crypto";
-
-function getSecret() {
-  const secret = process.env.SESSION_SECRET;
-  if (!secret) throw new Error("SESSION_SECRET is not set.");
-  return secret;
-}
+import { getSessionSecret } from "@/lib/auth";
 
 export function caseStudyAccessCookieName(slug: string) {
   return `conscept_case_access_${Buffer.from(slug).toString("base64url")}`;
 }
 
 function signature(slug: string, hashes: string[]) {
-  return createHmac("sha256", getSecret()).update(`${slug}:${hashes.join("|")}`).digest("base64url");
+  return createHmac("sha256", getSessionSecret()).update(`${slug}:${hashes.join("|")}`).digest("base64url");
 }
 
 export function createCaseStudyAccessToken(slug: string, hashes: string[]) {

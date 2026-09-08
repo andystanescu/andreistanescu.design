@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSessionToken, verifyCredentials, SESSION_COOKIE_NAME } from "@/lib/auth";
 import { relativeRedirect } from "@/lib/relativeRedirect";
 
+export async function GET() {
+  return relativeRedirect("/admin/login");
+}
+
 export async function POST(request: NextRequest) {
   const form = await request.formData();
   const username = String(form.get("username") ?? "");

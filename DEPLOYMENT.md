@@ -16,7 +16,7 @@ Use Node.js 22.13 or newer (Node 24 recommended). The database uses `node:sqlite
 
 | Variable | Purpose |
 | --- | --- |
-| `SESSION_SECRET` | Required for administrator sessions and protected case-study access. Keep stable across restarts. |
+| `SESSION_SECRET` | Recommended for administrator sessions and protected case-study access. Keep stable across restarts. If omitted, the app generates and stores one in SQLite. |
 | `PUBLIC_SITE_URL` | Set to the public HTTPS origin for metadata, sitemap and recovery links. The code defaults to `https://andreistanescu.design`; the example uses localhost. |
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH` | Optional together if first-use setup is used. Stored credentials take precedence. Use a bcrypt hash; escape dollar signs with backslashes when putting it in a Next.js env file. |
 | `RESEND_API_KEY`, `CONTACT_EMAIL_FROM` | Optional email delivery, using a verified sender. Without them, contact submissions still save to SQLite. Set the recipient in admin settings. |
@@ -55,6 +55,8 @@ If this repository is connected to an existing Render service instead of a Bluep
 - `PUBLIC_SITE_URL`: the public HTTPS origin
 
 Render persistent disks require a paid web-service instance. Without a disk, environment-based credentials can make sign-in work, but SQLite content and uploaded files are erased when the service restarts or redeploys.
+
+If `SESSION_SECRET` is absent on an existing service, the application generates one and stores it beside the administrator credentials in SQLite. This prevents a successful credential check from ending in an HTTP 500. An explicit Render environment value remains preferable because it stays valid independently of the database.
 
 ## Missing uploaded content
 
