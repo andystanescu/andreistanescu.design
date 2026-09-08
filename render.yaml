@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: andreistanescu-design
+    runtime: node
+    plan: 0.5c-512mb
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    numInstances: 1
+    disk:
+      name: application-data
+      mountPath: /opt/render/project/src/storage
+      sizeGB: 1
+    envVars:
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: PUBLIC_SITE_URL
+        value: https://andreistanescu.design
+      - key: DATA_DIR
+        value: /opt/render/project/src/storage/data
+      - key: UPLOADS_DIR
+        value: /opt/render/project/src/storage/uploads
+
