@@ -37,9 +37,11 @@ The imported `researcher-assistant` case study remains password-protected, but i
 
 ## Render
 
-The repository includes `render.yaml` for a Node web service. It builds with `npm ci && npm run build`, starts with `npm start`, generates a stable `SESSION_SECRET`, and mounts a 1 GB persistent disk at `/opt/render/project/src/storage`. The SQLite database and uploaded files use directories beneath that mount so administrator credentials and content edits survive deploys and restarts.
+The repository includes `render.yaml` for the existing `conscept` Node web service. It builds with `npm ci && npm run build`, starts with `npm start`, generates a stable `SESSION_SECRET`, and mounts a 1 GB persistent disk at `/opt/render/project/src/storage`. The SQLite database and uploaded files use directories beneath that mount so administrator credentials and content edits survive deploys and restarts.
 
-Create or sync the service from the Blueprint in the Render dashboard. After its first successful deploy, open `https://<your-service>.onrender.com/admin/login`. If no administrator exists yet, the page shows the one-time setup form. Create the account there, then sign in normally. Credentials are stored on the attached disk.
+Sync the Blueprint to the existing `conscept` service in the Render dashboard. Committing `render.yaml` alone does not attach a disk to a manually configured service. Before attaching a new disk, export the current content from **Admin > Content Transfer**. A newly attached disk starts empty, so after the first successful disk-backed deploy, sign in at `https://conscept.onrender.com/admin/login` and import that export. Subsequent administrator credentials, content edits, contact submissions, and uploaded files persist across deploys and restarts.
+
+Do not detach or replace the disk during routine deploys. Keep the service at one instance because the SQLite database cannot be shared safely between multiple Render instances. Back up content regularly from **Admin > Content Transfer**.
 
 If this repository is connected to an existing Render service instead of a Blueprint, apply these settings in its dashboard:
 

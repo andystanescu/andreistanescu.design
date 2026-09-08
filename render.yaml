@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: andreistanescu-design
+    name: conscept
     runtime: node
     plan: 0.5c-512mb
     buildCommand: npm ci && npm run build
