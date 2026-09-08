@@ -35,6 +35,27 @@ If `UPLOADS_DIR` points outside `public/uploads`, copy the bundled `public/uploa
 
 The imported `researcher-assistant` case study remains password-protected, but its old password hash was removed. Set a new password in the admin editor. The snapshot also excludes administrator credentials. Content exports now omit these credentials and case-study hashes; content imports cannot replace administrator credentials.
 
+## Render
+
+The repository includes `render.yaml` for a Node web service. It builds with `npm ci && npm run build`, starts with `npm start`, generates a stable `SESSION_SECRET`, and mounts a 1 GB persistent disk at `/opt/render/project/src/storage`. The SQLite database and uploaded files use directories beneath that mount so administrator credentials and content edits survive deploys and restarts.
+
+Create or sync the service from the Blueprint in the Render dashboard. After its first successful deploy, open `https://<your-service>.onrender.com/admin/login`. If no administrator exists yet, the page shows the one-time setup form. Create the account there, then sign in normally. Credentials are stored on the attached disk.
+
+If this repository is connected to an existing Render service instead of a Blueprint, apply these settings in its dashboard:
+
+- Service type: Web Service
+- Runtime: Node
+- Build command: `npm ci && npm run build`
+- Start command: `npm start`
+- Instance count: one
+- Persistent disk mount: `/opt/render/project/src/storage`
+- `DATA_DIR`: `/opt/render/project/src/storage/data`
+- `UPLOADS_DIR`: `/opt/render/project/src/storage/uploads`
+- `SESSION_SECRET`: a stable random 32-byte or longer secret
+- `PUBLIC_SITE_URL`: the public HTTPS origin
+
+Render persistent disks require a paid web-service instance. Without a disk, environment-based credentials can make sign-in work, but SQLite content and uploaded files are erased when the service restarts or redeploys.
+
 ## Missing uploaded content
 
 All tracked assets are included. The source snapshot contains no embedded assets and references 48 upload files absent from the source checkout and checked local backups. See `MIGRATION-MANIFEST.json` for their exact filenames. Obtain a content export including assets from the live application, or restore the corresponding files into `UPLOADS_DIR`. Review that export for credentials before using it. Existing text, layouts and asset references have been preserved rather than replaced with invented content.
