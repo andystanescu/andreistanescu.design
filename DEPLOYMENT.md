@@ -56,6 +56,8 @@ If this repository is connected to an existing Render service instead of a Bluep
 - `SESSION_SECRET`: a stable random 32-byte or longer secret
 - `PUBLIC_SITE_URL`: the public HTTPS origin
 
+For contact email delivery, add `RESEND_API_KEY` and `CONTACT_EMAIL_FROM` to the service environment. The Blueprint declares both with `sync: false`, so Render prompts for their values without storing them in Git. `CONTACT_EMAIL_FROM` must use a domain verified in Resend, for example `Website <contact@andreistanescu.design>`. In **Admin > Settings**, also set **Contact form: send submissions to** to the inbox that should receive messages. Redeploy after changing environment variables.
+
 Render persistent disks require a paid web-service instance. Without a disk, environment-based credentials can make sign-in work, but SQLite content and uploaded files are erased when the service restarts or redeploys.
 
 If `SESSION_SECRET` is absent on an existing service, the application generates one and stores it beside the administrator credentials in SQLite. This prevents a successful credential check from ending in an HTTP 500. An explicit Render environment value remains preferable because it stays valid independently of the database.
