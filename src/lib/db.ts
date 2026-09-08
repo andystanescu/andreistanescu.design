@@ -19,7 +19,13 @@ globalForDb.__conscept_db = db;
 // Allow concurrent application workers to finish SQLite initialization.
 db.exec("PRAGMA busy_timeout = 30000;");
 
-db.exec(`
+function initializeDatabase() {
+  // Next.js evaluates server modules in parallel while collecting page data.
+  // Serialize schema migrations and seed data so multiple build workers cannot
+  // pass the same existence check and then insert the same record.
+  db.exec("BEGIN IMMEDIATE;");
+  try {
+    db.exec(`
   CREATE TABLE IF NOT EXISTS case_studies (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     slug TEXT NOT NULL UNIQUE,
@@ -310,7 +316,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
 
 const getSettingStmt = db.prepare("SELECT value FROM settings WHERE key = ?");
 const insertSettingStmt = db.prepare(
-  "INSERT INTO settings (key, value) VALUES (?, ?)"
+  "INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)"
 );
 for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
   if (!getSettingStmt.get(key)) insertSettingStmt.run(key, value);
@@ -889,3 +895,16 @@ for (const article of db
     updateArticleBody.run(backfill.next(article.cover_image), article.slug, backfill.current);
   }
 }
+
+    db.exec("COMMIT;");
+  } catch (error) {
+    try {
+      db.exec("ROLLBACK;");
+    } catch {
+      // The original initialization error is the useful failure to report.
+    }
+    throw error;
+  }
+}
+
+initializeDatabase();
