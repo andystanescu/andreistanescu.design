@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "@/components/Logo/Logo";
 import { Button } from "@/components/Button/Button";
 import { ArrowIcon } from "@/components/Icon/ArrowIcon";
+import { ThemeSwitch } from "@/components/ThemeSwitch/ThemeSwitch";
 import type { NavLink } from "@/lib/pages";
 import styles from "./Nav.module.css";
 
@@ -100,9 +101,12 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
         className={`${styles.navOuter} ${scrolled ? styles.scrolled : ""}`}
       >
         <div className={`container ${styles.nav} ${logoIdentity === "personal" ? styles.personal : ""}`}>
-          <Link href="/" aria-label="ConScept home" onClick={closeMenu}>
-            <Logo variant="compact" identity={logoIdentity} />
-          </Link>
+          <div className={styles.logoArea}>
+            <Link href="/" aria-label="ConScept home" onClick={closeMenu}>
+              <Logo variant="compact" identity={logoIdentity} />
+            </Link>
+            <ThemeSwitch />
+          </div>
           <div className={styles.right}>
             <nav className={styles.links} aria-label="Primary">
               {links.map((link) => (
