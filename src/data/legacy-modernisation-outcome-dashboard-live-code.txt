@@ -1,0 +1,30 @@
+function OutcomeDashboard() {
+  const [open, setOpen] = useState("complaints");
+  const metrics = {
+    complaints: { value: "−75%", label: "Client complaints", period: "First 12 weeks after launch", changed: "A clearer hierarchy, navigation model, and more consistent states reduced avoidable confusion in the live product.", connection: "The modernisation focused effort on the highest-friction moments, then carried the resulting patterns into reusable components." },
+    savings: { value: "£560K", label: "Support cost savings", period: "First 12 weeks after launch", changed: "Fewer recurring issues and clearer task completion reduced the support effort associated with the previous interface.", connection: "The work made high-value improvements within the existing architecture, creating measurable operational value without a rebuild." },
+    satisfaction: { value: "4.2/5", label: "Client satisfaction", period: "Post-launch client feedback", changed: "The updated experience gave clients a more predictable way to complete tasks and understand what would happen next.", connection: "Consistent components and accessible interaction states turned design decisions into a more dependable product experience." }
+  };
+  const active = metrics[open];
+  return (
+    <section style={{ width: "100%", boxSizing: "border-box", padding: "clamp(24px, 4vw, 52px)", background: "#11161F", color: "#FFF", borderRadius: "12px", fontFamily: "Inter, Arial, sans-serif" }}>
+      <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+        <p style={{ margin: "0 0 10px", color: "#FF8A66", fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em" }}>OUTCOME DASHBOARD</p>
+        <h2 style={{ margin: "0 0 10px", maxWidth: "700px", fontSize: "clamp(28px, 5vw, 54px)", lineHeight: 1.04, letterSpacing: "-0.04em" }}>Impact beyond the interface</h2>
+        <p style={{ margin: "0 0 26px", maxWidth: "680px", color: "#C8CCD0", fontSize: "16px", lineHeight: 1.55 }}>Select an outcome to see the evidence, the change behind it, and how it connected to the design work.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "12px" }}>
+          {Object.entries(metrics).map(([key, metric]) => <button key={key} type="button" onClick={() => setOpen(key)} aria-expanded={open === key} style={{ padding: "22px", minHeight: "150px", border: open === key ? "2px solid #FF8A66" : "1px solid #3B4552", borderRadius: "9px", background: open === key ? "#202936" : "#191F29", color: "#FFF", textAlign: "left", cursor: "pointer", transform: open === key ? "translateY(-3px)" : "none", transition: "transform 160ms ease, border-color 160ms ease" }}><strong style={{ display: "block", marginBottom: "16px", color: "#FF8A66", fontSize: "clamp(30px, 4vw, 46px)", lineHeight: 1 }}>{metric.value}</strong><span style={{ display: "block", fontSize: "14px", fontWeight: 700 }}>{metric.label}</span><span style={{ display: "block", marginTop: "12px", color: "#AAB2BC", fontSize: "11px" }}>{open === key ? "OPEN · VIEW DETAILS" : "VIEW DETAILS"}</span></button>)}
+        </div>
+        <div style={{ marginTop: "14px", padding: "22px", borderLeft: "3px solid #FF8A66", background: "#191F29" }}>
+          <p style={{ margin: "0 0 14px", color: "#FF8A66", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em" }}>{active.label.toUpperCase()}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "22px" }}>
+            <div><strong style={{ display: "block", marginBottom: "6px", fontSize: "12px" }}>Measurement period</strong><p style={{ margin: 0, color: "#C8CCD0", fontSize: "14px", lineHeight: 1.5 }}>{active.period}</p></div>
+            <div><strong style={{ display: "block", marginBottom: "6px", fontSize: "12px" }}>What changed</strong><p style={{ margin: 0, color: "#C8CCD0", fontSize: "14px", lineHeight: 1.5 }}>{active.changed}</p></div>
+            <div><strong style={{ display: "block", marginBottom: "6px", fontSize: "12px" }}>Connection to the work</strong><p style={{ margin: 0, color: "#C8CCD0", fontSize: "14px", lineHeight: 1.5 }}>{active.connection}</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+render(<OutcomeDashboard />);

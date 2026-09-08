@@ -1,0 +1,154 @@
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 0 auto;
+  background: var(--bg-canvas);
+}
+
+.heroInner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-800);
+  padding-block: var(--space-800);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-300);
+  width: 560px;
+  max-width: 100%;
+}
+
+/* Give the (now much larger) lattice more breathing room on mid-size
+   desktop viewports, where a fixed 560px copy column would otherwise force
+   it to wrap under the copy and blow past one viewport's height. */
+@media (min-width: 901px) and (max-width: 1600px) {
+  .copy {
+    width: min(560px, 42vw);
+  }
+}
+
+.headline {
+  color: var(--text-primary);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-300);
+}
+
+.diagram {
+  display: flex;
+  align-items: center;
+  gap: clamp(var(--space-300), 4vw, var(--space-800));
+  /* flex-basis must be a real minimum (matching the lattice's own clamp
+     floor below), not 0 — a 0 basis "hypothetically" fits next to .copy no
+     matter how little room is actually left, so heroInner never wraps them
+     onto separate lines and the diagram gets squeezed to near-nothing while
+     the lattice (which has a hard minimum) overflows past it. */
+  flex: 1 1 220px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+/* On desktop, align the lattice/legend group to the container's right edge
+   — matching the nav's right-aligned content (links/CTA) above it. */
+@media (min-width: 901px) {
+  .diagram {
+    justify-content: flex-end;
+  }
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-400);
+}
+
+/* When the legend can't fit beside the lattice and drops to its own line
+   below it, lay its two items out side by side instead of stacking them —
+   there's a full line's width free down there. Toggled by DiagramLayout,
+   which measures where the legend actually lands (the lattice's size is
+   capped by both viewport width and height, so no fixed breakpoint captures
+   this reliably). */
+.diagramStacked .legend {
+  flex-direction: row;
+  gap: var(--space-600);
+}
+
+.legendItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-100);
+  width: 170px;
+}
+
+.legendLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-100);
+  color: var(--text-primary);
+}
+
+.scrollHint {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-400);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  color: var(--text-tertiary);
+  transition: color 0.15s ease;
+}
+
+.scrollHint:hover,
+.scrollHint:focus-visible {
+  color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scrollHint {
+    animation: scrollHintBounce 2s ease-in-out infinite;
+  }
+}
+
+@keyframes scrollHintBounce {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(6px);
+  }
+}
+
+@media (max-width: 900px) {
+  /* Nav becomes a fixed bottom bar below this breakpoint (see Nav.module.css)
+     — lift the hint clear of it. */
+  .scrollHint {
+    bottom: calc(var(--nav-height) + var(--space-300));
+  }
+}
+
+@media (max-height: 700px) {
+  .scrollHint {
+    display: none;
+  }
+}
+
+/* Foundations/System legend: only worth the space on tablet and up — on
+   phones the diagram alone (plus the headline/copy) already says enough. */
+@media (max-width: 640px) {
+  .legend {
+    display: none;
+  }
+}

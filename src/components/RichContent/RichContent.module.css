@@ -1,0 +1,173 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-200);
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-body);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.content :global(h1) {
+  margin-top: var(--space-300);
+  color: var(--text-primary);
+  font-family: var(--font-family-heading);
+  font-size: 36px;
+}
+
+.content :global(h2) {
+  margin-top: var(--space-300);
+  color: var(--text-primary);
+  font-family: var(--font-family-heading);
+  font-size: 28px;
+}
+
+.content :global(h3) {
+  margin-top: var(--space-300);
+  color: var(--text-primary);
+  font-family: var(--font-family-heading);
+  font-size: 22px;
+}
+
+.content :global(ul),
+.content :global(ol) {
+  padding-left: 1.4em;
+}
+
+.content :global(blockquote) {
+  margin: 0;
+  padding-left: var(--space-300);
+  border-left: 4px solid var(--accent-foundation);
+  color: var(--text-secondary);
+  font-family: var(--font-family-heading);
+  font-size: 24px;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.content :global(blockquote p) {
+  margin: 0;
+}
+
+.content :global(blockquote cite) {
+  display: block;
+  margin-top: var(--space-200);
+  color: var(--text-accent);
+  font-family: var(--font-family-body);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.content :global(blockquote[data-attribution])::after {
+  display: block;
+  margin-top: var(--space-200);
+  color: var(--text-accent);
+  content: "— " attr(data-attribution);
+  font-family: var(--font-family-body);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.content :global(a) {
+  color: var(--text-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+
+.content :global(img) {
+  width: auto;
+  max-width: 100%;
+  border-radius: var(--radius-lg);
+}
+
+
+.content :global(hr) {
+  border: none;
+  border-top: 1px solid var(--border-default);
+}
+
+.content :global(pre) {
+  padding: var(--space-300);
+  border-radius: var(--radius-md);
+  background: var(--text-primary);
+  color: var(--bg-canvas);
+  overflow-x: auto;
+}
+
+.content :global(pre code) {
+  font-family: var(--font-family-mono);
+  font-size: 15px;
+}
+
+/* #word# inside a heading — see src/lib/headingAccents.ts */
+.content :global(.accent) {
+  color: var(--text-accent);
+}
+
+/* Syntax highlighting — hljs-* classes are applied server-side at render
+   time (see src/lib/highlightCode.ts). Kept in sync with the same palette
+   in the admin editor's RichTextEditor.module.css. */
+.content :global(.hljs-comment),
+.content :global(.hljs-quote) {
+  color: #7f848e;
+  font-style: italic;
+}
+
+.content :global(.hljs-keyword),
+.content :global(.hljs-selector-tag),
+.content :global(.hljs-literal),
+.content :global(.hljs-section) {
+  color: #e8441c;
+}
+
+.content :global(.hljs-string),
+.content :global(.hljs-attr),
+.content :global(.hljs-regexp),
+.content :global(.hljs-addition) {
+  color: #98c379;
+}
+
+.content :global(.hljs-number),
+.content :global(.hljs-meta) {
+  color: #d19a66;
+}
+
+.content :global(.hljs-title),
+.content :global(.hljs-title.function_),
+.content :global(.hljs-built_in) {
+  color: #61afef;
+}
+
+.content :global(.hljs-variable),
+.content :global(.hljs-template-variable),
+.content :global(.hljs-attribute),
+.content :global(.hljs-tag),
+.content :global(.hljs-name),
+.content :global(.hljs-deletion) {
+  color: #e06c75;
+}
+
+.content :global(.hljs-type),
+.content :global(.hljs-class .hljs-title) {
+  color: #e5c07b;
+}
+
+.content :global(.hljs-symbol),
+.content :global(.hljs-bullet),
+.content :global(.hljs-link) {
+  color: #56b6c2;
+}
+
+.content :global(.hljs-emphasis) {
+  font-style: italic;
+}
+
+.content :global(.hljs-strong) {
+  font-weight: 700;
+}

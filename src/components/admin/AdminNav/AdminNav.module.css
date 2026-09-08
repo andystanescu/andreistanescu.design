@@ -1,0 +1,43 @@
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-500);
+  flex: 1;
+}
+
+.group { display: flex; flex-direction: column; gap: var(--space-150); }
+.groupItems { display: flex; flex-direction: column; gap: var(--space-50); }
+.groupLabel { margin: 0 var(--space-150); color: var(--text-tertiary); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-150);
+  padding: var(--space-150) var(--space-150);
+  border-left: 3px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: var(--font-family-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.icon { width: 18px; height: 18px; flex: 0 0 18px; color: var(--text-tertiary); }
+.navLink:hover .icon, .navLink:focus-visible .icon, .navLink.navLinkActive .icon { color: var(--accent-foundation); }
+
+.navLink:hover,
+.navLink:focus-visible {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+/* Same "orange rule marks current location" convention as the public
+   site's Nav (see Nav.module.css .linkActive) — a left rule here since
+   this nav runs vertically. */
+.navLink.navLinkActive {
+  border-left-color: var(--accent-foundation);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}

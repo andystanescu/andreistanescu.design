@@ -1,0 +1,79 @@
+.services {
+  width: 100%;
+  padding-block: var(--space-1200);
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+}
+
+.servicesInner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-800);
+  flex-wrap: wrap;
+}
+
+.intro {
+  flex: 0 1 300px;
+  min-width: 0;
+}
+
+.intro h2 {
+  max-width: 40vw;
+}
+
+.grid {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 280px;
+  flex-wrap: wrap;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-200);
+  flex: 1 0 180px;
+  padding: 0 var(--space-300);
+  border-left: 1px solid var(--border-default);
+  color: inherit;
+  transition: opacity 0.15s ease;
+}
+
+.card:hover,
+.card:focus-visible {
+  opacity: 0.72;
+}
+
+.card:active {
+  opacity: 0.56;
+}
+
+.card:first-child {
+  border-left: none;
+  padding-left: 0;
+}
+
+/* Below the single-row breakpoint, cards stack: swap the side hairline for a
+   top one so the divider still reads as "between items" rather than a
+   dangling vertical rule. */
+@media (max-width: 900px) {
+  .intro {
+    width: 100%;
+  }
+
+  .intro h2 {
+    max-width: 100%;
+  }
+
+  .card {
+    flex-basis: 100%;
+    padding: var(--space-300) 0 0;
+    border-left: none;
+    border-top: 1px solid var(--border-default);
+  }
+
+  .card:first-child {
+    padding-top: 0;
+    border-top: none;
+  }
+}

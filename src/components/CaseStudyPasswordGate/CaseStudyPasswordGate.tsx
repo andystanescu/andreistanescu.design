@@ -1,0 +1,5 @@
+import styles from "./CaseStudyPasswordGate.module.css";
+
+export function CaseStudyPasswordGate({ slug, error }: { slug: string; error?: string }) {
+  return <main className={styles.main}><section className={styles.card}><p className="label-eyebrow">Password protected case study</p><h1 className="heading-01">Password protected case study</h1><p className="body-default">This case study contains information that is sensitive or needs special permissions to display. Please enter the password I provided to unlock it.</p>{error && <p className={styles.error}>This is not the correct password. If I gave you the password, you can check our conversation, or you can always reach out to me again.</p>}<form action={`/api/case-studies/${encodeURIComponent(slug)}/unlock`} method="POST"><label className={styles.field}><span className="label-small">Password</span><input name="password" type="password" required autoComplete="off" autoFocus /></label><button type="submit">View case study</button></form></section></main>;
+}

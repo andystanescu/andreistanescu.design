@@ -1,0 +1,19 @@
+.section { padding-block: var(--space-1200); }
+.section h2 { max-width: 760px; margin-top: var(--space-200); }
+.intro { width: 100%; max-width: none; margin-top: var(--space-300); color: var(--text-secondary); }
+.timeline { margin-top: var(--space-800); }
+.card { display: grid; grid-template-columns: minmax(140px, 180px) minmax(220px, 0.8fr) minmax(0, 1.4fr); align-items: start; gap: 40px; min-width: 0; padding: 24px 0; border-top: 1px solid var(--border-default); }
+.dates { color: var(--text-secondary); font-size: 13px; font-weight: 500; }
+.body { display: flex; min-width: 0; flex-direction: column; gap: 6px; }
+.body h3 { color: var(--text-primary); font-size: 18px; font-weight: 600; }
+.company { color: var(--text-secondary); font-size: 13px; font-weight: 500; }
+.description { width: 100%; max-width: none; min-width: 0; color: var(--text-secondary); font-size: 15px; line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }
+.description :global(.content) { gap: 0; color: inherit; font-size: inherit; line-height: inherit; }
+.description :global(.content p) { margin: 0; }
+.description :global(.content p + p) { margin-top: 10px; }
+.description :global(.content ul), .description :global(.content ol) { margin: 10px 0; padding-left: 1.4em; }
+.description :global(.content li + li) { margin-top: 6px; }
+.description :global(.content strong) { font-weight: 700; color: var(--text-primary); }
+.description :global(.content h1), .description :global(.content h2), .description :global(.content h3) { margin-top: 12px; font-size: 18px; }
+@media (max-width: 900px) { .card { grid-template-columns: minmax(120px, 160px) minmax(0, 1fr); gap: 24px; } .description { grid-column: 2; } }
+@media (max-width: 700px) { .card { display: flex; flex-direction: column; gap: 12px; } .dates { flex-basis: auto; } .description { width: 100%; } }

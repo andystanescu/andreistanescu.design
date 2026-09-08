@@ -1,0 +1,160 @@
+.insights {
+  width: 100%;
+  padding-block: var(--space-1200);
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+}
+
+.insightsInner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-800);
+  flex-wrap: wrap;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-300);
+  flex: 0 1 300px;
+  min-width: 0;
+}
+
+.intro h2 {
+  max-width: 40vw;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+  gap: var(--space-300);
+}
+
+.seeAll {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-100);
+  font-family: var(--font-family-body);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+/* Same resting/hover language as ArticleCard (Figma node 157:203) — a
+   reserved transparent border at rest so hover's outline doesn't shift
+   the layout. */
+.card {
+  display: flex;
+  min-width: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.card:hover,
+.card:focus, .card:focus-visible {
+  border-color: var(--accent-foundation);
+  box-shadow:
+    0 12px 24px rgba(17, 22, 31, 0.1),
+    0 4px 8px rgba(17, 22, 31, 0.12);
+  transform: translateY(-2px);
+}
+
+.card:focus, .card:focus-visible {
+  outline: 2px solid #e8441c;
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.card:hover .link,
+.card:focus-visible .link {
+  color: var(--accent-foundation);
+}
+
+.cover {
+  width: 50%;
+  min-width: 0;
+  flex-shrink: 0;
+  background-color: var(--text-primary);
+  background-image: radial-gradient(
+    var(--accent-foundation) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 16px 16px;
+}
+
+.cardContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-250, 20px);
+  padding: var(--space-400, 32px);
+  min-width: 0;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-100);
+  font-family: var(--font-family-body);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.2;
+  color: inherit;
+}
+
+/* The trailing icon carries brand orange regardless of the label's color. */
+.seeAll svg,
+.link svg {
+  color: var(--accent-foundation);
+}
+
+@media (max-width: 900px) {
+  .intro {
+    width: 100%;
+  }
+
+  .intro h2 {
+    max-width: 100%;
+  }
+
+  .cards {
+    width: 100%;
+    flex-basis: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    width: 100%;
+    flex-basis: 100%;
+    flex-direction: column;
+  }
+
+  .cover {
+    width: 100%;
+    height: 200px;
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 901px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    flex-direction: column;
+  }
+
+  .cover {
+    width: 100%;
+    height: 200px;
+  }
+}

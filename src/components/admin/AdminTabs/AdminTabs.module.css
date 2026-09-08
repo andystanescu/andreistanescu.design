@@ -1,0 +1,39 @@
+.tabs {
+  position: sticky;
+  top: 7rem;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: var(--space-300);
+  margin-bottom: var(--space-400);
+  border-bottom: 1px solid var(--border-default);
+  padding-top: 0;
+  background: var(--bg-canvas);
+}
+
+.embedded {
+  position: static;
+  margin: var(--space-300) 0 0;
+}
+
+.tab {
+  padding: var(--space-150) 0;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-family-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tab:hover,
+.tab:focus-visible {
+  color: var(--text-primary);
+}
+
+/* Same "orange rule marks current location" convention as the public
+   site's Nav and the admin sidebar's AdminNav. */
+.tab.tabActive {
+  border-bottom-color: var(--accent-foundation);
+  color: var(--text-primary);
+}

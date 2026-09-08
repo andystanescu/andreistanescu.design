@@ -1,0 +1,43 @@
+.lattice {
+  /* ~50% of viewport width, but also bounded by viewport height (it's ~square)
+     so it can never force the hero taller than one screen. */
+  width: clamp(297px, min(54vw, 60.75vh), 756px);
+  flex-shrink: 0;
+  /* Keep vertical swipes available for page scrolling. The interaction code
+     promotes only clearly horizontal touch gestures into a dot drag. */
+  touch-action: pan-y;
+}
+
+@media (max-width: 640px) {
+  .lattice {
+    width: clamp(216px, min(74.25vw, 43.2vh), 378px);
+  }
+}
+
+.lattice svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Dots near an edge can drift past the nominal 365x365 box — don't clip
+     them (the default UA behavior for a root <svg> is to clip). */
+  overflow: visible;
+}
+
+/* Dots are individually draggable (LatticeInteractive) — grab affordance on
+   the whole diagram since which exact dot is under the cursor changes as
+   they drift, and the "grabbing" state overrides it while a drag is live. */
+.lattice svg path[fill] {
+  cursor: grab;
+}
+
+.lattice.grabbing,
+.lattice.grabbing svg path[fill] {
+  cursor: grabbing;
+}
+
+/* Idle drift and cursor-repulsion are driven per-node from LatticeInteractive
+   (JS, respects prefers-reduced-motion by not running at all — the spring
+   easing happens in the rAF loop itself, not via CSS) — dots carry a `fill`,
+   edges carry only `stroke`, so no ids are needed to tell them apart. Edges
+   are redrawn every frame from their attached dots' live positions, which is
+   what keeps them connected as the dots drift. */

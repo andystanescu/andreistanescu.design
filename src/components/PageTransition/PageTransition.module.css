@@ -1,0 +1,73 @@
+.page {
+  /* The wrapper stays still so the persistent navigation and footer never
+     participate in page transitions. */
+}
+
+.page:not(.pageTabExit) > :not(header):not(footer):not(.wipe):not([data-admin-shell]),
+.page:not(.pageTabExit) > [data-admin-shell] > [data-page-transition-content] {
+  will-change: transform;
+  animation: depth-in 100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.pageExit:not(.pageTabExit) > :not(header):not(footer):not(.wipe):not([data-admin-shell]),
+.pageExit:not(.pageTabExit) > [data-admin-shell] > [data-page-transition-content] {
+  animation: depth-out 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  pointer-events: none;
+}
+
+.page > [data-admin-shell] > [data-page-transition-content]:has([data-editor-page]),
+.pageExit > [data-admin-shell] > [data-page-transition-content]:has([data-editor-page]) {
+  transform: none !important;
+  animation: none !important;
+  will-change: auto !important;
+}
+/* Content tabs keep the persistent admin page header in place while the
+   section below it changes. Sidebar navigation continues to use pageExit. */
+.pageTabExit > [data-admin-shell] > [data-page-transition-content] > :not([data-admin-about-header]):not(.editorHeader) {
+  animation: depth-out 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  pointer-events: none;
+}
+
+.pageExit.pageTabExit > [data-admin-shell] > [data-page-transition-content] > [data-admin-about-header] {
+  animation: none;
+}
+
+.page:not(.pageExit).pageTabExit > [data-admin-shell] > [data-page-transition-content] > :not([data-admin-about-header]):not(.editorHeader) {
+  animation: depth-in 100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.page:not(.pageExit).pageTabExit > [data-admin-shell] > [data-page-transition-content] > [data-admin-about-header] {
+  animation: none;
+}
+
+@keyframes depth-in {
+  from {
+    opacity: 0;
+    transform: scale(1.025);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes depth-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(.975);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page:not(.pageTabExit) > :not(header):not(footer):not(.wipe):not([data-admin-shell]),
+  .pageExit:not(.pageTabExit) > :not(header):not(footer):not(.wipe):not([data-admin-shell]),
+  .pageTabExit > [data-admin-shell] > [data-page-transition-content] > :not([data-admin-about-header]):not(.editorHeader),
+  .page:not(.pageTabExit) > [data-admin-shell] > [data-page-transition-content],
+  .pageExit:not(.pageTabExit) > [data-admin-shell] > [data-page-transition-content] {
+    animation: none;
+  }
+}

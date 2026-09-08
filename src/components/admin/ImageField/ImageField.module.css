@@ -1,0 +1,39 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-200);
+}
+
+.preview {
+  width: 96px;
+  height: 64px;
+  flex-shrink: 0;
+  border: 1px solid var(--border-field);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle) center / cover no-repeat;
+}
+
+.fileInput {
+  font-family: var(--font-family-body);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.fileInput::file-selector-button {
+  margin-right: var(--space-150);
+  padding: var(--space-100) var(--space-200);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-family-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.fileInput::file-selector-button:hover {
+  background: var(--bg-inset);
+  border-color: var(--accent-foundation);
+}

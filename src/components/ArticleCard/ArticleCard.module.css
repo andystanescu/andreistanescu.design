@@ -1,0 +1,115 @@
+/* Resting/hover states per Figma (node 157:203). The border is reserved
+   (transparent) at rest rather than added on hover, so the hover outline
+   doesn't shift the card's layout or the thumbnail underneath it. */
+.card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-default, #e2e0dc);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-surface);
+  color: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.caseStudy {
+  background: #11161f;
+  color: #fff;
+}
+
+.card:hover,
+.card:hover {
+  border-color: var(--border-strong, #c8ccd0);
+  box-shadow: 0 2px 6px -1px rgba(20, 23, 31, 0.05);
+  transform: none;
+}
+
+.card:focus-visible {
+  border-color: var(--border-default, #e2e0dc);
+  box-shadow: 0 0 0 4px rgba(232, 68, 28, 0.22);
+  outline: none;
+}
+
+.thumb {
+  width: 100%;
+  aspect-ratio: 16 / 8;
+  flex-shrink: 0;
+  background-color: var(--bg-subtle);
+  background-size: cover;
+  background-position: center;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-150, 12px);
+  padding: var(--space-400, 32px);
+}
+
+.meta {
+  display: flex;
+  gap: var(--space-150, 12px);
+  width: 100%;
+  overflow: hidden;
+  color: var(--text-accent);
+  font: 500 12px/1.4 var(--font-family-body);
+  letter-spacing: 0.96px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.metaSecondary {
+  color: var(--text-tertiary, #5c646f);
+}
+
+.title {
+  color: var(--text-primary);
+}
+
+.caseStudy .title,
+.caseStudy .link {
+  color: #fff;
+}
+
+.caseStudy {
+  border-color: #98a0ac;
+  background: #0a1020;
+}
+
+.caseStudy:hover {
+  border-color: #c8ccd0;
+}
+
+.caseStudy:focus-visible {
+  border-color: #98a0ac;
+  box-shadow: 0 0 0 4px rgba(232, 68, 28, 0.22);
+}
+
+.caseStudy p {
+  color: #c8ccd0 !important;
+}
+
+.caseStudy .thumb {
+  background-color: #11161f;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-100);
+  margin-top: var(--space-100);
+  color: var(--text-primary);
+  font-family: var(--font-family-body);
+  font-size: 12px;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.link svg {
+  color: var(--accent-foundation);
+}
+
+.card:hover .link,
+.card:focus-visible .link {
+  color: var(--accent-foundation);
+}

@@ -1,0 +1,72 @@
+.share {
+  position: relative;
+  margin-top: var(--space-200);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-100);
+  box-sizing: border-box;
+  min-width: 50px;
+  min-height: 50px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: 500 13px/1.4 var(--font-family-body);
+  cursor: pointer;
+}
+
+.button span {
+  color: var(--text-accent);
+  font-size: 16px;
+}
+
+.button:hover,
+.button:focus-visible {
+  color: var(--text-accent);
+}
+
+.menu {
+  position: absolute;
+  z-index: 2;
+  top: calc(100% + var(--space-150));
+  left: 0;
+  display: flex;
+  gap: var(--space-150);
+  padding: var(--space-150);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  box-shadow: 0 8px 20px rgba(17, 22, 31, 0.12);
+}
+
+.menu a,
+.menu button {
+  padding: var(--space-100) var(--space-150);
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: 500 12px/1.3 var(--font-family-body);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.menu a:hover,
+.menu a:focus-visible,
+.menu button:hover,
+.menu button:focus-visible {
+  color: var(--text-accent);
+}
+
+@media (max-width: 640px) {
+  .button {
+    padding-inline: var(--space-150);
+  }
+
+  .menu {
+    flex-wrap: wrap;
+    max-width: 220px;
+  }
+}
