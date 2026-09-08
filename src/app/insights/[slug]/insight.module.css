@@ -1,0 +1,236 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+
+/* No .container here — the hero image bleeds to the true viewport edge
+   (per Figma), while the copy column gets the same left gutter .container
+   would give it via its own padding. */
+.hero {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  max-width: 1920px;
+  margin-inline: auto;
+  min-height: 420px;
+  padding-block: var(--space-800);
+}
+
+.heroCopy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-200);
+  flex: 0 0 50%;
+  min-width: 0;
+  max-width: none;
+  box-sizing: border-box;
+  padding-left: var(--space-800);
+  padding-right: var(--space-800);
+}
+
+.heroCopy:only-child { flex-basis: 100%; }
+
+.breadcrumb {
+  color: var(--text-tertiary);
+}
+
+.breadcrumb a {
+  color: var(--text-tertiary);
+  transition: color 0.15s ease;
+}
+
+.breadcrumb a:hover,
+.breadcrumb a:focus-visible {
+  color: var(--text-primary);
+}
+
+.title {
+  color: var(--text-primary);
+}
+
+.byline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-50);
+  margin-top: var(--space-100);
+}
+
+.tags {
+  margin: 0;
+  color: var(--text-accent);
+  font-family: var(--font-family-body);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.heroImage {
+  flex: 0 0 50%;
+  width: 50%;
+  flex-shrink: 0;
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  overflow: hidden;
+}
+
+.heroImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-default);
+}
+
+.layout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-800);
+  padding-block: var(--space-800);
+}
+
+.toc {
+  position: sticky;
+  top: calc(var(--nav-height) + var(--space-300));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-200);
+  width: 20vw;
+  flex-shrink: 0;
+}
+
+.toc ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-150);
+  list-style: none;
+}
+
+.toc a {
+  color: var(--text-secondary);
+  font-family: var(--font-family-body);
+  font-size: 14px;
+  line-height: 1.5;
+  transition: color 0.15s ease;
+}
+
+.toc a:hover,
+.toc a:focus-visible {
+  color: var(--accent-foundation);
+}
+
+.articleBody {
+  flex: 0 1 60vw;
+  width: 60vw;
+  min-width: 0;
+  max-width: 60vw;
+}
+
+.articleBody > div {
+  width: 100%;
+  max-width: none;
+}
+
+:global(.mobileToc) { display: none; }
+@media (max-width: 900px) { .toc > p, .toc > nav { display: none; } }
+@media (max-width: 900px) {
+  :global(.mobileToc) { display: block; position: sticky; top: calc(var(--nav-height) + 8px); z-index: 5; }
+  :global(.mobileToc summary) { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border: 0; background: transparent; color: var(--text-primary); font: 600 13px/1 var(--font-family-body); cursor: pointer; list-style: none; }
+  :global(.mobileToc summary::-webkit-details-marker) { display: none; }
+  :global(.mobileToc nav) { padding: 8px 0 12px; border: 0; background: transparent; }
+  :global(.mobileToc ul) { display: flex; flex-direction: column; gap: 10px; list-style: none; }
+  :global(.mobileToc a) { color: var(--text-secondary); font: 14px/1.4 var(--font-family-body); }
+}
+
+.articleBody :global(p) {
+  max-width: none;
+}
+
+.articleBody :global(figure) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-150);
+  margin: var(--space-600) 0;
+}
+
+.articleBody :global(figcaption) {
+  color: var(--text-tertiary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.articleBody :global(.content) {
+  width: 100%;
+  max-width: none;
+}
+
+/* Anchors land below the sticky nav instead of tucked underneath it. */
+.articleBody :global(h1),
+.articleBody :global(h2),
+.articleBody :global(h3) {
+  scroll-margin-top: calc(var(--nav-height) + var(--space-200));
+}
+
+.moreSection {
+  padding-block: var(--space-1200);
+  border-top: 1px solid var(--border-default);
+}
+
+.moreGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-400);
+  margin-top: var(--space-400);
+}
+
+@media (max-width: 900px) {
+  .hero {
+    flex-direction: column;
+    min-height: 0;
+    gap: var(--space-400);
+  }
+
+  .heroCopy {
+    max-width: none;
+    padding-left: var(--space-800);
+    padding-right: var(--space-800);
+  }
+
+  .heroImage {
+    flex: none;
+    width: 100%;
+    height: 260px;
+    border-radius: var(--radius-lg);
+    margin-right: 0;
+  }
+
+  .layout {
+    flex-direction: column;
+  }
+
+  .toc {
+    position: static;
+    width: 100%;
+  }
+
+  .articleBody {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .moreGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroCopy {
+    padding-left: var(--space-400);
+    padding-right: var(--space-400);
+  }
+}

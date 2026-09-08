@@ -1,0 +1,189 @@
+.navOuter {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  background: var(--bg-canvas);
+  border-bottom: 1px solid var(--border-default);
+  transition: background-color 0.2s ease;
+}
+
+.navOuter.scrolled {
+  background: color-mix(in srgb, var(--bg-canvas) 72%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-200);
+  flex-wrap: wrap;
+  min-height: var(--nav-height);
+  padding-block: var(--space-300);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-600);
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-400);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+@media (min-width: 901px) {
+  .nav.personal { position: relative; }
+  .nav.personal .links {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .nav.personal .right { margin-left: auto; }
+}
+
+.links a {
+  padding-bottom: var(--space-100);
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+/* Hover previews the rule in neutral — a hint that it's clickable, kept
+   distinct from active's orange so it never reads as "you are here". */
+.links a:hover,
+.links a:focus-visible {
+  border-bottom-color: var(--text-tertiary);
+}
+
+/* Active carries a 2px orange rule — wayfinding, not decoration. Exactly one
+   per navigation. Written as .links a.linkActive (not a bare class) so it
+   outranks .links a's own border-bottom on specificity — a bare .linkActive
+   loses that fight and silently never shows. */
+.links a.linkActive,
+.links a.linkActive:hover,
+.links a.linkActive:focus-visible {
+  border-bottom-color: var(--accent-foundation);
+}
+
+.overlayLinks a.overlayLinkActive {
+  border-bottom-color: var(--accent-foundation);
+}
+
+/* Hamburger: hidden until the tablet/mobile breakpoint, morphs into an X
+   when the overlay is open. */
+.menuToggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 24px;
+  height: 20px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.bar {
+  display: block;
+  width: 100%;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--text-primary);
+  transition: transform 0.25s ease, opacity 0.15s ease;
+}
+
+.barTop {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.barMiddle {
+  opacity: 0;
+}
+
+.barBottom {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Full-page menu overlay — highest z-index in the app, so nothing can ever
+   render above it. It still leaves the toggle reachable to close it: its
+   geometry stops at the (fixed, on mobile) nav bar's own strip at the
+   bottom rather than covering the full viewport, so that bar — and the
+   hamburger/X button in it — never sits underneath the overlay in the first
+   place; z-index ordering between them doesn't come into play. */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--nav-height);
+  z-index: 100;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-800);
+  padding: var(--space-800);
+  background: var(--bg-canvas);
+  overflow-y: auto;
+}
+
+.overlayOpen {
+  display: flex;
+}
+
+.overlayLinks {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-300);
+}
+
+.overlayLinks a {
+  border-bottom: 2px solid transparent;
+}
+
+.overlayLinks a {
+  font-family: var(--font-family-heading);
+  font-weight: 500;
+  font-size: 32px;
+  letter-spacing: -0.3px;
+  color: var(--text-primary);
+}
+
+@media (max-width: 900px) {
+  .links,
+  .desktopCta {
+    display: none;
+  }
+
+  .menuToggle {
+    display: flex;
+  }
+
+  /* Nav becomes a fixed bottom bar on mobile so the hero can own the full
+     viewport height above it; body gets matching bottom padding globally
+     (globals.css) so nothing on any page ends up hidden behind it. The
+     hairline moves to the top edge — it's still the seam between the nav
+     and the page content, just on the other side now. */
+  .navOuter {
+    position: fixed;
+    inset: auto 0 0 0;
+    top: auto;
+    border-bottom: none;
+    border-top: 1px solid var(--border-default);
+  }
+}
+
+/* Belt-and-suspenders: force the overlay closed above the breakpoint even if
+   state hasn't caught up yet (e.g. mid-resize), since .overlayOpen alone
+   would otherwise win on specificity. */
+@media (min-width: 901px) {
+  .overlay {
+    display: none !important;
+  }
+}

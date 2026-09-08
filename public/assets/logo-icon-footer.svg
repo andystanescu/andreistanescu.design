@@ -1,0 +1,17 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Logo/Icon">
+<circle id="dot" cx="12.375" cy="2.75" r="2.75" fill="#E8441C"/>
+<circle id="dot_2" cx="22" cy="2.75" r="2.75" fill="#FFFFFF"/>
+<circle id="dot_3" cx="31.625" cy="2.75" r="2.75" fill="#FFFFFF"/>
+<circle id="dot_4" cx="2.75" cy="12.375" r="2.75" fill="#FFFFFF"/>
+<circle id="dot_5" cx="12.375" cy="12.375" r="2.75" fill="#FFFFFF"/>
+<circle id="dot_6" cx="2.75" cy="22" r="2.75" fill="#E8441C"/>
+<circle id="node" cx="31.625" cy="22" r="2.75" fill="#E8441C"/>
+<circle id="dot_7" cx="2.75" cy="31.625" r="2.75" fill="#FFFFFF"/>
+<circle id="dot_8" cx="12.375" cy="31.625" r="2.75" fill="#FFFFFF"/>
+<circle id="dot_9" cx="12.375" cy="22" r="2.75" fill="#FFFFFF"/>
+<circle id="dot_10" cx="12.375" cy="41.25" r="2.75" fill="#E8441C"/>
+<circle id="dot_11" cx="22" cy="41.25" r="2.75" fill="#FFFFFF"/>
+<circle id="dot_12" cx="31.625" cy="41.25" r="2.75" fill="#FFFFFF"/>
+</g>
+</svg>

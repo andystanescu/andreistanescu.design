@@ -1,0 +1,20 @@
+.bar {
+  position: fixed;
+  right: var(--space-300);
+  bottom: var(--space-300);
+  z-index: 1000;
+  padding: var(--space-150) var(--space-300);
+  border-radius: var(--radius-lg);
+  background: #11161f;
+  color: #fff;
+  font-family: var(--font-family-body);
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
+  transition: opacity 0.15s ease;
+}
+
+.bar:hover,
+.bar:focus-visible {
+  opacity: 0.85;
+}

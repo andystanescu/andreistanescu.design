@@ -1,0 +1,40 @@
+.draggableRow {
+  cursor: grab;
+}
+
+.draggableRow:active {
+  cursor: grabbing;
+}
+
+/* The source slot while its row is being dragged — the actual "card" is
+   the floating .dragImage clone following the cursor, so this becomes a
+   quiet placeholder marking where it will land if dropped here. */
+.draggableRow.dragging {
+  border-style: dashed !important;
+  background: var(--bg-subtle) !important;
+  box-shadow: none !important;
+}
+
+.draggableRow.dragging * {
+  visibility: hidden;
+}
+
+/* The floating clone set via setDragImage — a genuinely "picked up" card:
+   lifted with a shadow and a slight tilt, following the cursor. */
+.dragImage {
+  box-shadow: 0 16px 32px rgba(17, 22, 31, 0.2);
+  transform: rotate(-1.5deg);
+  cursor: grabbing;
+}
+
+.handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  margin-right: 32px;
+  color: var(--text-tertiary);
+  font-size: 16px;
+  line-height: 1;
+  user-select: none;
+}

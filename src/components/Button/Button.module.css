@@ -1,0 +1,125 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-100);
+  padding: var(--space-200) var(--space-400);
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease, transform 0.1s ease;
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+/* The trailing icon carries brand orange across every kind at rest —
+   "nothing orange sits idle" — via currentColor on the icon's own color. */
+.button svg {
+  flex-shrink: 0;
+  color: var(--accent-foundation);
+}
+
+.compact {
+  padding: var(--space-150) var(--space-300);
+}
+
+/* Primary: neutral at rest, brand orange fill on hover/focus. White on
+   #E8441C is 3.98:1 and fails, so the label AND icon flip to near-black
+   there instead — not the (also failing) inherited light/dark text token. */
+.primary {
+  background: var(--action-primary-bg);
+  color: var(--action-primary-text);
+}
+
+.primary:hover,
+.primary:focus-visible {
+  background: var(--accent-foundation);
+  color: #11161f;
+}
+
+.primary:hover svg,
+.primary:focus-visible svg {
+  color: #11161f;
+}
+
+.primary:active {
+  background: var(--accent-foundation);
+  color: #11161f;
+  filter: brightness(0.92);
+}
+
+.primary:active svg {
+  color: #11161f;
+}
+
+/* Secondary: outlined, hover adds orange to the border */
+.secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+}
+
+.secondary:hover,
+.secondary:focus-visible {
+  border-color: var(--accent-foundation);
+}
+
+.secondary:active {
+  background: var(--bg-subtle);
+  border-color: var(--accent-foundation);
+}
+
+/* Tertiary: quiet filled control, boundary required, hover adds orange to
+   the border */
+.tertiary {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+}
+
+.tertiary:hover,
+.tertiary:focus-visible {
+  background: var(--bg-inset);
+  border-color: var(--accent-foundation);
+}
+
+.tertiary:active {
+  background: var(--border-default);
+  border-color: var(--accent-foundation);
+}
+
+/* Ghost: transparent until hover */
+.ghost {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.ghost:hover,
+.ghost:focus-visible {
+  background: var(--bg-subtle);
+}
+
+.ghost:active {
+  background: var(--bg-inset);
+}
+
+/* Link: inline text, always underlined, hover adds orange to the label */
+.link {
+  background: transparent;
+  color: var(--action-link-text);
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--accent-foundation);
+}
+
+.link:active {
+  color: var(--text-accent);
+  transform: none;
+}

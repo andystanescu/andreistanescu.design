@@ -1,0 +1,12 @@
+.main { display: flex; flex-direction: column; flex: 1 0 auto; }
+.hero { background: var(--bg-canvas); }
+.heroInner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 520px); gap: var(--space-800); align-items: center; min-height: 800px; padding-block: var(--space-1200); }
+.copy { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-300); }
+.code { margin: 0; color: var(--text-primary); font: 600 clamp(120px, 12vw, 176px)/.92 var(--font-family-body); letter-spacing: -.05em; }
+.copy h1 { max-width: 620px; }
+.copy > p:not(.code) { max-width: 520px; }
+.lattice { display: flex; justify-content: center; align-items: center; }
+.reassurance { padding-block: var(--space-800); background: #11161f; }
+.reassurance h2 { color: #fff; margin-bottom: var(--space-200); }
+@media (max-width: 800px) { .heroInner { grid-template-columns: 1fr; min-height: 0; } .lattice { justify-content: flex-start; } }
+@media (max-width: 560px) { .heroInner { padding-block: var(--space-800); } .code { font-size: 112px; } }

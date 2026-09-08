@@ -1,0 +1,50 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-150);
+  color: var(--text-primary);
+}
+
+.personal .wordmark {
+  transition: color 0.15s ease;
+}
+
+.personal:hover .wordmark,
+.personal:focus-within .wordmark {
+  color: var(--text-accent);
+}
+
+.iconSwap {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+}
+
+.icon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.15s ease;
+}
+
+.iconHover {
+  opacity: 0;
+}
+
+.logo:hover .iconHover,
+.logo:focus-within .iconHover {
+  opacity: 1;
+}
+
+.logo:hover .icon:not(.iconHover),
+.logo:focus-within .icon:not(.iconHover) {
+  opacity: 0;
+}
+
+.wordmark {
+  font-family: var(--font-family-heading);
+  font-weight: 500;
+  line-height: normal;
+  white-space: nowrap;
+}

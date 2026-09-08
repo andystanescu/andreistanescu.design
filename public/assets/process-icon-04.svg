@@ -1,0 +1,23 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="106" height="48" viewBox="0 0 106 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Frame" clip-path="url(#clip0_4_753)">
+<g id="Frame_2">
+<path id="Vector" d="M4 4H44" stroke="#E8441C"/>
+<path id="Vector_2" d="M4 44H44" stroke="#E8441C"/>
+<circle id="Ellipse" cx="24" cy="4" r="3.2" fill="#11161F"/>
+<circle id="Ellipse_2" cx="44" cy="4" r="3.2" fill="#11161F"/>
+<circle id="Ellipse_3" cx="24" cy="24" r="3.2" fill="#11161F"/>
+<circle id="Ellipse_4" cx="44" cy="24" r="3.2" fill="#11161F"/>
+<circle id="Ellipse_5" cx="24" cy="44" r="3.2" fill="#11161F"/>
+<circle id="Ellipse_6" cx="44" cy="44" r="3.2" fill="#11161F"/>
+<circle id="Ellipse_7" cx="4" cy="24" r="3.2" fill="#11161F"/>
+<circle id="Ellipse_8" cx="4" cy="4" r="4" fill="#E8441C"/>
+<circle id="Ellipse_9" cx="4" cy="44" r="4" fill="#E8441C"/>
+</g>
+<path id="Vector_3" d="M60 24H106M100 28L106 24L100 20" stroke="#C8CCD0" stroke-linecap="round" stroke-dasharray="3 3"/>
+</g>
+<defs>
+<clipPath id="clip0_4_753">
+<rect width="106" height="48" fill="white"/>
+</clipPath>
+</defs>
+</svg>

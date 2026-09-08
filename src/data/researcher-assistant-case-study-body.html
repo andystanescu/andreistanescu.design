@@ -1,0 +1,57 @@
+<h2>Two ways to be wrong, both expensive</h2>
+<p>Researcher Assistant supported US criminal background screening, where records are matched against identifiers such as name, date of birth, address, and SSN. The problem was that court records do not contain those identifiers consistently. One jurisdiction might return a full date of birth, another only a birth year, and another nothing at all.</p>
+<p>Researchers were making liability-bearing decisions from evidence that was incomplete by nature. Attribute a record incorrectly and a candidate can lose a job they should have had, with FCRA exposure behind it. Miss a real record and the client may hire the person they were screening to avoid.</p>
+<blockquote data-attribution="Project risk">In regulated work, design decisions are risk decisions whether or not anyone in the room calls them that.</blockquote>
+<h3>Image suggestion</h3>
+<p>Show two diverging error paths from the same court record: a wrong attribution leading to candidate harm, and a missed match leading to client risk. Use orange only at the point where the decision branches.</p>
+<h3>Live component suggestion: Error cost paths</h3>
+<pre data-interactive="true"><code>function ErrorCostPaths() {
+  const [selected, setSelected] = useState("wrong");
+  const paths = {
+    wrong: { title: "Attributed wrongly", detail: "The record was not the candidate's, but incomplete comparison led to the wrong conclusion.", impact: "Candidate pays: lost opportunity and potential FCRA exposure." },
+    missed: { title: "Eliminated wrongly", detail: "The record belonged to the candidate, but the workflow failed to surface enough evidence to act safely.", impact: "Client pays: the screening process fails to identify the risk it was designed to find." }
+  };
+  const active = paths[selected];
+  return (<section style={{ width: "100%", boxSizing: "border-box", padding: "28px", background: "#11161F", color: "#FFF", borderRadius: "12px", fontFamily: "Inter, Arial, sans-serif" }}><p style={{ margin: "0 0 8px", color: "#FF8A66", fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em" }}>ERROR COST PATHS</p><h3 style={{ margin: "0 0 18px", fontSize: "clamp(24px, 4vw, 40px)", lineHeight: 1.08 }}>Both errors are expensive</h3><div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>{Object.entries(paths).map(([key, path]) => <button key={key} type="button" onClick={() => setSelected(key)} aria-pressed={selected === key} style={{ flex: "1 1 220px", padding: "14px", border: selected === key ? "2px solid #FF8A66" : "1px solid #3B4552", borderRadius: "8px", background: selected === key ? "#202936" : "#191F29", color: selected === key ? "#FF8A66" : "#FFF", textAlign: "left", fontWeight: 700, cursor: "pointer" }}>{path.title}</button>)}</div><div style={{ marginTop: "16px", padding: "18px", borderLeft: "3px solid #FF8A66", background: "#191F29" }}><p style={{ margin: "0 0 8px", color: "#FFF", fontSize: "15px", lineHeight: 1.5 }}>{active.detail}</p><p style={{ margin: 0, color: "#C8CCD0", fontSize: "14px", lineHeight: 1.5 }}>{active.impact}</p></div></section>);
+}
+render(<ErrorCostPaths />);</code></pre>
+<h2>The risk was spread evenly across work that was not</h2>
+<p>Researchers cross-checked identifiers by hand and held the reasoning in their heads, following written and often ambiguous guidelines. Nothing in the workflow distinguished a record that contradicted every identifier from one where the court file simply did not contain enough information to say.</p>
+<p>Both cases cost the same to open and the same to think about. Because the reasoning lived in the researcher's head rather than in an artefact, little survived the decision that could be audited afterwards.</p>
+<blockquote data-attribution="Research insight">When every case looks equally decidable, attention is spent uniformly on a problem that is anything but.</blockquote>
+<h3>Image suggestion</h3>
+<p>Show three record cards with the same queue status but different identifier evidence: conflicting, partial, and unmatchable. Annotate the gap between what the queue says and what the record actually contains.</p>
+<h2>The interface was part of the autonomy decision</h2>
+<p>The next phase of the programme would allow the agent to work independently under oversight, gated on 99.9% accuracy. That figure could only come from researchers overriding the agent when it was wrong.</p>
+<p>Any asymmetry in the interface would corrupt the evidence: a recommendation shown before the underlying comparison, an accept that costs one click and a reject that costs four, or a score that flattens the reasoning into a number. Designing the tool and designing the evidence base for autonomy were the same job.</p>
+<blockquote data-attribution="Design principle">If disagreeing costs more than agreeing, you are not measuring accuracy. You are measuring compliance.</blockquote>
+<h3>Image suggestion</h3>
+<p>Use a close-up of a researcher reviewing evidence before a conclusion appears. Highlight the equal-weight accept and override actions in orange, with the evidence hierarchy visible above them.</p>
+<h2>Defining rules that closed named failure modes</h2>
+<p>I translated the problem into a small set of rules, each connected to a specific way the workflow could fail.</p>
+<ol><li><strong>Target identifiers, never full records.</strong> The agent states a status for each identifier it examined instead of issuing one conclusion for the record as a whole.</li><li><strong>Make unmatchable a status, not a low score.</strong> Missing evidence is a fact about the source, not a weak signal about the candidate.</li><li><strong>Make overriding cost the same as accepting.</strong> The interface must not turn agreement into the path of least resistance.</li><li><strong>Show reasoning, do not summarise it away.</strong> The researcher needs to see what was compared against what, not only a sentence characterising the comparison.</li></ol>
+<h3>Live component suggestion: Identifier status model</h3>
+<pre data-interactive="true"><code>function IdentifierStatusModel() {
+  const [status, setStatus] = useState("partial");
+  const options = {
+    full: { label: "Full match", detail: "The available value agrees with the candidate information." },
+    partial: { label: "Partial match", detail: "Some evidence agrees, but the available record cannot support a complete match." },
+    mismatch: { label: "Mismatch", detail: "The available value contradicts the candidate information." },
+    unmatchable: { label: "Unmatchable", detail: "The source did not record enough information to make a comparison." }
+  };
+  const active = options[status];
+  return (<section style={{ width: "100%", boxSizing: "border-box", padding: "28px", background: "#F2F0EC", color: "#11161F", borderRadius: "12px", fontFamily: "Inter, Arial, sans-serif" }}><p style={{ margin: "0 0 8px", color: "#D96643", fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em" }}>STATUS VOCABULARY</p><h3 style={{ margin: "0 0 16px", fontSize: "clamp(24px, 4vw, 40px)", lineHeight: 1.08 }}>One status per identifier</h3><div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>{Object.entries(options).map(([key, item]) => <button key={key} type="button" onClick={() => setStatus(key)} aria-pressed={status === key} style={{ flex: "1 1 140px", padding: "12px", border: status === key ? "2px solid #D96643" : "1px solid #C8C4BE", borderRadius: "8px", background: status === key ? "#FFF" : "transparent", color: status === key ? "#11161F" : "#6E6A64", fontWeight: 700, cursor: "pointer" }}>{item.label}</button>)}</div><div style={{ marginTop: "16px", padding: "18px", borderLeft: "3px solid #D96643", background: "#FFF" }}><strong style={{ display: "block", marginBottom: "7px", fontSize: "16px" }}>{active.label}</strong><p style={{ margin: 0, color: "#4E4B47", fontSize: "15px", lineHeight: 1.5 }}>{active.detail}</p></div></section>);
+}
+render(<IdentifierStatusModel />);</code></pre>
+<h2>Evidence before verdict</h2>
+<p>Researchers wanted a recommendation up front. A recommendation shown first becomes the thing a person confirms rather than the thing they check.</p>
+<p>The final direction put the identifier comparison first and any record-level conclusion beneath it, traceable to the evidence above. This was slower on obvious cases, but it made uncertainty visible where the stakes were highest.</p>
+<h2>What outlived my time on the project</h2>
+<p>Most of the project happened in conversations I was not in: a model team tuning thresholds, engineers implementing the specification, researchers working cases. The useful output was not a set of screens. It was the small set of documents that let other people make the call I would have made.</p>
+<ul><li><strong>The status vocabulary:</strong> defined what the agent was allowed to assert.</li><li><strong>The provenance split:</strong> kept candidate-provided information separate from independently developed information.</li><li><strong>The evidence display specification:</strong> settled what the agent showed before showing a conclusion.</li><li><strong>The override and reason taxonomy:</strong> turned disagreement into usable evidence for the model team, QA, and future autonomy decisions.</li></ul>
+<blockquote data-attribution="Reflection">On an AI product, the design work is largely deciding what the system is permitted to claim.</blockquote>
+<h3>Image suggestion</h3>
+<p>Show the four artefacts as a connected system: status vocabulary, provenance split, evidence display, and override taxonomy. Use orange connectors to show how each one supports a safer human decision.</p>
+<h2>Reflection</h2>
+<p>Researcher Assistant was not simply an interface for reviewing records. It was a decision system operating where evidence could be incomplete and the cost of being wrong was unevenly distributed.</p>
+<p>The work made that uncertainty visible, protected the researcher's judgement, and created a more defensible path toward AI-assisted screening. The most important outcome was not that the agent appeared more intelligent. It was that the product became more honest about what the evidence could and could not support.</p>

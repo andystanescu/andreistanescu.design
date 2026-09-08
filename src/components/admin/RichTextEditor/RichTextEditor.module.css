@@ -1,0 +1,632 @@
+.wrapper {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.wrapper:focus-within .content {
+  border-color: var(--accent-foundation);
+  box-shadow: inset 0 0 0 2px var(--accent-foundation);
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+  flex-wrap: nowrap;
+  padding: var(--space-50);
+  border: 1px solid var(--border-field);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: var(--bg-surface);
+  box-shadow: 0 4px 14px rgba(17, 22, 31, 0.08);
+  width: 100%;
+  max-width: 100%;
+    overflow: visible;
+    white-space: nowrap;
+    box-sizing: border-box;
+    background: var(--bg-canvas);
+  }
+
+.toolbarOverflowed .overflowable {
+  display: none;
+}
+
+.toolbarButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 var(--space-100);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-family-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.toolbarIcon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.toolbarButton :global(svg) {
+  flex: 0 0 20px;
+}
+
+.toolbarButton:hover,
+.toolbarButton:focus-visible {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.toolbarButtonActive {
+  background: var(--bg-subtle);
+  color: var(--text-accent);
+}
+
+.toolbarDivider {
+  width: 1px;
+  height: 20px;
+  margin: 0 var(--space-50);
+  background: var(--border-field);
+}
+
+.toolbarSelectWrap {
+  position: relative;
+}
+
+.toolbarSelect {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 36px;
+  padding: 0 var(--space-100);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-family-body);
+  font-size: 12px;
+  text-align: left;
+}
+
+.toolbarSelect .toolbarIcon {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+}
+
+.insertMenu {
+  position: absolute;
+  top: calc(100% + var(--space-100));
+  right: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-50);
+  min-width: 140px;
+  padding: var(--space-100);
+  border: 1px solid var(--border-field);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  box-shadow: 0 4px 14px rgba(17, 22, 31, 0.12);
+}
+
+.insertMenu button {
+  padding: var(--space-100);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font: 500 14px/1.2 var(--font-family-body);
+  text-align: left;
+}
+
+.insertMenu button:hover,
+.insertMenu button:focus-visible {
+  background: var(--bg-subtle);
+  color: var(--text-accent);
+}
+
+.comparisonWidget {
+  margin: var(--space-150) 0 0;
+  padding: var(--space-300);
+  border: 1px solid var(--border-field);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  box-shadow: 0 4px 14px rgba(17, 22, 31, 0.08);
+}
+
+.comparisonWidgetHeader,
+.comparisonWidgetActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-200);
+}
+
+.comparisonWidgetEyebrow,
+.comparisonWidgetTitle,
+.comparisonWidgetHint,
+.comparisonSlotLabel,
+.comparisonSlotAction {
+  margin: 0;
+}
+
+.comparisonWidgetEyebrow {
+  color: var(--text-accent);
+  font: 700 11px/1.2 var(--font-family-body);
+  letter-spacing: 0.12em;
+}
+
+.comparisonWidgetTitle {
+  margin-top: var(--space-50);
+  color: var(--text-primary);
+  font: 600 16px/1.3 var(--font-family-body);
+}
+
+.comparisonWidgetHint {
+  margin-top: var(--space-100);
+  color: var(--text-secondary);
+  font: 13px/1.45 var(--font-family-body);
+}
+
+.comparisonClose {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.comparisonClose:hover,
+.comparisonClose:focus-visible {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.comparisonSlots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-200);
+  margin-top: var(--space-250);
+}
+
+.comparisonSlotLabel {
+  margin-bottom: var(--space-100);
+  color: var(--text-primary);
+  font: 600 13px/1.3 var(--font-family-body);
+}
+
+.comparisonUpload {
+  display: grid;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  place-items: center;
+  overflow: hidden;
+  padding: 0;
+  border: 1px dashed var(--border-field);
+  border-radius: var(--radius-sm);
+  background: var(--bg-field);
+  color: var(--text-secondary);
+  font: 500 13px/1.3 var(--font-family-body);
+}
+
+.comparisonUpload:hover,
+.comparisonUpload:focus-visible {
+  border-color: var(--accent-foundation);
+  color: var(--text-accent);
+}
+
+.comparisonUpload img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comparisonSlotAction {
+  display: block;
+  margin-top: var(--space-75);
+  color: var(--text-secondary);
+  font: 12px/1.3 var(--font-family-body);
+}
+
+.comparisonWidgetActions {
+  justify-content: flex-end;
+  margin-top: var(--space-250);
+}
+
+.comparisonCancel,
+.comparisonInsert {
+  min-height: 36px;
+  padding: 0 var(--space-200);
+  border-radius: var(--radius-sm);
+  font: 600 13px/1 var(--font-family-body);
+}
+
+.comparisonCancel {
+  border: 1px solid var(--border-field);
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.comparisonInsert {
+  border: 1px solid var(--accent-foundation);
+  background: var(--accent-foundation);
+  color: var(--bg-surface);
+}
+
+.comparisonInsert:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.toolbarSelect:hover,
+.toolbarSelect:focus-visible {
+  border-color: var(--accent-foundation);
+}
+
+.toolbarMenu {
+  position: absolute;
+  top: calc(100% + var(--space-100));
+  left: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-50);
+  padding: var(--space-50);
+  border: 1px solid var(--border-field);
+  border-radius: var(--radius-md);
+  background: var(--bg-field);
+  box-shadow: 0 8px 20px rgba(17, 22, 31, 0.14);
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+.toolbarMenuButton {
+  min-height: 30px;
+  padding: 0 var(--space-100);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-family-body);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.toolbarMenuButton:hover,
+.toolbarMenuButton:focus-visible {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.attributionInput {
+  position: absolute;
+  top: calc(100% + var(--space-100));
+  left: calc(100% + var(--space-100));
+  z-index: 4;
+  width: 180px;
+  padding: var(--space-100);
+  border: 1px solid var(--border-field);
+  border-radius: var(--radius-sm);
+  background: var(--bg-field);
+  color: var(--text-primary);
+  font: 13px/1.3 var(--font-family-body);
+}
+
+.content {
+  min-height: 220px;
+  width: 100%;
+  border: 1px solid var(--border-field);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: var(--bg-field);
+  padding: var(--space-200);
+  color: var(--text-primary);
+  font-family: var(--font-family-body);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.editorPreview {
+  margin-top: var(--space-200);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.collapsedLiveCode :global(pre[data-interactive="true"]) {
+  max-height: 3.2em;
+  overflow: hidden;
+}
+
+.codeExpandButton {
+  margin: var(--space-100) 0 0;
+  padding: 0;
+  border: 0;
+  color: var(--text-secondary);
+  background: transparent;
+  font: 500 12px/1.3 var(--font-family-body);
+  cursor: pointer;
+}
+
+.codeExpandButton:hover,
+.codeExpandButton:focus-visible {
+  color: var(--accent-foundation);
+}
+
+.editorPreviewLabel {
+  margin: 0 0 var(--space-100);
+  color: var(--text-accent);
+  font: 500 12px/1.3 var(--font-family-body);
+  text-transform: uppercase;
+}
+
+.editorPreview :global(.liveComponent) {
+  margin: 0;
+}
+
+/* editorProps.attributes.class puts "ProseMirror" on the SAME element as
+   .content (it's the contenteditable root itself, not a wrapper) — so
+   these are compound selectors (.content:global(.ProseMirror)), never
+   ".content .ProseMirror" (a descendant combinator would never match,
+   since there's no nested .ProseMirror element to find). */
+.content:global(.ProseMirror) {
+  outline: none;
+}
+
+@media (max-width: 700px) {
+  .wrapper {
+    display: block;
+  }
+
+  .toolbar {
+    position: static;
+    border-right: 1px solid var(--border-field);
+  }
+
+  .toolbarMenu {
+    top: calc(100% + var(--space-100));
+    left: 0;
+    max-width: calc(100vw - var(--space-800));
+    overflow-x: auto;
+  }
+
+  .content {
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+  }
+
+  .comparisonSlots {
+    grid-template-columns: 1fr;
+  }
+}
+
+.content:global(.ProseMirror) p {
+  margin: 0 0 var(--space-200);
+}
+
+.content:global(.ProseMirror) h1 {
+  margin: var(--space-300) 0 var(--space-150);
+  font-family: var(--font-family-heading);
+  font-size: 32px;
+}
+
+.content:global(.ProseMirror) h2 {
+  margin: var(--space-300) 0 var(--space-150);
+  font-family: var(--font-family-heading);
+  font-size: 24px;
+}
+
+.content:global(.ProseMirror) h3 {
+  margin: var(--space-300) 0 var(--space-150);
+  font-family: var(--font-family-heading);
+  font-size: 19px;
+}
+
+.content:global(.ProseMirror) hr {
+  margin: var(--space-300) 0;
+  border: none;
+  border-top: 1px solid var(--border-field);
+}
+
+.content:global(.ProseMirror) pre {
+  margin: 0 0 var(--space-200);
+  padding: var(--space-200);
+  border-radius: var(--radius-md);
+  background: var(--text-primary);
+  color: var(--bg-canvas);
+  overflow-x: auto;
+}
+
+.content:global(.ProseMirror) pre code {
+  font-family: var(--font-family-mono);
+  font-size: 14px;
+}
+
+/* "⚡ Live" toggle — visual cue in the editor that this block renders as a
+   running React component on the public page, not highlighted text. */
+.content:global(.ProseMirror) pre[data-interactive="true"] {
+  position: relative;
+  border: 1px solid var(--accent-foundation);
+}
+
+.content:global(.ProseMirror) pre[data-interactive="true"]::before {
+  content: "⚡ Live component";
+  display: block;
+  margin-bottom: var(--space-100);
+  color: var(--accent-foundation);
+  font-family: var(--font-family-body);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Syntax highlighting — applied live by the editor's own lowlight
+   decorations while typing (see CodeBlockLowlight). The public site
+   applies the same hljs-* classes at render time (RichContent), so this
+   palette is duplicated in RichContent.module.css to match. */
+.content :global(.hljs-comment),
+.content :global(.hljs-quote) {
+  color: #7f848e;
+  font-style: italic;
+}
+
+.content :global(.hljs-keyword),
+.content :global(.hljs-selector-tag),
+.content :global(.hljs-literal),
+.content :global(.hljs-section) {
+  color: #e8441c;
+}
+
+.content :global(.hljs-string),
+.content :global(.hljs-attr),
+.content :global(.hljs-regexp),
+.content :global(.hljs-addition) {
+  color: #98c379;
+}
+
+.content :global(.hljs-number),
+.content :global(.hljs-meta) {
+  color: #d19a66;
+}
+
+.content :global(.hljs-title),
+.content :global(.hljs-title.function_),
+.content :global(.hljs-built_in) {
+  color: #61afef;
+}
+
+.content :global(.hljs-variable),
+.content :global(.hljs-template-variable),
+.content :global(.hljs-attribute),
+.content :global(.hljs-tag),
+.content :global(.hljs-name),
+.content :global(.hljs-deletion) {
+  color: #e06c75;
+}
+
+.content :global(.hljs-type),
+.content :global(.hljs-class .hljs-title) {
+  color: #e5c07b;
+}
+
+.content :global(.hljs-symbol),
+.content :global(.hljs-bullet),
+.content :global(.hljs-link) {
+  color: #56b6c2;
+}
+
+.content :global(.hljs-emphasis) {
+  font-style: italic;
+}
+
+.content :global(.hljs-strong) {
+  font-weight: 700;
+}
+
+/* #word# inside a heading — see src/lib/headingAccents.ts */
+.content :global(.accent) {
+  color: var(--text-accent);
+}
+
+.content:global(.ProseMirror) ul,
+.content:global(.ProseMirror) ol {
+  margin: 0 0 var(--space-200);
+  padding-left: 1.4em;
+}
+
+.content:global(.ProseMirror) blockquote {
+  margin: 0 0 var(--space-200);
+  padding-left: var(--space-300);
+  border-left: 4px solid var(--accent-foundation);
+  color: var(--text-secondary);
+  font-family: var(--font-family-heading);
+  font-size: 24px;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.content:global(.ProseMirror) blockquote p {
+  margin-bottom: 0;
+}
+
+.content:global(.ProseMirror) a {
+  color: var(--text-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+
+.content:global(.ProseMirror) img {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+}
+
+.content:global(.ProseMirror) :global([data-resizable-image]) {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  line-height: 0;
+}
+
+.content:global(.ProseMirror) :global([data-resizable-image] img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  cursor: pointer;
+}
+
+.content:global(.ProseMirror) :global([data-resizable-image].ProseMirror-selectednode) {
+  outline: 2px solid var(--accent-foundation);
+  outline-offset: 3px;
+}
+
+.content:global(.ProseMirror) :global([data-resizable-image].ProseMirror-selectednode img) {
+  cursor: grab;
+}
+
+.imageResizeHandle {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 2px solid var(--bg-field);
+  border-radius: 50%;
+  background: var(--accent-foundation);
+  box-shadow: 0 0 0 1px var(--accent-foundation);
+  cursor: nwse-resize;
+}
+
+.imageResizeHandle:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+.content:global(.ProseMirror) p.is-editor-empty:first-child::before {
+  float: left;
+  height: 0;
+  color: var(--text-placeholder);
+  content: attr(data-placeholder);
+  pointer-events: none;
+}

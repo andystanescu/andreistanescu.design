@@ -1,0 +1,49 @@
+.approach {
+  width: 100%;
+  padding-block: var(--space-1200);
+  background: var(--bg-canvas);
+}
+
+.approachInner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-800);
+  flex-wrap: wrap;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-200);
+  flex: 0 1 300px;
+  min-width: 0;
+}
+
+.intro h2 {
+  max-width: 40vw;
+}
+
+.steps {
+  display: flex;
+  flex: 1 0 0;
+  gap: var(--space-200);
+  min-width: 280px;
+  flex-wrap: wrap;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-150);
+  flex: 1 0 160px;
+}
+
+@media (max-width: 900px) {
+  .intro {
+    width: 100%;
+  }
+
+  .intro h2 {
+    max-width: 100%;
+  }
+}

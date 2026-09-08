@@ -1,0 +1,141 @@
+.impact {
+  width: 100%;
+  padding-block: var(--space-1200);
+  background: var(--bg-canvas);
+}
+
+.impactInner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-800);
+  flex-wrap: wrap;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-200);
+  flex: 0 1 300px;
+  min-width: 0;
+}
+
+.intro h2 {
+  max-width: 40vw;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: var(--space-400);
+  flex: 1 1 480px;
+  min-width: 0;
+}
+
+.featured {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-600);
+  padding: var(--space-600);
+  border: 2px solid transparent;
+  border-radius: var(--radius-lg);
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.featured:hover,
+.featured:focus,
+.featured:focus-visible {
+  border-color: var(--accent-foundation);
+  box-shadow:
+    0 12px 24px rgba(17, 22, 31, 0.1),
+    0 4px 8px rgba(17, 22, 31, 0.12);
+  transform: translateY(-2px);
+}
+
+.featured:focus, .featured:focus-visible {
+  outline: 2px solid #e8441c;
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.featured:active {
+  transform: translateY(0);
+}
+
+.featuredTitle {
+  margin-top: var(--space-100);
+  margin-bottom: var(--space-300);
+}
+
+.featuredDescription {
+  margin-top: var(--space-200);
+}
+
+.secondaryList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-300);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-300);
+  padding: var(--space-400);
+  border: 2px solid transparent;
+  border-radius: var(--radius-lg);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  flex: 1;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: var(--accent-foundation);
+  box-shadow:
+    0 12px 24px rgba(17, 22, 31, 0.1),
+    0 4px 8px rgba(17, 22, 31, 0.12);
+  transform: translateY(-2px);
+}
+
+.card:active {
+  transform: translateY(0);
+}
+
+.card h3 {
+  margin-top: var(--space-150);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-100);
+  font-family: var(--font-family-body);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.2;
+  color: inherit;
+}
+
+/* The trailing icon carries brand orange regardless of the label's color. */
+.link svg {
+  color: var(--accent-foundation);
+}
+
+@media (max-width: 900px) {
+  .intro {
+    width: 100%;
+  }
+
+  .intro h2 {
+    max-width: 100%;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

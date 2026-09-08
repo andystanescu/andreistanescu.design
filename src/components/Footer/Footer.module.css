@@ -1,0 +1,88 @@
+.footer {
+  width: 100%;
+  padding-block: var(--space-800) var(--space-600);
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+}
+
+.footerInner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-600);
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-800);
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-200);
+  width: 300px;
+}
+
+.linksGroup {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-800);
+  flex-wrap: wrap;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-150);
+  width: 220px;
+}
+
+.column a {
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.column a:hover,
+.column a:focus-visible {
+  color: var(--text-primary) !important;
+}
+
+.connect {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-200);
+  width: 260px;
+}
+
+.divider {
+  height: 1px;
+  width: 100%;
+  background: var(--border-default);
+}
+
+.bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: var(--space-300);
+}
+
+.legal {
+  display: flex;
+  align-items: center;
+  gap: var(--space-300);
+}
+
+.legal a {
+  transition: color 0.15s ease;
+}
+
+.legal a:hover,
+.legal a:focus-visible {
+  color: var(--text-primary) !important;
+}
