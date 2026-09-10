@@ -101,6 +101,7 @@ export default async function EditPagePage({
         ]} />
 
         <div className={styles.formActions}>
+          <a href="/admin/pages" className={styles.tertiaryButton}>Cancel</a>
           <button type="submit" className={styles.submit}>
             <span className="label-button">Save changes</span>
           </button>

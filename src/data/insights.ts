@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { ukDateTimeValue } from "@/lib/dateUtils";
 
 export type Insight = {
   id: number;
@@ -9,6 +10,7 @@ export type Insight = {
   cover_image: string;
   thumbnail_image: string;
   published_at: string;
+  scheduled_at: string;
   position: number;
   published: number;
   category: string;
@@ -26,11 +28,12 @@ export type Insight = {
 // featured on the homepage. Managed entirely from /admin/insights; an empty
 // result hides "Latest Insights" and shows an empty state on /insights.
 export function getInsights(): Insight[] {
+  const now = ukDateTimeValue();
   return db
     .prepare(
-      "SELECT * FROM insights WHERE published = 1 ORDER BY position ASC, id ASC"
+      "SELECT * FROM insights WHERE published = 1 AND (scheduled_at = '' OR scheduled_at <= ?) ORDER BY position ASC, id ASC"
     )
-    .all() as Insight[];
+    .all(now) as Insight[];
 }
 
 export function getInsightBySlug(slug: string): Insight | undefined {
@@ -41,8 +44,8 @@ export function getInsightBySlug(slug: string): Insight | undefined {
     // Keep the original value; the query will safely return no match.
   }
   return db
-    .prepare("SELECT * FROM insights WHERE slug = ? AND published = 1")
-    .get(normalizedSlug) as Insight | undefined;
+    .prepare("SELECT * FROM insights WHERE slug = ? AND published = 1 AND (scheduled_at = '' OR scheduled_at <= ?)")
+    .get(normalizedSlug, ukDateTimeValue()) as Insight | undefined;
 }
 
 // "Keep reading" on an article page — a fresh random sample (excluding the
@@ -50,7 +53,7 @@ export function getInsightBySlug(slug: string): Insight | undefined {
 export function getRandomInsights(excludeSlug: string, count: number): Insight[] {
   return db
     .prepare(
-      "SELECT * FROM insights WHERE published = 1 AND slug != ? ORDER BY RANDOM() LIMIT ?"
+      "SELECT * FROM insights WHERE published = 1 AND (scheduled_at = '' OR scheduled_at <= ?) AND slug != ? ORDER BY RANDOM() LIMIT ?"
     )
-    .all(excludeSlug, count) as Insight[];
+    .all(ukDateTimeValue(), excludeSlug, count) as Insight[];
 }

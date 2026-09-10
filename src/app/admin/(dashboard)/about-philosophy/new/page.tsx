@@ -45,6 +45,7 @@ export default async function NewPhilosophyItemPage({
         </label>
 
         <div className={styles.formActions}>
+          <a href="/admin/about-philosophy" className={styles.tertiaryButton}>Cancel</a>
           <button type="submit" className={styles.submit}>
             <span className="label-button">Create item</span>
           </button>

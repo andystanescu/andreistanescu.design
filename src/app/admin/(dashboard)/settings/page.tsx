@@ -104,6 +104,7 @@ export default async function AdminSettingsPage() {
         </label>
 
         <div className={styles.formActions}>
+          <a href="/admin" className={styles.tertiaryButton}>Cancel</a>
           <button type="submit" className={styles.submit}>
             <span className="label-button">Save settings</span>
           </button>

@@ -15,6 +15,6 @@ export function ExperienceForm({ action, item }: Props) {
     <Field label="Business profile" name="business_profile" value={item?.business_profile} required />
     <label className={styles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Description</span><textarea className={styles.textarea} name="description" defaultValue={item?.description ?? ""} required /></label>
     <label className={styles.checkboxField}><input type="checkbox" name="published" defaultChecked={item ? !!item.published : true} /><span className="body-default">Published</span></label>
-    <div className={styles.formActions}><button type="submit" className={styles.submit}><span className="label-button">Save experience</span></button></div>
+    <div className={styles.formActions}><a href="/admin/about-experiences" className={styles.tertiaryButton}>Cancel</a><button type="submit" className={styles.submit}><span className="label-button">Save experience</span></button></div>
   </form>;
 }

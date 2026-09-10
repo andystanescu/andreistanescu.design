@@ -50,6 +50,7 @@ export default async function NewApproachStepPage({
         </label>
 
         <div className={styles.formActions}>
+          <a href="/admin/approach-steps" className={styles.tertiaryButton}>Cancel</a>
           <button type="submit" className={styles.submit}>
             <span className="label-button">Create step</span>
           </button>

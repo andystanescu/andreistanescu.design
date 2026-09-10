@@ -18,7 +18,7 @@ export async function GET() {
     .all();
   const insights = db
     .prepare(
-      `SELECT slug, title, excerpt, body, published_at, position, published,
+      `SELECT slug, title, excerpt, body, published_at, scheduled_at, position, published,
               cover_image, thumbnail_image, category, author, tags
               , meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index
        FROM insights ORDER BY position, id`

@@ -56,6 +56,7 @@ function initializeDatabase() {
     cover_image TEXT NOT NULL DEFAULT '',
     thumbnail_image TEXT NOT NULL DEFAULT '',
     published_at TEXT NOT NULL,
+    scheduled_at TEXT NOT NULL DEFAULT '',
     position INTEGER NOT NULL DEFAULT 0,
     published INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -248,6 +249,7 @@ addColumnIfMissing(
   "thumbnail_image",
   "thumbnail_image TEXT NOT NULL DEFAULT ''"
 );
+addColumnIfMissing("insights", "scheduled_at", "scheduled_at TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("insights", "category", "category TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("insights", "tags", "tags TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing(

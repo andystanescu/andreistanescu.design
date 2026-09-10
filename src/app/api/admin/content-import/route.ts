@@ -175,13 +175,13 @@ export async function POST(request: NextRequest) {
 
       const upsertInsight = db.prepare(
         `INSERT INTO insights
-          (slug, title, excerpt, body, published_at, position, published,
+          (slug, title, excerpt, body, published_at, scheduled_at, position, published,
            cover_image, thumbnail_image, category, author, tags, meta_title,
            meta_description, meta_keywords, canonical_url, og_image, no_index)
-         VALUES (${Array(18).fill("?").join(",")})
+         VALUES (${Array(19).fill("?").join(",")})
          ON CONFLICT(slug) DO UPDATE SET
           title=excluded.title, excerpt=excluded.excerpt, body=excluded.body,
-          published_at=excluded.published_at, position=excluded.position,
+          published_at=excluded.published_at, scheduled_at=excluded.scheduled_at, position=excluded.position,
           published=excluded.published, cover_image=excluded.cover_image,
           thumbnail_image=excluded.thumbnail_image, category=excluded.category,
           author=excluded.author, tags=excluded.tags, meta_title=excluded.meta_title,
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
         if (!slug || !title) continue;
         upsertInsight.run(
           slug, title, text(record, "excerpt"), text(record, "body"),
-          text(record, "published_at"), integer(record, "position"), integer(record, "published", 1),
+          text(record, "published_at"), text(record, "scheduled_at"), integer(record, "position"), integer(record, "published", 1),
           text(record, "cover_image"), text(record, "thumbnail_image"), text(record, "category"),
           text(record, "author", "Andrei Stanescu"), text(record, "tags"),
           text(record, "meta_title"), text(record, "meta_description"), text(record, "meta_keywords"),

@@ -45,6 +45,7 @@ export default async function NewHighlightItemPage({
         </label>
 
         <div className={styles.formActions}>
+          <a href="/admin/about-highlights" className={styles.tertiaryButton}>Cancel</a>
           <button type="submit" className={styles.submit}>
             <span className="label-button">Create item</span>
           </button>

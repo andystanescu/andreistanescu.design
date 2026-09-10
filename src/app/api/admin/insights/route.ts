@@ -13,7 +13,8 @@ export async function POST(request: NextRequest) {
   const excerpt = String(form.get("excerpt") ?? "").trim();
   const body = applyHeadingAccents(String(form.get("body") ?? "").trim());
   const publishedAt = String(form.get("published_at") ?? "").trim();
-  const published = form.get("intent") === "publish" ? 1 : 0;
+  const scheduledAt = String(form.get("scheduled_at") ?? "").trim();
+  const published = form.get("published") ? 1 : 0;
   const category = String(form.get("category") ?? "").trim();
   const author = getSettings().author_name;
   const tags = String(form.get("tags") ?? "").trim();
@@ -39,8 +40,8 @@ export async function POST(request: NextRequest) {
 
   try {
     db.prepare(
-      `INSERT INTO insights (slug, title, excerpt, body, cover_image, thumbnail_image, published_at, position, published, category, author, tags, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO insights (slug, title, excerpt, body, cover_image, thumbnail_image, published_at, scheduled_at, position, published, category, author, tags, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       slug,
       title,
@@ -49,6 +50,7 @@ export async function POST(request: NextRequest) {
       coverImage,
       thumbnailImage,
       publishedAt || todayInputValue(),
+      scheduledAt,
       maxPosition.max + 1,
       published,
       category,

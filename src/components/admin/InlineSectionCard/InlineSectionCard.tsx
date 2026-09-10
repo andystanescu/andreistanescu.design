@@ -42,7 +42,7 @@ export function InlineSectionCard({ section, label, parent, fixed = false, reord
             <input type="hidden" name="cta_secondary_href" value={(section as HomepageSection).cta_secondary_href} />
           </>}
           <label className={adminStyles.checkboxField}><input type="checkbox" name="visible" defaultChecked={!!section.visible} /><span className={adminStyles.switch} /><span className="body-default">Visible on site</span></label>
-          <button type="submit" className={adminStyles.submit}><span className="label-button">Save section</span></button>
+          <div className={adminStyles.formActions}><a href="" className={adminStyles.tertiaryButton}>Cancel</a><button type="submit" className={adminStyles.submit}><span className="label-button">Save section</span></button></div>
         </form>
       </details>
     </div>

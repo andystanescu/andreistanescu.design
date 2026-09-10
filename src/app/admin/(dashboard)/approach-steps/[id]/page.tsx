@@ -81,6 +81,7 @@ export default async function EditApproachStepPage({
         </label>
 
         <div className={styles.formActions}>
+          <a href="/admin/approach-steps" className={styles.tertiaryButton}>Cancel</a>
           <button type="submit" className={styles.submit}>
             <span className="label-button">Save changes</span>
           </button>

@@ -5,10 +5,12 @@ import { ReorderableList } from "@/components/admin/ReorderableList/ReorderableL
 import { AdminTabs } from "@/components/admin/AdminTabs/AdminTabs";
 import { INSIGHTS_TABS } from "../adminTabs";
 import styles from "../admin.module.css";
+import { ukDateTimeValue } from "@/lib/dateUtils";
 
 export const dynamic = "force-dynamic";
 
 export default function AdminInsightsPage() {
+  const now = ukDateTimeValue();
   const insights = db
     .prepare("SELECT * FROM insights ORDER BY position ASC, id ASC")
     .all() as Insight[];
@@ -38,12 +40,14 @@ export default function AdminInsightsPage() {
                 <div className={styles.listItemMeta}>
                   <p className="body-default">
                     {insight.title}
-                    {!insight.published && (
+                    {insight.published && insight.scheduled_at && insight.scheduled_at > now ? (
+                      <span className={styles.unpublished}> — scheduled</span>
+                    ) : !insight.published && (
                       <span className={styles.unpublished}> — unpublished</span>
                     )}
                   </p>
                   <p className="body-small" style={{ color: "var(--text-tertiary)" }}>
-                    /insights/{insight.slug} · {insight.published_at}
+                    /insights/{insight.slug} · {insight.scheduled_at && insight.scheduled_at > now ? `publishes ${insight.scheduled_at.replace("T", " ")} UK time` : insight.published_at}
                   </p>
                 </div>
                 <div className={styles.listItemActions}>

@@ -72,6 +72,7 @@ export default async function EditPhilosophyItemPage({
         </label>
 
         <div className={styles.formActions}>
+          <a href="/admin/about-philosophy" className={styles.tertiaryButton}>Cancel</a>
           <button type="submit" className={styles.submit}>
             <span className="label-button">Save changes</span>
           </button>

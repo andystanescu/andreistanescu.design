@@ -72,6 +72,7 @@ export default async function EditHighlightItemPage({
         </label>
 
         <div className={styles.formActions}>
+          <a href="/admin/about-highlights" className={styles.tertiaryButton}>Cancel</a>
           <button type="submit" className={styles.submit}>
             <span className="label-button">Save changes</span>
           </button>
