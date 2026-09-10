@@ -1,4 +1,3 @@
-import { ArrowIcon } from "@/components/Icon/ArrowIcon";
 import { Nav } from "@/components/Nav/Nav";
 import { notFound } from "next/navigation";
 import { Footer } from "@/components/Footer/Footer";
@@ -41,7 +40,7 @@ export default function WorkPage() {
             Case studies are on their way — check back soon.
           </p>
         ) : (
-          <FeaturedCaseStudyCard slug={featured.slug} title={featured.title} description={featured.description} thumbnail={featured.thumbnail_image} passwordRequired={Boolean(featured.password_required)} category={featured.category} year={featured.year} />
+          <FeaturedCaseStudyCard slug={featured.slug} title={featured.title} description={featured.description} thumbnail={featured.thumbnail_image} category={featured.category} year={featured.year} />
         )}
         <MoreWorkGrid
           totalStudies={CASE_STUDIES.length}
@@ -51,7 +50,6 @@ export default function WorkPage() {
             title: study.title,
             description: study.description,
             thumbnail_image: study.thumbnail_image,
-            password_required: Boolean(study.password_required),
           }))}
           personal={settings.logo_identity === "personal"}
         />

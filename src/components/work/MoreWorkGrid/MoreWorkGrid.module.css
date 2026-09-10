@@ -76,12 +76,4 @@
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-.card.unlocking{cursor:default}
-.unlockThumbnail{display:flex;min-height:175px;flex-direction:column;justify-content:center;gap:var(--space-150);padding:var(--space-400);background:var(--bg-deep);color:var(--text-on-deep-primary);text-align:left}
-.unlockThumbnail h3{font:600 20px/1.2 var(--font-family-heading)}
-.unlockThumbnail>p:not(.label-eyebrow){color:var(--text-on-deep-secondary);font:13px/1.45 var(--font-family-body)}
-.unlockThumbnail form{display:flex;gap:var(--space-100)}
-.unlockThumbnail input{min-width:0;flex:1;padding:10px 12px;border:1px solid var(--border-on-deep);border-radius:var(--radius-md);background:color-mix(in srgb, var(--bg-deep) 80%, var(--text-on-deep-primary) 20%);color:var(--text-on-deep-primary);font:14px var(--font-family-body)}
-.unlockThumbnail button{padding:10px 12px;border:0;border-radius:var(--radius-md);background:var(--accent-foundation);color:var(--action-primary-hover-text);font:600 13px var(--font-family-body);cursor:pointer}
-.unlockError{color:var(--text-accent);font:600 12px/1.45 var(--font-family-body)}
 .card{text-align:left;cursor:pointer}
