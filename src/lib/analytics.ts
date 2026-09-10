@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { createHmac } from "crypto";
+import { createHmac, randomUUID } from "crypto";
 import { getSessionSecret } from "@/lib/auth";
 
 export type AnalyticsContentType = "case_study" | "article" | "cv";
@@ -7,14 +7,14 @@ export type AnalyticsContentType = "case_study" | "article" | "cv";
 export type VisitorContext = { source?: string; country?: string };
 
 export function recordAnalyticsEvent(eventType: "view" | "share" | "download", contentType: AnalyticsContentType, contentId = "", context?: VisitorContext) {
-  db.prepare("INSERT INTO analytics_events (event_type, content_type, content_id, source, country) VALUES (?, ?, ?, ?, ?)").run(eventType, contentType, contentId, context?.source ?? "", context?.country ?? "");
+  db.prepare("INSERT INTO analytics_events (event_type, content_type, content_id, source, country, event_key) VALUES (?, ?, ?, ?, ?, ?)").run(eventType, contentType, contentId, context?.source ?? "", context?.country ?? "", randomUUID());
 }
 
 export function recordUniqueView(contentType: "article" | "case_study", contentId: string, visitorId: string, context?: VisitorContext) {
   const visitorHash = createHmac("sha256", getSessionSecret()).update(visitorId).digest("hex");
   const existing = db.prepare(`SELECT 1 FROM analytics_events WHERE event_type = 'view' AND content_type = ? AND content_id = ? AND visitor_hash = ? AND created_at >= datetime('now', '-30 days') LIMIT 1`).get(contentType, contentId, visitorHash);
   if (existing) return false;
-  db.prepare("INSERT INTO analytics_events (event_type, content_type, content_id, source, country, visitor_hash) VALUES ('view', ?, ?, ?, ?, ?)").run(contentType, contentId, context?.source ?? "", context?.country ?? "", visitorHash);
+  db.prepare("INSERT INTO analytics_events (event_type, content_type, content_id, source, country, visitor_hash, event_key) VALUES ('view', ?, ?, ?, ?, ?, ?)").run(contentType, contentId, context?.source ?? "", context?.country ?? "", visitorHash, randomUUID());
   return true;
 }
 

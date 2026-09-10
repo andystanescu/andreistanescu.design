@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       pages?: ContentRecord[];
       pageConfiguration?: ContentRecord[];
       experiences?: ContentRecord[];
+      analyticsEvents?: ContentRecord[];
       assets?: { filename?: string; content?: string }[];
       configuration?: {
         settings?: ContentRecord[];
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
         ? payload.pageConfiguration
         : [];
     const experiences = Array.isArray(payload.experiences) ? payload.experiences : [];
+    const analyticsEvents = Array.isArray(payload.analyticsEvents) ? payload.analyticsEvents : [];
     const configuration = payload.configuration ?? {};
 
     if (Array.isArray(payload.assets)) {
@@ -251,13 +253,25 @@ export async function POST(request: NextRequest) {
           text(record, "description"), integer(record, "position"), integer(record, "published", 1)
         );
       }
+
+      const importAnalyticsEvent = db.prepare(`INSERT OR IGNORE INTO analytics_events
+        (event_key, event_type, content_type, content_id, source, country, visitor_hash, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+      for (const record of analyticsEvents) {
+        const eventKey = text(record, "event_key").trim();
+        const eventType = text(record, "event_type");
+        const contentType = text(record, "content_type");
+        const createdAt = text(record, "created_at").trim();
+        if (!eventKey || !createdAt || !["view", "share", "download"].includes(eventType) || !["case_study", "article", "cv"].includes(contentType)) continue;
+        importAnalyticsEvent.run(eventKey, eventType, contentType, text(record, "content_id"), text(record, "source"), text(record, "country"), text(record, "visitor_hash"), createdAt);
+      }
       db.exec("COMMIT");
     } catch (error) {
       db.exec("ROLLBACK");
       throw error;
     }
 
-    return NextResponse.json({ imported: { caseStudies: caseStudies.length, insights: insights.length, pages: pages.length, experiences: experiences.length } });
+    return NextResponse.json({ imported: { caseStudies: caseStudies.length, insights: insights.length, pages: pages.length, experiences: experiences.length, analyticsEvents: analyticsEvents.length } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Import failed.";
     return NextResponse.json({ error: `Import failed: ${message}` }, { status: 400 });

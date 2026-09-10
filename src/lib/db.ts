@@ -98,6 +98,7 @@ function initializeDatabase() {
     source TEXT NOT NULL DEFAULT '',
     country TEXT NOT NULL DEFAULT '',
     visitor_hash TEXT NOT NULL DEFAULT '',
+    event_key TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -215,6 +216,11 @@ addColumnIfMissing("case_studies", "body", "body TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("analytics_events", "source", "source TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("analytics_events", "country", "country TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("analytics_events", "visitor_hash", "visitor_hash TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("analytics_events", "event_key", "event_key TEXT NOT NULL DEFAULT ''");
+db.exec(`
+  UPDATE analytics_events SET event_key = lower(hex(randomblob(16))) WHERE event_key = '';
+  CREATE UNIQUE INDEX IF NOT EXISTS analytics_events_event_key ON analytics_events(event_key);
+`);
 addColumnIfMissing("case_studies", "category", "category TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "year", "year TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "outcome_eyebrow", "outcome_eyebrow TEXT NOT NULL DEFAULT 'OUTCOMES'");
