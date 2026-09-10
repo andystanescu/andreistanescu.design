@@ -10,14 +10,6 @@
 .featuredMeta { position:absolute; right:0; bottom:0; left:0; display:flex; align-items:center; gap:10px; min-height:40px; padding:12px 24px; border-top:1px solid var(--border-on-deep); background:var(--bg-deep); color:var(--text-on-deep-secondary); font:500 12px/1.4 var(--font-family-mono); }
 .featuredMeta i { display:block; width:8px; height:8px; flex:0 0 8px; background:var(--accent-foundation); }
 .featuredLink { display:inline-flex; align-items:center; gap:var(--space-100); min-height:44px; width:max-content; margin-top:var(--space-100); padding:var(--space-150) var(--space-300); border-radius:var(--radius-md); background:var(--bg-deep); color:var(--text-on-deep-primary); font:500 14px/1.2 var(--font-family-body); }
-.featuredUnlock { display:flex; align-items:center; }
-.featuredUnlockContent { display:flex; width:min(100%, 620px); flex-direction:column; gap:var(--space-200); padding:var(--space-800); }
-.featuredUnlockContent h2 { color:var(--text-on-deep-primary); }
-.featuredUnlockContent>p:not(.label-eyebrow) { color:var(--text-on-deep-secondary); font:14px/1.5 var(--font-family-body); }
-.featuredUnlockContent form { display:flex; gap:var(--space-100); }
-.featuredUnlockContent input { min-width:0; flex:1; padding:12px; border:1px solid var(--border-on-deep); border-radius:var(--radius-md); background:color-mix(in srgb, var(--bg-deep) 80%, var(--text-on-deep-primary) 20%); color:var(--text-on-deep-primary); font:14px var(--font-family-body); }
-.featuredUnlockContent button { padding:12px 16px; border:0; border-radius:var(--radius-md); background:var(--accent-foundation); color:var(--action-primary-hover-text); font:600 13px var(--font-family-body); cursor:pointer; }
-.featuredUnlockContent small { color:var(--text-accent); font:600 12px/1.45 var(--font-family-body); }
 .featured:hover .featuredLink, .featured:focus-visible .featuredLink { color:var(--text-on-deep-primary); }
 .outcome { width:100vw; margin-top:var(--space-600); margin-left:calc(50% - 50vw); padding-block:var(--space-800); background:var(--bg-deep); }
 .outcomeGrid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-800); margin-top:var(--space-300); }
