@@ -588,6 +588,26 @@
   line-height: 0;
 }
 
+.content:global(.ProseMirror) :global([data-resizable-image]) img {
+  display: block;
+}
+
+.imageCaptionInput {
+  display: block;
+  width: 100%;
+  min-width: 180px;
+  margin-top: var(--space-100);
+  padding: var(--space-100) var(--space-150);
+  border: 1px solid var(--border-field);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font: 14px/1.4 var(--font-family-body);
+  box-sizing: border-box;
+}
+
+.imageCaptionInput::placeholder { color: var(--text-placeholder); }
+
 .content:global(.ProseMirror) :global([data-resizable-image] img) {
   display: block;
   max-width: 100%;

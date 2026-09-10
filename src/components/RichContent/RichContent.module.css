@@ -86,6 +86,14 @@
   border-radius: var(--radius-lg);
 }
 
+.content :global(figure) { margin: 0; }
+
+.content :global(figcaption) {
+  margin-top: var(--space-150);
+  color: var(--text-tertiary);
+  font: 14px/1.5 var(--font-family-body);
+}
+
 
 .content :global(hr) {
   border: none;
