@@ -436,6 +436,9 @@
 .secondaryButton { display:inline-flex; align-items:center; justify-content:center; padding:var(--space-200) var(--space-400); border:1px solid var(--action-secondary-border); border-radius:var(--radius-md); background:transparent; color:var(--action-secondary-text); font:500 14px/1 var(--font-family-body); cursor:pointer; transition:background-color .15s ease,color .15s ease,transform .1s ease; }
 .secondaryButton:hover,.secondaryButton:focus-visible { background:var(--bg-subtle); color:var(--action-secondary-text); }
 .secondaryButton:active { transform:scale(.97); }
+.tertiaryButton { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:var(--space-150) var(--space-200); border:0; border-radius:var(--radius-md); background:transparent; color:var(--action-secondary-text); font:500 14px/1 var(--font-family-body); text-decoration:none; cursor:pointer; transition:background-color .15s ease,color .15s ease,transform .1s ease; }
+.tertiaryButton:hover,.tertiaryButton:focus-visible { background:var(--bg-subtle); color:var(--text-primary); }
+.tertiaryButton:active { transform:scale(.97); }
 .uploadRow { display:flex; align-items:center; gap:var(--space-200); min-height:40px; }
 .uploadButton { display:inline-grid; place-items:center; width:40px; height:40px; border:1px solid var(--border-field); border-radius:var(--radius-md); background:var(--bg-field); color:var(--text-primary); cursor:pointer; }
 .uploadButton:hover,.uploadButton:focus-within { border-color:var(--accent-foundation); color:var(--accent-foundation); }

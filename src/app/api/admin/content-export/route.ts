@@ -18,7 +18,7 @@ export async function GET() {
     .all();
   const insights = db
     .prepare(
-      `SELECT slug, title, excerpt, body, published_at, position, published,
+      `SELECT slug, title, excerpt, body, published_at, scheduled_at, position, published,
               cover_image, thumbnail_image, category, author, tags
               , meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index
        FROM insights ORDER BY position, id`
@@ -33,6 +33,11 @@ export async function GET() {
     `SELECT id, start_date, end_date, job_title, company_name, business_profile,
             description, position, published
      FROM about_experiences ORDER BY position, id`
+  ).all();
+  const analyticsEvents = db.prepare(
+    `SELECT event_key, event_type, content_type, content_id, source, country,
+            visitor_hash, created_at
+     FROM analytics_events ORDER BY created_at, id`
   ).all();
   const configuration = {
     settings: db.prepare("SELECT key, value FROM settings WHERE key NOT IN ('admin_credentials', 'session_secret') ORDER BY key").all(),
@@ -51,7 +56,7 @@ export async function GET() {
     position: page.position,
   }));
 
-  const source = JSON.stringify({ caseStudies, insights, pages, experiences, configuration });
+  const source = JSON.stringify({ caseStudies, insights, pages, experiences, configuration, analyticsEvents });
   const filenames = [...source.matchAll(/\/uploads\/([^"'?#]+)/g)]
     .map((match) => basename(match[1]))
     .filter(Boolean);
@@ -75,6 +80,7 @@ export async function GET() {
         pages,
         pageConfiguration,
         experiences,
+        analyticsEvents,
         configuration,
         assets,
       },

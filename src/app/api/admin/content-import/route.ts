@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       pages?: ContentRecord[];
       pageConfiguration?: ContentRecord[];
       experiences?: ContentRecord[];
+      analyticsEvents?: ContentRecord[];
       assets?: { filename?: string; content?: string }[];
       configuration?: {
         settings?: ContentRecord[];
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
         ? payload.pageConfiguration
         : [];
     const experiences = Array.isArray(payload.experiences) ? payload.experiences : [];
+    const analyticsEvents = Array.isArray(payload.analyticsEvents) ? payload.analyticsEvents : [];
     const configuration = payload.configuration ?? {};
 
     if (Array.isArray(payload.assets)) {
@@ -175,13 +177,13 @@ export async function POST(request: NextRequest) {
 
       const upsertInsight = db.prepare(
         `INSERT INTO insights
-          (slug, title, excerpt, body, published_at, position, published,
+          (slug, title, excerpt, body, published_at, scheduled_at, position, published,
            cover_image, thumbnail_image, category, author, tags, meta_title,
            meta_description, meta_keywords, canonical_url, og_image, no_index)
-         VALUES (${Array(18).fill("?").join(",")})
+         VALUES (${Array(19).fill("?").join(",")})
          ON CONFLICT(slug) DO UPDATE SET
           title=excluded.title, excerpt=excluded.excerpt, body=excluded.body,
-          published_at=excluded.published_at, position=excluded.position,
+          published_at=excluded.published_at, scheduled_at=excluded.scheduled_at, position=excluded.position,
           published=excluded.published, cover_image=excluded.cover_image,
           thumbnail_image=excluded.thumbnail_image, category=excluded.category,
           author=excluded.author, tags=excluded.tags, meta_title=excluded.meta_title,
@@ -195,7 +197,7 @@ export async function POST(request: NextRequest) {
         if (!slug || !title) continue;
         upsertInsight.run(
           slug, title, text(record, "excerpt"), text(record, "body"),
-          text(record, "published_at"), integer(record, "position"), integer(record, "published", 1),
+          text(record, "published_at"), text(record, "scheduled_at"), integer(record, "position"), integer(record, "published", 1),
           text(record, "cover_image"), text(record, "thumbnail_image"), text(record, "category"),
           text(record, "author", "Andrei Stanescu"), text(record, "tags"),
           text(record, "meta_title"), text(record, "meta_description"), text(record, "meta_keywords"),
@@ -251,13 +253,25 @@ export async function POST(request: NextRequest) {
           text(record, "description"), integer(record, "position"), integer(record, "published", 1)
         );
       }
+
+      const importAnalyticsEvent = db.prepare(`INSERT OR IGNORE INTO analytics_events
+        (event_key, event_type, content_type, content_id, source, country, visitor_hash, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+      for (const record of analyticsEvents) {
+        const eventKey = text(record, "event_key").trim();
+        const eventType = text(record, "event_type");
+        const contentType = text(record, "content_type");
+        const createdAt = text(record, "created_at").trim();
+        if (!eventKey || !createdAt || !["view", "share", "download"].includes(eventType) || !["case_study", "article", "cv"].includes(contentType)) continue;
+        importAnalyticsEvent.run(eventKey, eventType, contentType, text(record, "content_id"), text(record, "source"), text(record, "country"), text(record, "visitor_hash"), createdAt);
+      }
       db.exec("COMMIT");
     } catch (error) {
       db.exec("ROLLBACK");
       throw error;
     }
 
-    return NextResponse.json({ imported: { caseStudies: caseStudies.length, insights: insights.length, pages: pages.length, experiences: experiences.length } });
+    return NextResponse.json({ imported: { caseStudies: caseStudies.length, insights: insights.length, pages: pages.length, experiences: experiences.length, analyticsEvents: analyticsEvents.length } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Import failed.";
     return NextResponse.json({ error: `Import failed: ${message}` }, { status: 400 });

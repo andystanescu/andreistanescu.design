@@ -29,6 +29,7 @@ export default function InsightsPage() {
     cover_image: insight.cover_image,
     thumbnail_image: insight.thumbnail_image,
     published_at: insight.published_at,
+    scheduled_at: insight.scheduled_at,
     position: insight.position,
     published: insight.published,
     category: insight.category,

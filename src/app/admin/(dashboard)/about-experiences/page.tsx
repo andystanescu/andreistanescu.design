@@ -29,6 +29,7 @@ export default function AdminAboutExperiencesPage() {
           <input type="hidden" name="description" value={section.description} />
           <input type="hidden" name="visible" value={section.visible ? "on" : ""} />
           <div className={styles.formActions}>
+            <a href="/admin/about-experiences" className={styles.tertiaryButton}>Cancel</a>
             <button type="submit" className={styles.submit}>Save section</button>
           </div>
         </form>

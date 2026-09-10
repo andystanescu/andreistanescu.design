@@ -53,7 +53,7 @@ export default function ContentTransfer() {
       form.append("file", file);
       const response = await fetch("/api/admin/content-import", { method: "POST", body: form });
       const responseText = await response.text();
-      let result: { error?: string; imported?: { caseStudies: number; insights: number } } = {};
+      let result: { error?: string; imported?: { caseStudies: number; insights: number; analyticsEvents: number } } = {};
       try {
         result = JSON.parse(responseText) as typeof result;
       } catch {
@@ -67,7 +67,7 @@ export default function ContentTransfer() {
         throw new Error("The import completed with an unreadable server response.");
       }
       if (!response.ok) throw new Error(result.error ?? "Import failed.");
-      setMessage(`Imported ${result.imported?.caseStudies ?? 0} case studies and ${result.imported?.insights ?? 0} insights.`);
+      setMessage(`Imported ${result.imported?.caseStudies ?? 0} case studies, ${result.imported?.insights ?? 0} insights, and ${result.imported?.analyticsEvents ?? 0} analytics events.`);
       if (inputRef.current) inputRef.current.value = "";
       setFileName("");
     } catch (error) {
@@ -82,7 +82,7 @@ export default function ContentTransfer() {
       <p className="label-eyebrow">CONTENT TRANSFER</p>
       <h1 className="heading-01">Move your content</h1>
       <p className={`body-small ${styles.helper}`} style={{ maxWidth: 680 }}>
-        Export case studies and insights from this app, then import the JSON into another ConScept deployment. Existing records are matched by slug and updated; other admin data is left alone.
+        Export content, uploaded assets, configuration, and view metrics, then import the JSON into another ConScept deployment. Existing content is updated and analytics events are matched safely, so importing the same file twice does not duplicate the metrics. Visitor identifiers remain one-way hashes.
       </p>
       <div className={`${styles.transferPanel}`}>
         <div className={styles.transferActions}>

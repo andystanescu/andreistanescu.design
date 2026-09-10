@@ -8,7 +8,7 @@ import type { Insight } from "@/data/insights";
 import styles from "@/app/admin/(dashboard)/admin.module.css";
 import tagStyles from "@/components/admin/CaseStudyEditor/CaseStudyEditor.module.css";
 import editorStyles from "@/components/admin/CaseStudyEditor/CaseStudyEditor.module.css";
-import { dateInputValue, todayInputValue } from "@/lib/dateUtils";
+import { dateInputValue, todayInputValue, ukDateTimeValue } from "@/lib/dateUtils";
 
 type Props = { action: string; categories: Array<{ id: number; title: string }>; settingsAuthor: string; authorAvatarUrl?: string; insight?: Insight };
 
@@ -16,10 +16,11 @@ export function InsightEditor({ action, categories, settingsAuthor, authorAvatar
   const editing = Boolean(insight);
   const [tab, setTab] = useState<"details" | "body" | "metadata">("details");
   const value = (key: keyof Insight) => insight?.[key] ?? "";
+  const scheduled = Boolean(insight?.published && insight.scheduled_at && insight.scheduled_at > ukDateTimeValue());
   return <form data-editor-page className={`${styles.form} ${editorStyles.editorForm}`} action={action} method="POST" encType="multipart/form-data">
     <header className={editorStyles.editorHeader}>
       <div className={editorStyles.editorHeading}><p className={editorStyles.editorEyebrow}>ADMIN · INSIGHT</p><h1>{editing ? String(value("title")) : "New article"}</h1></div>
-      <div className={editorStyles.editorActions}><button type="submit" name="intent" value={editing ? "publish" : "draft"} className={editorStyles.headerSubmit}>{editing ? "Save changes" : "Create article"}</button></div>
+      <div className={editorStyles.editorActions}><a href="/admin/insights" className={styles.tertiaryButton}>Cancel</a><button type="submit" className={editorStyles.headerSubmit}>{editing ? "Save changes" : "Create article"}</button></div>
       <div className={editorStyles.tabs} role="tablist" aria-label="Insight details">
         {(["details", "body", "metadata"] as const).map((value) => <button key={value} type="button" role="tab" aria-selected={tab === value} aria-controls={`insight-panel-${value}`} className={tab === value ? editorStyles.tabActive : editorStyles.tab} onClick={() => setTab(value)}>{value === "metadata" ? "Metadata and SEO" : value === "body" ? "Body" : "Details"}</button>)}
       </div>
@@ -33,7 +34,8 @@ export function InsightEditor({ action, categories, settingsAuthor, authorAvatar
         <CategoryCards value={String(value("category"))} categories={categories} />
         <TagEditor initialValue={String(value("tags"))} />
         <label className={styles.field}><span className="label-small">Published date</span><input type="date" name="published_at" defaultValue={dateInputValue(String(value("published_at")) || todayInputValue())} className={styles.input} /></label>
-        {editing && <label className={styles.checkboxField}><input type="checkbox" name="published" defaultChecked={Boolean(insight?.published)} /><span className={styles.switch} aria-hidden="true" /><span className="body-default">Published</span></label>}
+        <label className={styles.field}><span className="label-small">Schedule publishing (UK time)</span><input type="datetime-local" name="scheduled_at" defaultValue={String(value("scheduled_at"))} className={styles.input} /><span className="body-small" style={{ color: "var(--text-tertiary)" }}>Leave empty to publish immediately when Published is enabled.</span></label>
+        <label className={styles.checkboxField}><input type="checkbox" name="published" defaultChecked={Boolean(insight?.published)} /><span className={styles.switch} aria-hidden="true" /><span className="body-default">Published</span></label>
     </section>
     <section id="insight-panel-body" role="tabpanel" aria-label="Body" hidden={tab !== "body"} className={editorStyles.panel}>
         <div className={`${styles.field} ${styles.fieldWide}`}><span className="label-small">Body</span><RichTextEditor name="body" defaultValue={String(value("body"))} /></div>
@@ -45,10 +47,10 @@ export function InsightEditor({ action, categories, settingsAuthor, authorAvatar
     <aside className={editorStyles.sidePanels} aria-label="Insight summary">
       <div className={editorStyles.sidePanel}>
         <h2 className="heading-03">Visibility</h2>
-        <p><span>Status</span><strong>{insight?.published ? "Published" : "Draft"}</strong></p>
+        <p><span>Status</span><strong>{scheduled ? "Scheduled" : insight?.published ? "Published" : "Draft"}</strong></p>
         <p><span>Author</span><strong>{settingsAuthor || "Not set"}</strong></p>
         <hr />
-        <small>{insight?.published ? "Visible on the live site." : "Not visible on the live site until published."}</small>
+        <small>{scheduled ? `Becomes visible ${insight?.scheduled_at.replace("T", " ")} UK time.` : insight?.published ? "Visible on the live site." : "Not visible on the live site until published."}</small>
       </div>
       <div className={editorStyles.sidePanel}>
         <h2 className="heading-03">Media</h2>

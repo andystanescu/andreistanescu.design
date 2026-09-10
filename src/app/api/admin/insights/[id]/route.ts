@@ -18,6 +18,7 @@ export async function POST(
   const excerpt = String(form.get("excerpt") ?? "").trim();
   const body = applyHeadingAccents(String(form.get("body") ?? "").trim());
   const publishedAt = dateInputValue(String(form.get("published_at") ?? "").trim());
+  const scheduledAt = String(form.get("scheduled_at") ?? "").trim();
   const published = form.get("published") ? 1 : 0;
   const category = String(form.get("category") ?? "").trim();
   const author = getSettings().author_name;
@@ -53,7 +54,7 @@ export async function POST(
   try {
     db.prepare(
       `UPDATE insights
-       SET slug = ?, title = ?, excerpt = ?, body = ?, cover_image = ?, thumbnail_image = ?, published_at = ?, published = ?, category = ?, author = ?, tags = ?, meta_title = ?, meta_description = ?, meta_keywords = ?, canonical_url = ?, og_image = ?, no_index = ?
+       SET slug = ?, title = ?, excerpt = ?, body = ?, cover_image = ?, thumbnail_image = ?, published_at = ?, scheduled_at = ?, published = ?, category = ?, author = ?, tags = ?, meta_title = ?, meta_description = ?, meta_keywords = ?, canonical_url = ?, og_image = ?, no_index = ?
        WHERE id = ?`
     ).run(
       slug,
@@ -63,6 +64,7 @@ export async function POST(
       coverImage,
       thumbnailImage,
       publishedAt,
+      scheduledAt,
       published,
       category,
       author,

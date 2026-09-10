@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { Nav } from "@/components/Nav/Nav";
 import { Footer } from "@/components/Footer/Footer";
 import { RichContent } from "@/components/RichContent/RichContent";
@@ -19,7 +19,7 @@ import { getSettings } from "@/lib/settings";
 import { displayDate } from "@/lib/dateUtils";
 import { AuthorAvatar } from "@/components/AuthorAvatar/AuthorAvatar";
 import { ShareArticle } from "@/components/ShareArticle/ShareArticle";
-import { recordAnalyticsEvent, visitorContextFromHeaders } from "@/lib/analytics";
+import { ContentViewTracker } from "@/components/ContentViewTracker/ContentViewTracker";
 import headerStyles from "@/app/insights/[slug]/insight.module.css";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +48,6 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
     const query = searchParams ? await searchParams : {};
     return <><Nav /><CaseStudyPasswordGate slug={study.slug} error={query.accessError ? "That password was not recognised." : undefined} /><Footer /></>;
   }
-  recordAnalyticsEvent("view", "case_study", study.slug, visitorContextFromHeaders(await headers()));
   const { html: bodyHtml, toc } = addHeadingIds(study.body);
   const studies = getCaseStudies();
   const index = studies.findIndex((item) => item.slug === study.slug);
@@ -74,6 +73,7 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
   const assessmentToc = hasAssessment ? [{ id: "assessment-overview", text: "Assessment" }, { id: "complexity-profile", text: "Complexity profile" }, { id: "likely-engagement", text: "Likely engagement" }] : [];
 
   return <>
+    <ContentViewTracker contentType="case_study" contentId={study.slug} />
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
       "@context": "https://schema.org", "@type": "CreativeWork", name: study.title, description: study.description,
       url: absoluteUrl(`/work/${encodeURIComponent(study.slug)}`), image: study.cover_image ? absoluteUrl(study.cover_image) : undefined,

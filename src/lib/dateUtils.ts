@@ -21,3 +21,13 @@ export function displayMonthYear(value: string) {
   const parsed = new Date(`${dateInputValue(value)}T12:00:00`);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 }
+
+export function ukDateTimeValue(date = new Date()): string {
+  const values = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+    }).formatToParts(date).map(({ type, value }) => [type, value])
+  );
+  return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
+}

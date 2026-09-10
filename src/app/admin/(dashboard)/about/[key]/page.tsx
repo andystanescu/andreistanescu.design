@@ -89,6 +89,7 @@ export default async function EditAboutSectionPage({
         </label>
 
         <div className={styles.formActions}>
+          <a href="/admin/about" className={styles.tertiaryButton}>Cancel</a>
           <button type="submit" className={styles.submit}>
             <span className="label-button">Save changes</span>
           </button>

@@ -124,6 +124,7 @@ export default async function EditHomepageSectionPage({
         )}
 
         <div className={styles.formActions}>
+          <a href="/admin/homepage" className={styles.tertiaryButton}>Cancel</a>
           <button type="submit" className={styles.submit}>
             <span className="label-button">Save changes</span>
           </button>
