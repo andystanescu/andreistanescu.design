@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Nav } from "@/components/Nav/Nav";
@@ -16,7 +15,7 @@ import styles from "./insight.module.css";
 import { contentMetadata, absoluteUrl } from "@/lib/seo";
 import { displayDate } from "@/lib/dateUtils";
 import { AuthorAvatar } from "@/components/AuthorAvatar/AuthorAvatar";
-import { recordAnalyticsEvent, visitorContextFromHeaders } from "@/lib/analytics";
+import { ContentViewTracker } from "@/components/ContentViewTracker/ContentViewTracker";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +37,6 @@ export default async function InsightDetailPage({
   if (!insight) {
     notFound();
   }
-  recordAnalyticsEvent("view", "article", insight.slug, visitorContextFromHeaders(await headers()));
 
   const { html: bodyHtml, toc } = addHeadingIds(insight.body);
   const readingMinutes = calculateReadingTime(insight.body);
@@ -46,6 +44,7 @@ export default async function InsightDetailPage({
 
   return (
     <>
+      <ContentViewTracker contentType="article" contentId={insight.slug} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         "@context": "https://schema.org", "@type": "Article", headline: insight.title,
         description: insight.excerpt, datePublished: insight.published_at, author: { "@type": "Person", name: insight.author },

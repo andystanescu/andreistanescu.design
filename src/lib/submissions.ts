@@ -45,3 +45,8 @@ export function countSubmissionsSince(days = 30): number {
   const row = db.prepare("SELECT COUNT(*) AS count FROM submissions WHERE created_at >= datetime('now', ?)").get(`-${days} days`) as { count: number };
   return row.count;
 }
+
+export function countSubmissionsPeriod(startDaysAgo: number, endDaysAgo = 0): number {
+  const row = db.prepare("SELECT COUNT(*) AS count FROM submissions WHERE created_at >= datetime('now', ?) AND created_at < datetime('now', ?)").get(`-${startDaysAgo} days`, `-${endDaysAgo} days`) as { count: number };
+  return row.count;
+}
