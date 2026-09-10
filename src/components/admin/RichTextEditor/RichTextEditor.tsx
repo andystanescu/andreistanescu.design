@@ -79,14 +79,43 @@ const ResizableImage = Image.extend({
         renderHTML: (attributes: { width?: string | null }) =>
           attributes.width ? { width: attributes.width } : {},
       },
+      caption: {
+        default: "",
+        parseHTML: (element: HTMLElement) => element.getAttribute("data-caption") || "",
+        renderHTML: (attributes: { caption?: string }) =>
+          attributes.caption ? { "data-caption": attributes.caption } : {},
+      },
     };
+  },
+  parseHTML() {
+    return [
+      {
+        tag: "figure",
+        getAttrs: (element: HTMLElement) => {
+          const image = element.querySelector("img[src]");
+          if (!image) return false;
+          return {
+            src: image.getAttribute("src"), alt: image.getAttribute("alt") || "",
+            title: image.getAttribute("title") || "", width: image.getAttribute("width") || null,
+            caption: element.querySelector("figcaption")?.textContent || "",
+          };
+        },
+      },
+      ...(this.parent?.() || []),
+    ];
+  },
+  renderHTML({ HTMLAttributes, node }: { HTMLAttributes: Record<string, unknown>; node: { attrs: { caption?: string } } }) {
+    const caption = typeof node.attrs.caption === "string" ? node.attrs.caption.trim() : "";
+    if (!caption) return ["img", HTMLAttributes];
+    return ["figure", {}, ["img", HTMLAttributes], ["figcaption", {}, caption]];
   },
   addNodeView() {
     return ({ node, editor, getPos }) => {
       const wrapper = document.createElement("span");
       const image = document.createElement("img");
       const handle = document.createElement("button");
-      const attrs = node.attrs as { src: string; alt?: string; title?: string; width?: string | null };
+      const captionInput = document.createElement("input");
+      const attrs = node.attrs as { src: string; alt?: string; title?: string; width?: string | null; caption?: string };
 
       wrapper.className = styles.resizableImage;
       wrapper.setAttribute("data-resizable-image", "true");
@@ -96,11 +125,16 @@ const ResizableImage = Image.extend({
       image.draggable = true;
       if (attrs.title) image.title = attrs.title;
       if (attrs.width) image.width = Number(attrs.width);
+      captionInput.type = "text";
+      captionInput.className = styles.imageCaptionInput;
+      captionInput.placeholder = "Add image caption…";
+      captionInput.setAttribute("aria-label", "Image caption");
+      captionInput.value = attrs.caption || "";
       handle.type = "button";
       handle.className = styles.imageResizeHandle;
       handle.setAttribute("aria-label", "Resize image");
       handle.title = "Drag to resize image";
-      wrapper.append(image, handle);
+      wrapper.append(image, captionInput, handle);
 
       const updateWidth = (width: number) => {
         const pos = typeof getPos === "function" ? getPos() : null;
@@ -118,6 +152,14 @@ const ResizableImage = Image.extend({
         event.stopPropagation();
         const pos = typeof getPos === "function" ? getPos() : null;
         if (pos != null) editor.commands.setNodeSelection(pos);
+      };
+
+      const updateCaption = () => {
+        const pos = typeof getPos === "function" ? getPos() : null;
+        if (pos == null) return;
+        const currentNode = editor.state.doc.nodeAt(pos);
+        if (!currentNode) return;
+        editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, undefined, { ...currentNode.attrs, caption: captionInput.value }));
       };
 
       const startResize = (event: PointerEvent) => {
@@ -147,20 +189,23 @@ const ResizableImage = Image.extend({
 
       handle.addEventListener("pointerdown", startResize);
       image.addEventListener("click", selectImage);
+      captionInput.addEventListener("input", updateCaption);
       return {
         dom: wrapper,
-        stopEvent: (event: Event) => event.target === handle || handle.contains(event.target as Node),
+        stopEvent: (event: Event) => event.target === handle || handle.contains(event.target as Node) || event.target === captionInput,
         update: (updatedNode: typeof node) => {
           if (updatedNode.type !== node.type) return false;
           image.src = updatedNode.attrs.src;
           image.alt = updatedNode.attrs.alt || "";
           if (updatedNode.attrs.width) image.width = Number(updatedNode.attrs.width);
           else image.removeAttribute("width");
+          captionInput.value = updatedNode.attrs.caption || "";
           return true;
         },
         destroy: () => {
           handle.removeEventListener("pointerdown", startResize);
           image.removeEventListener("click", selectImage);
+          captionInput.removeEventListener("input", updateCaption);
         },
       };
     };
@@ -666,6 +711,8 @@ render(<BeforeAfterComparison />);`;
                 <div className={styles.comparisonSlot} key={kind}>
                   <p className={styles.comparisonSlotLabel}>{kind === "before" ? "Before image" : "After image"}</p>
                   <button type="button" className={styles.comparisonUpload} onClick={() => (kind === "before" ? comparisonBeforeInputRef : comparisonAfterInputRef).current?.click()}>
+                    {/* Local previews use temporary blob URLs, which the Next.js image optimizer cannot process. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     {selected ? <img src={selected.preview} alt={`${kind} preview`} /> : <span>Choose image</span>}
                   </button>
                   <input

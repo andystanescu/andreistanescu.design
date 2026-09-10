@@ -17,8 +17,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (request.headers.get("x-card-unlock") === "1") return NextResponse.json({ error: "That password was not recognised." }, { status: 401 });
     return NextResponse.redirect(new URL(`/work/${encodeURIComponent(slug)}?accessError=1`, request.url), 303);
   }
-  if (request.headers.get("x-card-unlock") === "1") return NextResponse.json({ unlocked: true, redirect: `/work/${encodeURIComponent(slug)}` });
-  const response = NextResponse.redirect(new URL(`/work/${encodeURIComponent(slug)}`, request.url), 303);
+  const response = request.headers.get("x-card-unlock") === "1"
+    ? NextResponse.json({ unlocked: true })
+    : NextResponse.redirect(new URL(`/work/${encodeURIComponent(slug)}`, request.url), 303);
   response.cookies.set(caseStudyAccessCookieName(slug), createCaseStudyAccessToken(slug, hashes), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 30, path: "/" });
   return response;
 }
