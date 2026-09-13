@@ -4,3 +4,11 @@
   min-height: 100vh;
   min-height: 100svh;
 }
+
+@media (min-width: 901px) {
+  /* The desktop navigation occupies normal document flow, so the hero must
+     reserve the remaining viewport rather than adding another full screen. */
+  .heroWrap {
+    min-height: calc(100svh - var(--nav-height));
+  }
+}
