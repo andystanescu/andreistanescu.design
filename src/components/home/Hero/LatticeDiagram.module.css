@@ -30,6 +30,14 @@
   cursor: grab;
 }
 
+/* The SVG's emphasized nodes are authored in the light-theme ink colour.
+   Map that source colour to a semantic token so they become light when the
+   page switches to dark mode without changing the accent or supporting dots. */
+.lattice svg path[fill="#11161F"] {
+  fill: var(--text-primary);
+  transition: fill 0.2s ease;
+}
+
 .lattice.grabbing,
 .lattice.grabbing svg path[fill] {
   cursor: grabbing;
