@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { Nav } from "@/components/Nav/Nav";
@@ -23,6 +24,18 @@ import headerStyles from "@/app/insights/[slug]/insight.module.css";
 import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
+
+function ComplexityMetricIcon({ criterion }: { criterion: string }) {
+  const paths: Record<string, ReactNode> = {
+    discoveryComplexity: <><circle cx="11" cy="11" r="6" /><path d="m16 16 4 4" /></>,
+    organisationalComplexity: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
+    technicalComplexity: <><path d="m8 9-4 3 4 3M16 9l4 3-4 3M14 5l-4 14" /></>,
+    changeComplexity: <><path d="M20 7h-6V1" /><path d="M20 7a9 9 0 1 0 1 8" /></>,
+    riskComplexity: <><path d="M12 3 3 7v5c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V7l-9-4Z" /><path d="M12 8v5M12 17h.01" /></>,
+    deliveryComplexity: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 11h18M8 16l2 2 5-5" /></>,
+  };
+  return <svg className={styles.metricIcon} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[criterion]}</svg>;
+}
 
 function relatedStudyRank(currentSlug: string, candidateSlug: string) {
   const value = `${currentSlug}:${candidateSlug}`;
@@ -66,19 +79,13 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
   const assessment = getCaseStudyAssessment(study);
   const hasAssessment = assessment.overall || assessment.likelyEngagement.length > 0 || Object.values(assessment.scores).some(Boolean);
   const activityRecommendations = generateActivityRecommendations(assessment.scores);
-  const maxDisplayedActivities = 6;
   const applicableEngagement = assessment.likelyEngagement.filter((item) => !assessment.notApplicable.includes(item));
   const likelyRecommendations = applicableEngagement.map((item) => ({ item, recommendation: activityRecommendations.find((activity) => activity.name === item) }));
-  const selectedRequirements = new Set<string>();
-  const diverseActivities = likelyRecommendations.filter(({ recommendation }) => {
-    const requirement = recommendation?.triggeredBy.find((trigger) => !selectedRequirements.has(trigger.criterion));
-    if (!requirement) return false;
-    selectedRequirements.add(requirement.criterion);
-    return true;
-  }).map(({ item }) => item).slice(0, maxDisplayedActivities);
-  const likelyDisplayed = [...diverseActivities, ...applicableEngagement.filter((item) => !diverseActivities.includes(item))].slice(0, maxDisplayedActivities);
-  const likelyHiddenCount = Math.max(0, applicableEngagement.length - maxDisplayedActivities);
-  const displayedActivityGroups = assessmentCriteriaList.map((criterion) => ({ criterion, activities: likelyDisplayed.filter((item) => activityRecommendations.find((activity) => activity.name === item)?.triggeredBy[0]?.criterion === criterion.key) })).filter((group) => group.activities.length > 0);
+  const likelyDisplayed = assessmentCriteriaList.flatMap((criterion) => likelyRecommendations
+    .filter(({ recommendation }) => recommendation?.triggeredBy[0]?.criterion === criterion.key)
+    .slice(0, 2)
+    .map(({ item }) => item));
+  const likelyHiddenCount = Math.max(0, applicableEngagement.length - likelyDisplayed.length);
   const primaryDrivers = getPrimaryComplexityDrivers(assessment.scores);
   const assessmentToc = hasAssessment ? [{ id: "assessment-overview", text: "Assessment" }, { id: "complexity-profile", text: "Complexity profile" }, { id: "likely-engagement", text: "Likely engagement" }] : [];
 
@@ -112,7 +119,7 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
       {metrics.length > 0 && <section className={`${styles.outcomes} section-dark`}><div className={`container ${styles.outcomesGrid}`}><div className={styles.outcomeIntro}><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>{study.outcome_eyebrow || "OUTCOMES"}</p><h2 className={styles.outcomeTitle}>{study.outcome_title}</h2></div><div className={styles.metrics}>{metrics.map((metric) => <div key={`${metric.value}-${metric.label}`} className={styles.metric}><strong>{metric.value}</strong><span>{metric.label}</span></div>)}</div></div></section>}
       <div className={`container ${styles.layout}`}>
         {(toc.length > 0 || assessmentToc.length > 0) && <aside className={styles.toc}><TableOfContents items={[...assessmentToc, ...toc]} /><p className="label-small">ON THIS PAGE</p><nav aria-label="On this page"><ul>{[...assessmentToc, ...toc].map((item) => <li key={item.id}><a href={`#${item.id}`}>{item.text}</a></li>)}</ul></nav></aside>}
-        <article className={styles.articleBody}>{hasAssessment && <section id="engagement-assessment" className={styles.assessment}><div className={styles.assessmentHeader}><div><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>CONSCEPT ENGAGEMENT ASSESSMENT</p><h2 id="assessment-overview" className="heading-02">A clearer view of the work ahead.</h2><p className="body-default">A practical record of the complexity observed, the activities likely to help, and the work that was actually conducted.</p></div></div><div className={styles.assessmentGrid}><div className={styles.assessmentScores}><h3 id="complexity-profile" className="heading-03">Complexity profile</h3>{assessmentCriteriaList.map((criterion) => { const score=assessment.scores[criterion.key] || 0; return <div className={styles.assessmentScore} key={criterion.key}><div><span>{criterion.label}{primaryDrivers.includes(criterion.key) && <em className={styles.primaryDriver}>Primary driver</em>}</span><strong>{score ? `${score} / 5` : "—"}</strong></div><div className={styles.scoreTrack}><i style={{ width: `${Math.min(100, score / 5 * 100)}%` }} /></div></div>; })}</div><div className={styles.assessmentAside}>{assessment.overall && <div className={styles.assessmentSummary}><span>OVERALL COMPLEXITY</span><strong>{assessment.overall}</strong><p>{assessment.overallDescription}</p></div>}<div className={styles.assessmentLists}><div><h3 id="likely-engagement" className="heading-03">Likely engagement</h3><div className={styles.activityGroups}>{displayedActivityGroups.map(({ criterion, activities }) => <section className={styles.activityGroup} key={criterion.key}><h4>{criterion.label}</h4><div className={styles.activityCards}>{activities.map((item) => { const completed = assessment.conducted.includes(item); return <article className={styles.activityCard} key={item}><div className={styles.activityCardHeader}><h5>{item}</h5><span className={completed ? styles.statusComplete : styles.statusIncomplete}>{completed ? "Complete" : "Not completed"}</span></div><p>{getActivityDescription(item)}</p></article>; })}</div></section>)}</div>{likelyHiddenCount > 0 && <p className={styles.assessmentMore}>(+ {likelyHiddenCount} applicable activities were included in this project)</p>}</div></div></div></div></section>}
+        <article className={styles.articleBody}>{hasAssessment && <section id="engagement-assessment" className={styles.assessment}><div className={styles.assessmentHeader}><div><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>CONSCEPT ENGAGEMENT ASSESSMENT</p><h2 id="assessment-overview" className="heading-02">A clearer view of the work ahead.</h2><p className="body-default">A practical record of the complexity observed, the activities likely to help, and the work that was actually conducted.</p></div></div><div className={styles.assessmentGrid}><div className={styles.assessmentScores}><h3 id="complexity-profile" className="heading-03">Complexity profile</h3>{assessmentCriteriaList.map((criterion) => { const score=assessment.scores[criterion.key] || 0; return <div className={styles.assessmentScore} key={criterion.key}><ComplexityMetricIcon criterion={criterion.key} /><div><span>{criterion.label}{primaryDrivers.includes(criterion.key) && <em className={styles.primaryDriver}>Primary driver</em>}</span><strong>{score ? `${score} / 5` : "—"}</strong></div><div className={styles.scoreTrack}><i style={{ width: `${Math.min(100, score / 5 * 100)}%` }} /></div></div>; })}</div><div className={styles.assessmentAside}>{assessment.overall && <div className={styles.assessmentSummary}><span>OVERALL COMPLEXITY</span><strong>{assessment.overall}</strong><p>{assessment.overallDescription}</p></div>}<div className={styles.assessmentLists}><div><h3 id="likely-engagement" className="heading-03">Likely engagement</h3><div className={styles.activityCards}>{likelyDisplayed.map((item) => { const completed = assessment.conducted.includes(item); return <article className={styles.activityCard} key={item}><div className={styles.activityCardHeader}><h4>{item}</h4><span className={completed ? styles.statusComplete : styles.statusIncomplete}>{completed ? "Complete" : "Not completed"}</span></div><p>{getActivityDescription(item)}</p></article>; })}</div>{likelyHiddenCount > 0 && <p className={styles.assessmentMore}>(+ {likelyHiddenCount} applicable activities were included in this project)</p>}</div></div></div></div></section>}
         <RichContent html={bodyHtml} />
       </article>
       </div>
