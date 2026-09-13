@@ -9,7 +9,7 @@ services:
     numInstances: 1
     disk:
       name: application-data
-      mountPath: /opt/render/project/src/storage
+      mountPath: /var/data
       sizeGB: 1
     envVars:
       - key: SESSION_SECRET
@@ -21,7 +21,7 @@ services:
       - key: PUBLIC_SITE_URL
         value: https://andreistanescu.design
       - key: DATA_DIR
-        value: /opt/render/project/src/storage/data
+        value: /var/data
       - key: UPLOADS_DIR
-        value: /opt/render/project/src/storage/uploads
+        value: /var/data/uploads
 
