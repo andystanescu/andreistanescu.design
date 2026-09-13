@@ -16,4 +16,4 @@
 .description :global(.content strong) { font-weight: 700; color: var(--text-primary); }
 .description :global(.content h1), .description :global(.content h2), .description :global(.content h3) { margin-top: 12px; font-size: 18px; }
 @media (max-width: 900px) { .card { grid-template-columns: minmax(120px, 160px) minmax(0, 1fr); gap: 24px; } .description { grid-column: 2; } }
-@media (max-width: 700px) { .card { display: flex; flex-direction: column; gap: 12px; } .dates { flex-basis: auto; } .description { width: 100%; } }
+@media (max-width: 700px) { .section h2 { max-width: none; } .card { display: flex; flex-direction: column; gap: 12px; } .dates { flex-basis: auto; } .body,.description { width: 100%; } }

@@ -5,6 +5,7 @@ import { getInsights } from "@/data/insights";
 import { ArticleCard } from "@/components/ArticleCard/ArticleCard";
 import { getSection } from "@/lib/about";
 import styles from "@/components/home/LatestInsights/LatestInsights.module.css";
+import aboutStyles from "./AboutLatestInsights.module.css";
 
 export function AboutLatestInsights() {
   const insights = getInsights();
@@ -31,7 +32,7 @@ export function AboutLatestInsights() {
           </Link>
         </div>
 
-        <div className={styles.cards}>
+        <div className={`${styles.cards} ${aboutStyles.cards}`}>
           <Link
             href={`/insights/${featured.slug}`}
             className={`${styles.card} section-light`}

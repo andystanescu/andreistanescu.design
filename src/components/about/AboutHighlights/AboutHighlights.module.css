@@ -59,3 +59,18 @@
     max-width: 100%;
   }
 }
+
+@media (max-width: 640px) {
+  .intro,
+  .items,
+  .item {
+    width: 100%;
+    min-width: 0;
+    flex-basis: 100%;
+  }
+
+  .itemCopy {
+    min-width: 0;
+    flex: 1;
+  }
+}
