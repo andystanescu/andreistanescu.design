@@ -1,3 +1,4 @@
+.previewBanner{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:center;gap:var(--space-300);min-height:44px;padding:var(--space-100) var(--space-300);background:var(--accent-foundation);color:var(--action-primary-hover-text);font:14px/1.4 var(--font-family-body)}.previewBanner a{color:inherit;font-weight:600;text-decoration:underline;text-underline-offset:3px}
 .main {
   display: flex;
   flex-direction: column;

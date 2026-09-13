@@ -36,7 +36,7 @@ export function getInsights(): Insight[] {
     .all(now) as Insight[];
 }
 
-export function getInsightBySlug(slug: string): Insight | undefined {
+export function getInsightBySlug(slug: string, includeUnpublished = false): Insight | undefined {
   let normalizedSlug = slug;
   try {
     normalizedSlug = decodeURIComponent(slug);
@@ -44,8 +44,8 @@ export function getInsightBySlug(slug: string): Insight | undefined {
     // Keep the original value; the query will safely return no match.
   }
   return db
-    .prepare("SELECT * FROM insights WHERE slug = ? AND published = 1 AND (scheduled_at = '' OR scheduled_at <= ?)")
-    .get(normalizedSlug, ukDateTimeValue()) as Insight | undefined;
+    .prepare(includeUnpublished ? "SELECT * FROM insights WHERE slug = ?" : "SELECT * FROM insights WHERE slug = ? AND published = 1 AND (scheduled_at = '' OR scheduled_at <= ?)")
+    .get(...(includeUnpublished ? [normalizedSlug] : [normalizedSlug, ukDateTimeValue()])) as Insight | undefined;
 }
 
 // "Keep reading" on an article page — a fresh random sample (excluding the

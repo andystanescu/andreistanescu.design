@@ -58,8 +58,8 @@ export function getCaseStudies(): CaseStudy[] {
     .all() as CaseStudy[];
 }
 
-export function getCaseStudyBySlug(slug: string): CaseStudy | undefined {
+export function getCaseStudyBySlug(slug: string, includeUnpublished = false): CaseStudy | undefined {
   return db
-    .prepare("SELECT * FROM case_studies WHERE slug = ? AND published = 1")
+    .prepare(`SELECT * FROM case_studies WHERE slug = ?${includeUnpublished ? "" : " AND published = 1"}`)
     .get(slug) as CaseStudy | undefined;
 }

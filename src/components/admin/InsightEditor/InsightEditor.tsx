@@ -9,6 +9,7 @@ import styles from "@/app/admin/(dashboard)/admin.module.css";
 import tagStyles from "@/components/admin/CaseStudyEditor/CaseStudyEditor.module.css";
 import editorStyles from "@/components/admin/CaseStudyEditor/CaseStudyEditor.module.css";
 import { dateInputValue, todayInputValue, ukDateTimeValue } from "@/lib/dateUtils";
+import Link from "next/link";
 
 type Props = { action: string; categories: Array<{ id: number; title: string }>; settingsAuthor: string; authorAvatarUrl?: string; insight?: Insight };
 
@@ -20,7 +21,7 @@ export function InsightEditor({ action, categories, settingsAuthor, authorAvatar
   return <form data-editor-page className={`${styles.form} ${editorStyles.editorForm}`} action={action} method="POST" encType="multipart/form-data">
     <header className={editorStyles.editorHeader}>
       <div className={editorStyles.editorHeading}><p className={editorStyles.editorEyebrow}>ADMIN · INSIGHT</p><h1>{editing ? String(value("title")) : "New article"}</h1></div>
-      <div className={editorStyles.editorActions}><a href="/admin/insights" className={styles.tertiaryButton}>Cancel</a><button type="submit" className={editorStyles.headerSubmit}>{editing ? "Save changes" : "Create article"}</button></div>
+      <div className={editorStyles.editorActions}>{editing && <Link href={`/insights/${encodeURIComponent(String(value("slug")))}?preview=1`} target="_blank" className={styles.secondaryButton} title="Preview the latest saved version">Preview</Link>}<Link href="/admin/insights" className={styles.tertiaryButton}>Cancel</Link><button type="submit" className={editorStyles.headerSubmit}>{editing ? "Save changes" : "Create article"}</button></div>
       <div className={editorStyles.tabs} role="tablist" aria-label="Insight details">
         {(["details", "body", "metadata"] as const).map((value) => <button key={value} type="button" role="tab" aria-selected={tab === value} aria-controls={`insight-panel-${value}`} className={tab === value ? editorStyles.tabActive : editorStyles.tab} onClick={() => setTab(value)}>{value === "metadata" ? "Metadata and SEO" : value === "body" ? "Body" : "Details"}</button>)}
       </div>

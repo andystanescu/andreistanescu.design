@@ -16,6 +16,8 @@ import { contentMetadata, absoluteUrl } from "@/lib/seo";
 import { displayDate } from "@/lib/dateUtils";
 import { AuthorAvatar } from "@/components/AuthorAvatar/AuthorAvatar";
 import { ContentViewTracker } from "@/components/ContentViewTracker/ContentViewTracker";
+import { cookies } from "next/headers";
+import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -28,11 +30,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function InsightDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ preview?: string }>;
 }) {
   const { slug } = await params;
-  const insight = getInsightBySlug(slug);
+  const query = searchParams ? await searchParams : {};
+  const cookieStore = await cookies();
+  const preview = query.preview === "1" && verifySessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+  const insight = getInsightBySlug(slug, preview);
 
   if (!insight) {
     notFound();
@@ -44,13 +51,14 @@ export default async function InsightDetailPage({
 
   return (
     <>
-      <ContentViewTracker contentType="article" contentId={insight.slug} />
+      {!preview && <ContentViewTracker contentType="article" contentId={insight.slug} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         "@context": "https://schema.org", "@type": "Article", headline: insight.title,
         description: insight.excerpt, datePublished: insight.published_at, author: { "@type": "Person", name: insight.author },
         mainEntityOfPage: absoluteUrl(`/insights/${encodeURIComponent(insight.slug)}`), image: insight.cover_image ? absoluteUrl(insight.cover_image) : undefined,
       }) }} />
       <Nav />
+      {preview && <aside className={styles.previewBanner}><strong>Preview mode</strong><span>This is the latest saved version and may not be published.</span><Link href={`/admin/insights/${insight.id}`}>Return to editor</Link></aside>}
       <main className={styles.main}>
         <section className={styles.hero}>
           <div className={styles.heroCopy}>

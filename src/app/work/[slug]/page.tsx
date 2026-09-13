@@ -20,6 +20,7 @@ import { displayDate } from "@/lib/dateUtils";
 import { AuthorAvatar } from "@/components/AuthorAvatar/AuthorAvatar";
 import { ShareArticle } from "@/components/ShareArticle/ShareArticle";
 import headerStyles from "@/app/insights/[slug]/insight.module.css";
+import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -37,9 +38,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return contentMetadata({ title: study.meta_title || `${study.title} | Andrei Stanescu`, description: study.meta_description || study.description, path: `/work/${encodeURIComponent(study.slug)}`, image: study.og_image || study.thumbnail_image || study.cover_image, keywords: study.meta_keywords, canonicalUrl: study.canonical_url || undefined, noIndex: Boolean(study.password_required) || Boolean(study.no_index) });
 }
 
-export default async function CaseStudyDetailPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams?: Promise<{ accessError?: string }> }) {
+export default async function CaseStudyDetailPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams?: Promise<{ accessError?: string; preview?: string }> }) {
   const { slug } = await params;
-  const study = getCaseStudyBySlug(slug);
+  const query = searchParams ? await searchParams : {};
+  const cookieStore = await cookies();
+  const preview = query.preview === "1" && verifySessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+  const study = getCaseStudyBySlug(slug, preview);
   if (!study) notFound();
   const authorName = getSettings().author_name;
   const rawPublishedAt = "published_at" in study && typeof study.published_at === "string" ? study.published_at : "";
@@ -47,10 +51,8 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
   const publicationDetails = [publishedAt, study.year].filter(Boolean).join(" · ");
   let passwordHashes: string[] = [];
   try { const parsed = JSON.parse(study.password_hashes || "[]"); passwordHashes = Array.isArray(parsed) ? parsed.map((value) => typeof value === "string" ? value : value && typeof value === "object" && typeof value.hash === "string" ? value.hash : null).filter((value): value is string => Boolean(value)) : []; } catch { passwordHashes = []; }
-  const cookieStore = await cookies();
   const accessToken = cookieStore.get(caseStudyAccessCookieName(study.slug))?.value;
-  const accessGranted = !study.password_required || verifyCaseStudyAccessToken(accessToken, study.slug, passwordHashes);
-  const query = searchParams ? await searchParams : {};
+  const accessGranted = preview || !study.password_required || verifyCaseStudyAccessToken(accessToken, study.slug, passwordHashes);
   const { html: bodyHtml, toc } = addHeadingIds(study.body);
   const studies = getCaseStudies();
   const index = studies.findIndex((item) => item.slug === study.slug);
@@ -86,6 +88,7 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
       url: absoluteUrl(`/work/${encodeURIComponent(study.slug)}`), image: study.cover_image ? absoluteUrl(study.cover_image) : undefined,
     }) }} />
     <Nav />
+    {preview && <aside className={styles.previewBanner}><strong>Preview mode</strong><span>This is the latest saved version and may not be published.</span><Link href={`/admin/case-studies/${study.id}`}>Return to editor</Link></aside>}
     <CaseStudyLockedContent slug={study.slug} locked={!accessGranted} error={query.accessError ? "That password was not recognised." : undefined}>
     <main className={styles.main}>
       <section className={headerStyles.hero}>
