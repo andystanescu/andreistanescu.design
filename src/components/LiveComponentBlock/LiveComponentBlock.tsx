@@ -155,10 +155,7 @@ function LiveComponentSurface({ code, chrome }: { code: string; chrome: "framed"
   const [view, setView] = React.useState<"preview" | "code">("preview");
   const [copied, setCopied] = React.useState(false);
   const canRender = Boolean(element) && !error;
-
-  React.useEffect(() => {
-    if (error) setView("code");
-  }, [error]);
+  const activeView = error ? "code" : view;
 
   const handleCopy = async () => {
     try {
@@ -177,8 +174,8 @@ function LiveComponentSurface({ code, chrome }: { code: string; chrome: "framed"
         <div className={styles.headerActions}>
           {canRender && (
             <div className={styles.switcher} role="tablist" aria-label="Live component view">
-              <button type="button" role="tab" aria-selected={view === "preview"} className={view === "preview" ? styles.switcherActive : ""} onClick={() => setView("preview")}>Preview</button>
-              <button type="button" role="tab" aria-selected={view === "code"} className={view === "code" ? styles.switcherActive : ""} onClick={() => setView("code")}>Code</button>
+              <button type="button" role="tab" aria-selected={activeView === "preview"} className={activeView === "preview" ? styles.switcherActive : ""} onClick={() => setView("preview")}>Preview</button>
+              <button type="button" role="tab" aria-selected={activeView === "code"} className={activeView === "code" ? styles.switcherActive : ""} onClick={() => setView("code")}>Code</button>
             </div>
           )}
           <button type="button" className={styles.copyButton} onClick={handleCopy} aria-label={copied ? "Copied" : "Copy code"} title={copied ? "Copied" : "Copy code"}>
@@ -186,7 +183,7 @@ function LiveComponentSurface({ code, chrome }: { code: string; chrome: "framed"
           </button>
         </div>
       </div>}
-      {view === "preview" && canRender ? (
+      {activeView === "preview" && canRender ? (
         <div className={chrome === "minimal" ? styles.previewMinimal : styles.preview}><LivePreview /></div>
       ) : (
         <pre className={styles.code}><code>{code}</code></pre>

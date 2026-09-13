@@ -496,7 +496,11 @@ export function RichTextEditor({
 }
 render(<BeforeAfterComparison />);`;
 
-    editor.chain().focus().setCodeBlock().updateAttributes("codeBlock", { interactive: true }).insertContent(comparisonCode).run();
+    editor.chain().focus().insertContent({
+      type: "codeBlock",
+      attrs: { language: "tsx", interactive: true, chrome: "framed" },
+      content: [{ type: "text", text: comparisonCode }],
+    }).run();
     setComparisonOpen(false);
     setComparisonBefore(null);
     setComparisonAfter(null);
