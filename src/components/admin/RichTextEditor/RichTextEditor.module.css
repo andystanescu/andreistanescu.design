@@ -587,6 +587,7 @@
   max-width: 100%;
   line-height: 0;
 }
+.relatedInsightBlock{display:flex;align-items:center;min-height:72px;margin-block:var(--space-200);padding:var(--space-300);border:1px solid var(--accent-foundation);border-radius:var(--radius-md);background:color-mix(in srgb,var(--text-accent) 8%,var(--bg-surface));color:var(--text-primary);font:600 14px/1.4 var(--font-family-body)}.relatedInsightSelect{width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--border-field);border-radius:var(--radius-md);background:var(--bg-field);color:var(--text-primary);font:14px/1.4 var(--font-family-body)}
 
 .content:global(.ProseMirror) :global([data-resizable-image]) img {
   display: block;

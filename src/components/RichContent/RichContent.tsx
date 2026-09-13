@@ -1,6 +1,7 @@
 import { highlightCodeBlocks } from "@/lib/highlightCode";
 import { splitInteractiveBlocks } from "@/lib/interactiveBlocks";
 import { LiveComponentBlock } from "@/components/LiveComponentBlock/LiveComponentBlock";
+import { RelatedInsightCard } from "@/components/RelatedInsightCard/RelatedInsightCard";
 import styles from "./RichContent.module.css";
 
 type RichContentProps = {
@@ -14,7 +15,7 @@ export function RichContent({ html }: RichContentProps) {
   if (!html.trim()) return null;
 
   const segments = splitInteractiveBlocks(html);
-  const hasLiveBlocks = segments.some((segment) => segment.type === "live");
+  const hasLiveBlocks = segments.some((segment) => segment.type !== "html");
 
   // The common case (no "⚡ Live" blocks) stays exactly as before — a
   // single dangerouslySetInnerHTML, no extra wrapper markup.
@@ -32,6 +33,8 @@ export function RichContent({ html }: RichContentProps) {
       {segments.map((segment, index) =>
         segment.type === "live" ? (
           <LiveComponentBlock key={index} code={segment.code} chrome={segment.chrome} />
+        ) : segment.type === "relatedInsight" ? (
+          <RelatedInsightCard key={index} slug={segment.slug} />
         ) : segment.content.trim() ? (
           <div
             key={index}

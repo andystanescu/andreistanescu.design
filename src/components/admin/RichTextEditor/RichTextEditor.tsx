@@ -10,6 +10,7 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { AllSelection, TextSelection } from "@tiptap/pm/state";
+import { Node as TiptapNode } from "@tiptap/core";
 import { createLowlight, common } from "lowlight";
 import { AccentMark } from "./AccentMark";
 import { LiveComponentBlock } from "@/components/LiveComponentBlock/LiveComponentBlock";
@@ -63,6 +64,29 @@ const StyledParagraph = Paragraph.extend({
         renderHTML: (attributes: { className?: string }) =>
           attributes.className ? { class: attributes.className } : {},
       },
+    };
+  },
+});
+
+const RelatedInsightBlock = TiptapNode.create({
+  name: "relatedInsight",
+  group: "block",
+  atom: true,
+  addAttributes() {
+    return {
+      slug: { default: "", parseHTML: (element: HTMLElement) => element.getAttribute("data-related-insight") || "", renderHTML: (attributes: { slug?: string }) => ({ "data-related-insight": attributes.slug || "" }) },
+      title: { default: "", parseHTML: (element: HTMLElement) => element.getAttribute("data-title") || "", renderHTML: (attributes: { title?: string }) => attributes.title ? { "data-title": attributes.title } : {} },
+    };
+  },
+  parseHTML() { return [{ tag: "aside[data-related-insight]" }]; },
+  renderHTML({ HTMLAttributes }) { return ["aside", HTMLAttributes]; },
+  addNodeView() {
+    return ({ node }) => {
+      const element = document.createElement("aside");
+      element.className = styles.relatedInsightBlock;
+      element.contentEditable = "false";
+      element.textContent = `Related insight · ${node.attrs.title || node.attrs.slug}`;
+      return { dom: element };
     };
   },
 });
@@ -217,6 +241,7 @@ type RichTextEditorProps = {
   defaultValue?: string;
   placeholder?: string;
   onContentChange?: () => void;
+  relatedInsights?: Array<{ slug: string; title: string }>;
 };
 
 type BlockType = "paragraph" | "eyebrow" | "h1" | "h2" | "h3" | "quote" | "code";
@@ -282,6 +307,7 @@ export function RichTextEditor({
   defaultValue = "",
   placeholder = "Write the full story…",
   onContentChange,
+  relatedInsights = [],
 }: RichTextEditorProps) {
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -296,6 +322,8 @@ export function RichTextEditor({
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [comparisonBefore, setComparisonBefore] = useState<{ file: File; preview: string } | null>(null);
   const [comparisonAfter, setComparisonAfter] = useState<{ file: File; preview: string } | null>(null);
+  const [relatedInsightOpen, setRelatedInsightOpen] = useState(false);
+  const [relatedInsightSlug, setRelatedInsightSlug] = useState("");
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -307,6 +335,7 @@ export function RichTextEditor({
         paragraph: false,
       }),
       StyledParagraph,
+      RelatedInsightBlock,
       Link.configure({ openOnClick: false }),
       AttributedBlockquote,
       InteractiveCodeBlock.configure({ lowlight }),
@@ -506,6 +535,14 @@ render(<BeforeAfterComparison />);`;
     setComparisonAfter(null);
   };
 
+  const handleRelatedInsightInsert = () => {
+    const insight = relatedInsights.find((item) => item.slug === relatedInsightSlug);
+    if (!insight) return;
+    editor.chain().focus().insertContent({ type: "relatedInsight", attrs: { slug: insight.slug, title: insight.title } }).run();
+    setRelatedInsightOpen(false);
+    setRelatedInsightSlug("");
+  };
+
   const handleLink = () => {
     const href = window.prompt("Enter a URL", editor.getAttributes("link").href || "https://");
     if (href) editor.chain().focus().setLink({ href }).run();
@@ -672,6 +709,7 @@ render(<BeforeAfterComparison />);`;
         >
           Compare
         </button>
+        {relatedInsights.length > 0 && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={() => { setRelatedInsightSlug(relatedInsights[0]?.slug || ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }} aria-label="Insert related insight" title="Insert related insight">Related insight</button>}
         <button
           type="button"
           className={`${styles.toolbarButton} ${styles.overflowable}`}
@@ -695,6 +733,7 @@ render(<BeforeAfterComparison />);`;
         )}
         {toolbarOverflowed && insertMenuOpen && <div className={styles.insertMenu} role="menu">
           <button type="button" role="menuitem" onClick={() => { setInsertMenuOpen(false); setComparisonOpen(true); }}>Comparison</button>
+          {relatedInsights.length > 0 && <button type="button" role="menuitem" onClick={() => { setRelatedInsightSlug(relatedInsights[0]?.slug || ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }}>Related insight</button>}
           <button type="button" role="menuitem" onClick={() => { setInsertMenuOpen(false); editor.chain().focus().setHorizontalRule().run(); }}>Separator</button>
         </div>}
       </div>
@@ -738,6 +777,14 @@ render(<BeforeAfterComparison />);`;
             <button type="button" className={styles.comparisonCancel} onClick={() => setComparisonOpen(false)}>Cancel</button>
             <button type="button" className={styles.comparisonInsert} disabled={!comparisonBefore || !comparisonAfter} onClick={() => void handleComparisonInsert()}>Insert comparison</button>
           </div>
+        </div>
+      )}
+      {relatedInsightOpen && (
+        <div className={styles.comparisonWidget} role="dialog" aria-label="Insert a related insight">
+          <div className={styles.comparisonWidgetHeader}><div><p className={styles.comparisonWidgetEyebrow}>RELATED INSIGHT</p><p className={styles.comparisonWidgetTitle}>Link an article to this section</p></div><button type="button" className={styles.comparisonClose} onClick={() => setRelatedInsightOpen(false)} aria-label="Close related insight picker">×</button></div>
+          <p className={styles.comparisonWidgetHint}>The card will stay synchronized with the selected article&apos;s title, excerpt, thumbnail, and publication date.</p>
+          <select className={styles.relatedInsightSelect} value={relatedInsightSlug} onChange={(event) => setRelatedInsightSlug(event.target.value)} aria-label="Article"><option value="">Select an article</option>{relatedInsights.map((insight) => <option key={insight.slug} value={insight.slug}>{insight.title}</option>)}</select>
+          <div className={styles.comparisonWidgetActions}><button type="button" className={styles.comparisonCancel} onClick={() => setRelatedInsightOpen(false)}>Cancel</button><button type="button" className={styles.comparisonInsert} disabled={!relatedInsightSlug} onClick={handleRelatedInsightInsert}>Insert related insight</button></div>
         </div>
       )}
       <div
