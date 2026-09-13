@@ -82,11 +82,12 @@ function prepareHtmlPreview(source: string): string {
 // syntax rather than requiring a single trailing JSX expression.
 export function LiveComponentBlock({ code, chrome = "framed" }: LiveComponentBlockProps) {
   const mode = detectPreviewMode(code);
+  const displayChrome = /\bBeforeAfterComparison\b/.test(code) ? "minimal" : chrome;
   if (mode === "html") {
-    return <HtmlComponentSurface code={code} chrome={chrome} />;
+    return <HtmlComponentSurface code={code} chrome={displayChrome} />;
   }
   if (mode === "none") {
-    return <StaticCodeSurface code={code} chrome={chrome} />;
+    return <StaticCodeSurface code={code} chrome={displayChrome} />;
   }
 
   const preparedCode = prepareLiveCode(code);
@@ -98,7 +99,7 @@ export function LiveComponentBlock({ code, chrome = "framed" }: LiveComponentBlo
       language="tsx"
       enableTypeScript
     >
-      <LiveComponentSurface code={preparedCode} chrome={chrome} />
+      <LiveComponentSurface code={preparedCode} chrome={displayChrome} />
     </LiveProvider>
   );
 }

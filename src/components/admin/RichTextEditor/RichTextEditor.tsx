@@ -498,7 +498,7 @@ render(<BeforeAfterComparison />);`;
 
     editor.chain().focus().insertContent({
       type: "codeBlock",
-      attrs: { language: "tsx", interactive: true, chrome: "framed" },
+      attrs: { language: "tsx", interactive: true, chrome: "minimal" },
       content: [{ type: "text", text: comparisonCode }],
     }).run();
     setComparisonOpen(false);
