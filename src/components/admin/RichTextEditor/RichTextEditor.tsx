@@ -66,11 +66,20 @@ const AttributedBlockquote = Blockquote.extend({
       input.contentEditable = "false";
       input.value = node.attrs.attribution || "";
       const syncVisibility = () => {
-        const position = typeof getPos === "function" ? getPos() : undefined;
+        let position: number | undefined;
+        try {
+          position = typeof getPos === "function" ? getPos() : undefined;
+        } catch {
+          return;
+        }
         if (typeof position !== "number") return;
         const { from, to } = editor.state.selection;
         const selectionIsInsideQuote = from > position && to < position + currentNode.nodeSize;
-        input.hidden = !selectionIsInsideQuote && document.activeElement !== input;
+        const shouldHide = !selectionIsInsideQuote && document.activeElement !== input;
+        // Avoid repeatedly writing the same DOM attribute. ProseMirror observes
+        // node-view mutations, so redundant writes can create a render loop
+        // while an existing case study is being opened.
+        if (input.hidden !== shouldHide) input.hidden = shouldHide;
       };
       input.addEventListener("input", () => {
         const position = typeof getPos === "function" ? getPos() : undefined;
@@ -85,6 +94,8 @@ const AttributedBlockquote = Blockquote.extend({
       return {
         dom,
         contentDOM,
+        stopEvent: (event) => event.target === input,
+        ignoreMutation: (mutation) => mutation.target === input,
         update: (updatedNode) => {
           if (updatedNode.type !== currentNode.type) return false;
           currentNode = updatedNode;
