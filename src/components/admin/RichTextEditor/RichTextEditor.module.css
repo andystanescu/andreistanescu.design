@@ -596,7 +596,7 @@
 }
 
 .imageCaptionInput::placeholder { color: var(--text-placeholder); }
-.content:global(.ProseMirror) blockquote:not(:focus-within) .quoteAttributionInput{display:none}.content:global(.ProseMirror) blockquote:focus-within .quoteAttributionInput{display:block}
+.quoteAttributionInput[hidden]{display:none}
 
 .content:global(.ProseMirror) :global([data-resizable-image] img) {
   display: block;

@@ -65,13 +65,23 @@ const AttributedBlockquote = Blockquote.extend({
       input.setAttribute("aria-label", "Quote attribution");
       input.contentEditable = "false";
       input.value = node.attrs.attribution || "";
+      const syncVisibility = () => {
+        const position = typeof getPos === "function" ? getPos() : undefined;
+        if (typeof position !== "number") return;
+        const { from, to } = editor.state.selection;
+        const selectionIsInsideQuote = from > position && to < position + currentNode.nodeSize;
+        input.hidden = !selectionIsInsideQuote && document.activeElement !== input;
+      };
       input.addEventListener("input", () => {
         const position = typeof getPos === "function" ? getPos() : undefined;
         if (typeof position !== "number") return;
         editor.view.dispatch(editor.state.tr.setNodeMarkup(position, undefined, { ...currentNode.attrs, attribution: input.value }));
       });
       input.addEventListener("mousedown", (event) => event.stopPropagation());
+      input.addEventListener("blur", syncVisibility);
+      editor.on("selectionUpdate", syncVisibility);
       dom.append(contentDOM, input);
+      queueMicrotask(syncVisibility);
       return {
         dom,
         contentDOM,
@@ -79,7 +89,12 @@ const AttributedBlockquote = Blockquote.extend({
           if (updatedNode.type !== currentNode.type) return false;
           currentNode = updatedNode;
           if (document.activeElement !== input) input.value = updatedNode.attrs.attribution || "";
+          syncVisibility();
           return true;
+        },
+        destroy: () => {
+          editor.off("selectionUpdate", syncVisibility);
+          input.removeEventListener("blur", syncVisibility);
         },
       };
     };

@@ -104,5 +104,5 @@ export function getActivityDescription(name: string) {
     : activity.includes("operating-model") || activity.includes("pattern") ? "define reusable structures and ways of working that connect day-to-day delivery with longer-term organisational intent"
     : activity.includes("continuous") ? "establish a repeatable cadence for learning, reassessing priorities, and adapting the work as new evidence appears"
     : "produce a concrete, reviewable outcome that reduces uncertainty and gives the engagement a clear next decision";
-  return `The purpose of ${name} is to ${purpose}.`;
+  return `${purpose.charAt(0).toUpperCase()}${purpose.slice(1)}.`;
 }
