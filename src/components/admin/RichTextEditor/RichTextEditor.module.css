@@ -320,7 +320,6 @@
   color: var(--text-primary);
 }
 
-.attributionRow{display:flex;align-items:stretch;flex-direction:column;gap:0;width:100%;padding:var(--space-100) var(--space-150);border-right:1px solid var(--border-field);border-left:1px solid var(--border-field);background:var(--bg-surface);color:var(--text-secondary);font:600 12px/1.3 var(--font-family-body)}
 
 .content {
   min-height: 220px;
@@ -597,6 +596,7 @@
 }
 
 .imageCaptionInput::placeholder { color: var(--text-placeholder); }
+.content:global(.ProseMirror) blockquote:not(:focus-within) .quoteAttributionInput{display:none}.content:global(.ProseMirror) blockquote:focus-within .quoteAttributionInput{display:block}
 
 .content:global(.ProseMirror) :global([data-resizable-image] img) {
   display: block;

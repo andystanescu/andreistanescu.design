@@ -53,6 +53,37 @@ const AttributedBlockquote = Blockquote.extend({
       },
     };
   },
+  addNodeView() {
+    return ({ node, editor, getPos }) => {
+      let currentNode = node;
+      const dom = document.createElement("blockquote");
+      const contentDOM = document.createElement("div");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = `${styles.imageCaptionInput} ${styles.quoteAttributionInput}`;
+      input.placeholder = "Quote attribution";
+      input.setAttribute("aria-label", "Quote attribution");
+      input.contentEditable = "false";
+      input.value = node.attrs.attribution || "";
+      input.addEventListener("input", () => {
+        const position = typeof getPos === "function" ? getPos() : undefined;
+        if (typeof position !== "number") return;
+        editor.view.dispatch(editor.state.tr.setNodeMarkup(position, undefined, { ...currentNode.attrs, attribution: input.value }));
+      });
+      input.addEventListener("mousedown", (event) => event.stopPropagation());
+      dom.append(contentDOM, input);
+      return {
+        dom,
+        contentDOM,
+        update: (updatedNode) => {
+          if (updatedNode.type !== currentNode.type) return false;
+          currentNode = updatedNode;
+          if (document.activeElement !== input) input.value = updatedNode.attrs.attribution || "";
+          return true;
+        },
+      };
+    };
+  },
 });
 
 const StyledParagraph = Paragraph.extend({
@@ -275,7 +306,6 @@ function readToolbarState(editor: Editor | null) {
     bold: editor?.isActive("bold") ?? false,
     italic: editor?.isActive("italic") ?? false,
     bulletList: editor?.isActive("bulletList") ?? false,
-    attribution: (editor?.getAttributes("blockquote").attribution as string) ?? "",
     liveCode: selectedNode?.type.name === "codeBlock" ? selectedNode.textContent : "",
     hasLiveCode,
     orderedList: editor?.isActive("orderedList") ?? false,
@@ -313,6 +343,8 @@ export function RichTextEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const comparisonBeforeInputRef = useRef<HTMLInputElement>(null);
   const comparisonAfterInputRef = useRef<HTMLInputElement>(null);
+  const comparisonInsertPosRef = useRef<number | null>(null);
+  const relatedInsightInsertPosRef = useRef<number | null>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const typeStyleRef = useRef<HTMLDivElement>(null);
   const [typeStyleOpen, setTypeStyleOpen] = useState(false);
@@ -525,22 +557,26 @@ export function RichTextEditor({
 }
 render(<BeforeAfterComparison />);`;
 
-    editor.chain().focus().insertContent({
+    const position = comparisonInsertPosRef.current ?? editor.state.selection.from;
+    editor.chain().insertContentAt(position, {
       type: "codeBlock",
       attrs: { language: "tsx", interactive: true, chrome: "minimal" },
       content: [{ type: "text", text: comparisonCode }],
-    }).run();
+    }).focus().run();
     setComparisonOpen(false);
     setComparisonBefore(null);
     setComparisonAfter(null);
+    comparisonInsertPosRef.current = null;
   };
 
   const handleRelatedInsightInsert = () => {
     const insight = relatedInsights.find((item) => item.slug === relatedInsightSlug);
     if (!insight) return;
-    editor.chain().focus().insertContent({ type: "relatedInsight", attrs: { slug: insight.slug, title: insight.title } }).run();
+    const position = relatedInsightInsertPosRef.current ?? editor.state.selection.from;
+    editor.chain().insertContentAt(position, { type: "relatedInsight", attrs: { slug: insight.slug, title: insight.title } }).focus().run();
     setRelatedInsightOpen(false);
     setRelatedInsightSlug("");
+    relatedInsightInsertPosRef.current = null;
   };
 
   const handleLink = () => {
@@ -694,13 +730,13 @@ render(<BeforeAfterComparison />);`;
         <button
           type="button"
           className={`${styles.toolbarButton} ${styles.overflowable}`}
-          onClick={() => { setComparisonOpen(true); setInsertMenuOpen(false); }}
+          onClick={() => { comparisonInsertPosRef.current = editor.state.selection.from; setComparisonOpen(true); setInsertMenuOpen(false); }}
           aria-label="Insert before and after comparison"
           title="Insert comparison"
         >
           Compare
         </button>
-        {relatedInsights.length > 0 && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={() => { setRelatedInsightSlug(relatedInsights[0]?.slug || ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }} aria-label="Insert related insight" title="Insert related insight">Related insight</button>}
+        {relatedInsights.length > 0 && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={() => { relatedInsightInsertPosRef.current = editor.state.selection.from; setRelatedInsightSlug(relatedInsights[0]?.slug || ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }} aria-label="Insert related insight" title="Insert related insight">Related insight</button>}
         <button
           type="button"
           className={`${styles.toolbarButton} ${styles.overflowable}`}
@@ -723,12 +759,11 @@ render(<BeforeAfterComparison />);`;
           </button>
         )}
         {toolbarOverflowed && insertMenuOpen && <div className={styles.insertMenu} role="menu">
-          <button type="button" role="menuitem" onClick={() => { setInsertMenuOpen(false); setComparisonOpen(true); }}>Comparison</button>
-          {relatedInsights.length > 0 && <button type="button" role="menuitem" onClick={() => { setRelatedInsightSlug(relatedInsights[0]?.slug || ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }}>Related insight</button>}
+          <button type="button" role="menuitem" onClick={() => { comparisonInsertPosRef.current = editor.state.selection.from; setInsertMenuOpen(false); setComparisonOpen(true); }}>Comparison</button>
+          {relatedInsights.length > 0 && <button type="button" role="menuitem" onClick={() => { relatedInsightInsertPosRef.current = editor.state.selection.from; setRelatedInsightSlug(relatedInsights[0]?.slug || ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }}>Related insight</button>}
           <button type="button" role="menuitem" onClick={() => { setInsertMenuOpen(false); editor.chain().focus().setHorizontalRule().run(); }}>Separator</button>
         </div>}
       </div>
-      {state.blockType === "quote" && <label className={styles.attributionRow}><span>Quote attribution</span><input className={styles.imageCaptionInput} value={state.attribution} onChange={(event) => editor.commands.updateAttributes("blockquote", { attribution: event.target.value })} placeholder="Name, role or source" aria-label="Quote attribution" /></label>}
       {comparisonOpen && (
         <div className={styles.comparisonWidget} role="dialog" aria-label="Create before and after comparison">
           <div className={styles.comparisonWidgetHeader}>
