@@ -1,10 +1,18 @@
 import { DatabaseSync } from "node:sqlite";
 import { existsSync, mkdirSync } from "fs";
+import { tmpdir } from "os";
 import { join } from "path";
 
 // Use Node built-in SQLite with a configurable storage directory.
 // No provider-specific runtime or native compilation is required.
-const dataDir = process.env.DATA_DIR?.trim() || join(process.cwd(), "data");
+// Render's persistent disk is available to the running service, but not to
+// `next build`, which imports route modules while collecting page data.
+// Use disposable build storage during that phase and the configured disk at
+// runtime so build-time initialization never touches an unavailable mount.
+const isProductionBuild = process.env.NEXT_PHASE === "phase-production-build";
+const dataDir = isProductionBuild
+  ? join(tmpdir(), "conscept-build-data")
+  : process.env.DATA_DIR?.trim() || join(process.cwd(), "data");
 if (!existsSync(/*turbopackIgnore: true*/ dataDir)) mkdirSync(/*turbopackIgnore: true*/ dataDir, { recursive: true });
 const dbPath = join(dataDir, "conscept.db");
 
