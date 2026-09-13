@@ -9,9 +9,10 @@
  .assessmentGrid{margin-top:var(--space-400)}
  .activityReveal{display:flex;align-items:center;justify-content:space-between;gap:var(--space-300);margin-top:var(--space-300)}
  .activityReveal>span{color:var(--text-tertiary);font:12px/1.4 var(--font-family-body)}
- .activityRevealButton{display:inline-flex;min-height:40px;align-items:center;justify-content:center;padding:var(--space-150) var(--space-300);border:1px solid var(--action-tertiary-border);border-radius:var(--radius-md);background:var(--action-tertiary-bg);color:var(--action-tertiary-text);font:500 14px/1 var(--font-family-body);white-space:nowrap;cursor:pointer;transition:background-color .15s ease,transform .1s ease}
- .activityRevealButton:hover,.activityRevealButton:focus-visible{background:var(--action-tertiary-hover)}
- .activityRevealButton:active{background:var(--action-tertiary-pressed);transform:scale(.97)}
+ .activityRevealButton{display:inline-flex;min-height:44px;align-items:center;justify-content:center;gap:var(--space-100);padding:0;border:0;background:transparent;color:var(--action-link-text);font:600 14px/1 var(--font-family-body);white-space:nowrap;cursor:pointer;transition:color .15s ease,transform .1s ease}
+ .activityRevealButton:hover,.activityRevealButton:focus-visible{color:var(--text-accent);text-decoration:underline;text-underline-offset:3px}
+ .activityRevealButton:active{transform:scale(.97)}
+ .activityRevealIcon{display:inline-grid;width:20px;height:20px;place-items:center;font:500 20px/1 var(--font-family-body);text-decoration:none}
  .activityCards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-200)}
  .activityCard{padding:var(--space-300);border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface)}
  .activityCardHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-300)}

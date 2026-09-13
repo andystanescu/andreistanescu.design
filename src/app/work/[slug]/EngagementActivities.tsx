@@ -49,7 +49,10 @@ export function EngagementActivities({
             aria-controls="additional-engagement-activities"
             onClick={() => setExpanded((current) => !current)}
           >
-            {expanded ? "Show fewer activities" : "View all activities"}
+            <span>{expanded ? "Show fewer activities" : "View all activities"}</span>
+            <span className={styles.activityRevealIcon} aria-hidden="true">
+              {expanded ? "−" : "+"}
+            </span>
           </button>
         </div>
       )}
