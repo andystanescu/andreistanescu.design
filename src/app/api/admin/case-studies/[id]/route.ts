@@ -50,6 +50,7 @@ export async function POST(
     primaryDrivers: getPrimaryComplexityDrivers(assessmentScores),
     likelyEngagement: form.getAll("assessment_likely").map(String).filter(Boolean),
     conducted: form.getAll("assessment_conducted").map(String).filter(Boolean),
+    notApplicable: form.getAll("assessment_not_applicable").map(String).filter(Boolean),
   });
 
   if (!slug || !title || !description) {

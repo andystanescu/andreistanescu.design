@@ -71,8 +71,38 @@ export function generateActivityRecommendations(scores: AssessmentScores): Recom
   return [...activityMap.values()];
 }
 
-export type CaseStudyAssessment = { scores: AssessmentScores; likelyEngagement: string[]; conducted: string[]; overall: string; overallDescription: string; primaryDrivers: CriterionKey[] };
+export type CaseStudyAssessment = { scores: AssessmentScores; likelyEngagement: string[]; conducted: string[]; notApplicable: string[]; overall: string; overallDescription: string; primaryDrivers: CriterionKey[] };
 export function parseCaseStudyAssessment(value: string | undefined): CaseStudyAssessment {
-  try { const parsed = JSON.parse(value || "{}"); return { scores: parsed?.scores && typeof parsed.scores === "object" ? parsed.scores : {}, likelyEngagement: Array.isArray(parsed?.likelyEngagement) ? parsed.likelyEngagement : [], conducted: Array.isArray(parsed?.conducted) ? parsed.conducted : [], overall: typeof parsed?.overall === "string" ? parsed.overall : "", overallDescription: typeof parsed?.overallDescription === "string" ? parsed.overallDescription : "", primaryDrivers: Array.isArray(parsed?.primaryDrivers) ? parsed.primaryDrivers : [] }; }
-  catch { return { scores: {}, likelyEngagement: [], conducted: [], overall: "", overallDescription: "", primaryDrivers: [] }; }
+  try { const parsed = JSON.parse(value || "{}"); return { scores: parsed?.scores && typeof parsed.scores === "object" ? parsed.scores : {}, likelyEngagement: Array.isArray(parsed?.likelyEngagement) ? parsed.likelyEngagement : [], conducted: Array.isArray(parsed?.conducted) ? parsed.conducted : [], notApplicable: Array.isArray(parsed?.notApplicable) ? parsed.notApplicable : [], overall: typeof parsed?.overall === "string" ? parsed.overall : "", overallDescription: typeof parsed?.overallDescription === "string" ? parsed.overallDescription : "", primaryDrivers: Array.isArray(parsed?.primaryDrivers) ? parsed.primaryDrivers : [] }; }
+  catch { return { scores: {}, likelyEngagement: [], conducted: [], notApplicable: [], overall: "", overallDescription: "", primaryDrivers: [] }; }
+}
+
+export function getActivityDescription(name: string) {
+  const activity = name.toLowerCase();
+  const purpose = activity.includes("interview") ? "capture first-hand needs, constraints, incentives, and decision context from the people closest to the work"
+    : activity.includes("workshop") || activity.includes("session") ? "bring the right participants together to build shared understanding, resolve differences, and leave with explicit decisions"
+    : activity.includes("mapping") || activity.includes("map") ? "make relationships, dependencies, ownership gaps, and points of friction visible enough to act on"
+    : activity.includes("audit") || activity.includes("assessment") || activity.includes("review") ? "examine the current evidence and implementation systematically, then document risks, duplication, strengths, and priority improvements"
+    : activity.includes("validation") || activity.includes("testing") || activity.includes("checkpoint") ? "test the proposed direction against user, stakeholder, accessibility, technical, and delivery needs before further investment"
+    : activity.includes("governance") || activity.includes("ownership") || activity.includes("accountability") || activity.includes("decision") ? "define who decides, who contributes, how exceptions are handled, and how accountability continues after delivery"
+    : activity.includes("strategy") || activity.includes("roadmap") || activity.includes("plan") ? "translate evidence into a sequenced course of action with priorities, dependencies, owners, measures, and decision points"
+    : activity.includes("pilot") || activity.includes("rollout") || activity.includes("release") ? "introduce the change in controlled stages, gather evidence from real use, and adjust the next stage before scaling"
+    : activity.includes("training") || activity.includes("coaching") || activity.includes("enablement") || activity.includes("walkthrough") ? "give each audience the knowledge, practice, and support required to apply the new approach confidently"
+    : activity.includes("implementation") || activity.includes("architecture") || activity.includes("prototype") || activity.includes("technical") ? "turn the intended direction into a feasible technical approach, exposing constraints and reusable implementation decisions early"
+    : activity.includes("risk") || activity.includes("contingency") || activity.includes("rollback") || activity.includes("incident") ? "identify credible failure modes, reduce their likelihood, and agree clear responses if they occur"
+    : activity.includes("communication") || activity.includes("sponsorship") || activity.includes("champion") ? "build understanding and active support through audience-specific messages, trusted advocates, and clear feedback routes"
+    : activity.includes("metric") || activity.includes("measurement") || activity.includes("analytics") || activity.includes("threshold") ? "define observable signals that show whether the change is working and when intervention is required"
+    : activity.includes("dependency") || activity.includes("workstream") || activity.includes("milestone") || activity.includes("delivery") || activity.includes("progress") ? "coordinate the sequence of work, dependencies, responsibilities, and review points needed for reliable delivery"
+    : activity.includes("documentation") || activity.includes("report") || activity.includes("evidence") || activity.includes("log") ? "create a durable record of evidence, reasoning, decisions, and next actions that teams can reuse"
+    : activity.includes("adoption") || activity.includes("change") || activity.includes("readiness") || activity.includes("resistance") ? "understand how the change affects people and workflows, then remove barriers and reinforce adoption over time"
+    : activity.includes("assumption") || activity.includes("problem") || activity.includes("root-cause") || activity.includes("diagnostic") ? "turn uncertainty about the underlying problem into explicit, testable statements supported by evidence"
+    : activity.includes("alignment") || activity.includes("agreement") || activity.includes("responsibilit") || activity.includes("owner") ? "make responsibilities, expectations, boundaries, and approval paths explicit across the participating teams"
+    : activity.includes("quality") || activity.includes("standard") || activity.includes("compliance") || activity.includes("legal") ? "define the standards the work must satisfy and provide evidence that critical obligations have been met"
+    : activity.includes("handover") || activity.includes("transition") ? "transfer decisions, working knowledge, ownership, and outstanding actions so the receiving team can continue confidently"
+    : activity.includes("stakeholder") || activity.includes("steering") || activity.includes("partner") || activity.includes("contribution") ? "identify the people who influence success and establish how their input, commitments, and decisions will be coordinated"
+    : activity.includes("monitoring") || activity.includes("optimisation") || activity.includes("evaluation") || activity.includes("feedback") || activity.includes("iteration") ? "create a structured feedback loop that detects outcomes and problems, then turns what is learned into targeted improvements"
+    : activity.includes("operating-model") || activity.includes("pattern") ? "define reusable structures and ways of working that connect day-to-day delivery with longer-term organisational intent"
+    : activity.includes("continuous") ? "establish a repeatable cadence for learning, reassessing priorities, and adapting the work as new evidence appears"
+    : "produce a concrete, reviewable outcome that reduces uncertainty and gives the engagement a clear next decision";
+  return `The purpose of ${name} is to ${purpose}.`;
 }
