@@ -1,6 +1,7 @@
 import { getCaseStudies } from "@/data/caseStudies";
 import { getInsights } from "@/data/insights";
 import { getSettings } from "@/lib/settings";
+import type { CSSProperties } from "react";
 import styles from "./HeroCollage.module.css";
 
 type CollageItem = {
@@ -60,7 +61,12 @@ export function HeroCollage() {
         <div
           className={`${styles.tile} ${styles[`tile${index + 1}`] ?? ""} ${item.kind === "profile" ? styles.profileTile : ""}`}
           key={`${item.kind}-${item.slug}`}
-          style={{ opacity: 0.15 + Math.random() * 0.1 }}
+          style={
+            {
+              "--light-opacity": (0.3 + Math.random() * 0.1).toFixed(3),
+              "--dark-opacity": (0.25 + Math.random() * 0.1).toFixed(3),
+            } as CSSProperties
+          }
         >
           <img src={item.image} alt="" loading={index < 4 ? "eager" : "lazy"} />
         </div>

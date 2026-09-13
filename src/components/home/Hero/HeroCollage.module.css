@@ -10,8 +10,9 @@
 .tile {
   position: absolute;
   overflow: hidden;
-  width: clamp(180px, 17vw, 300px);
+  width: clamp(260px, 27vw, 520px);
   aspect-ratio: 4 / 3;
+  opacity: var(--light-opacity);
   border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
   border-radius: var(--radius-xl);
   background: var(--bg-surface);
@@ -76,9 +77,19 @@
 }
 
 .profileTile {
-  width: clamp(110px, 10vw, 170px);
+  width: clamp(150px, 13vw, 220px);
   aspect-ratio: 1;
   border-radius: 50%;
+}
+
+:global([data-theme="dark"]) .tile {
+  opacity: var(--dark-opacity);
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme="light"])) .tile {
+    opacity: var(--dark-opacity);
+  }
 }
 
 .scrim {
@@ -92,7 +103,7 @@
 
 @media (max-width: 900px) {
   .tile {
-    width: clamp(150px, 25vw, 230px);
+    width: clamp(220px, 36vw, 360px);
   }
 
   .tile1 {

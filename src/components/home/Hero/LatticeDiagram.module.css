@@ -38,6 +38,16 @@
   transition: fill 0.2s ease;
 }
 
+.lattice svg path[fill="#F04B1F"] {
+  fill: var(--accent-foundation);
+  transition: fill 0.2s ease;
+}
+
+.lattice svg path[stroke="#F04B1F"] {
+  stroke: var(--accent-foundation);
+  transition: stroke 0.2s ease;
+}
+
 .lattice.grabbing,
 .lattice.grabbing svg path[fill] {
   cursor: grabbing;

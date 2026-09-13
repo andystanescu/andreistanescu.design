@@ -53,12 +53,7 @@ export function Hero() {
             <>
               <div className={styles.legendItem}>
                 <div className={styles.legendLabel}>
-                  <img
-                    src="/assets/legend-dot-foundations.svg"
-                    alt=""
-                    width={9}
-                    height={9}
-                  />
+                  <span className={`${styles.legendDot} ${styles.foundationDot}`} aria-hidden="true" />
                   <p className="label-eyebrow">Foundations</p>
                 </div>
                 <p
@@ -70,12 +65,7 @@ export function Hero() {
               </div>
               <div className={styles.legendItem}>
                 <div className={styles.legendLabel}>
-                  <img
-                    src="/assets/legend-dot-system.svg"
-                    alt=""
-                    width={9}
-                    height={9}
-                  />
+                  <span className={`${styles.legendDot} ${styles.systemDot}`} aria-hidden="true" />
                   <p className="label-eyebrow">System</p>
                 </div>
                 <p

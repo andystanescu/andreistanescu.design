@@ -97,6 +97,22 @@
   color: var(--text-primary);
 }
 
+.legendDot {
+  display: block;
+  flex: 0 0 9px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.foundationDot {
+  background: var(--accent-foundation);
+}
+
+.systemDot {
+  background: var(--text-primary);
+}
+
 .scrollHint {
   position: absolute;
   z-index: 2;
