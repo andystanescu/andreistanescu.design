@@ -630,15 +630,6 @@ render(<BeforeAfterComparison />);`;
           <ToolbarIcon name="italic" />
         </button>
         <button type="button" className={styles.toolbarButton} onClick={handleLink} aria-label="Add link" title="Add link"><ToolbarIcon name="link" /></button>
-        {state.blockType === "quote" && (
-          <input
-            className={styles.attributionInput}
-            value={state.attribution}
-            onChange={(event) => editor.chain().focus().updateAttributes("blockquote", { attribution: event.target.value }).run()}
-            placeholder="Attribution"
-            aria-label="Quote attribution"
-          />
-        )}
         <span className={styles.toolbarDivider} />
         <button
           type="button"
@@ -737,6 +728,7 @@ render(<BeforeAfterComparison />);`;
           <button type="button" role="menuitem" onClick={() => { setInsertMenuOpen(false); editor.chain().focus().setHorizontalRule().run(); }}>Separator</button>
         </div>}
       </div>
+      {state.blockType === "quote" && <label className={styles.attributionRow}><span>Quote attribution</span><input className={styles.imageCaptionInput} value={state.attribution} onChange={(event) => editor.commands.updateAttributes("blockquote", { attribution: event.target.value })} placeholder="Name, role or source" aria-label="Quote attribution" /></label>}
       {comparisonOpen && (
         <div className={styles.comparisonWidget} role="dialog" aria-label="Create before and after comparison">
           <div className={styles.comparisonWidgetHeader}>
