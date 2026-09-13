@@ -60,6 +60,7 @@ export function HeroCollage() {
         <div
           className={`${styles.tile} ${styles[`tile${index + 1}`] ?? ""} ${item.kind === "profile" ? styles.profileTile : ""}`}
           key={`${item.kind}-${item.slug}`}
+          style={{ opacity: 0.15 + Math.random() * 0.1 }}
         >
           <img src={item.image} alt="" loading={index < 4 ? "eager" : "lazy"} />
         </div>

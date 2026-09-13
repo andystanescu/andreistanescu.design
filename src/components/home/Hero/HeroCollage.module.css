@@ -4,7 +4,6 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  opacity: 0.15;
   isolation: isolate;
 }
 
@@ -92,10 +91,6 @@
 }
 
 @media (max-width: 900px) {
-  .collage {
-    opacity: 0.15;
-  }
-
   .tile {
     width: clamp(150px, 25vw, 230px);
   }
