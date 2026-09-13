@@ -1,3 +1,4 @@
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { readFile } from "fs/promises";
 import { basename, join } from "path";
@@ -5,7 +6,8 @@ import { getUploadsDir } from "@/lib/uploads";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const includeAssets = request.nextUrl.searchParams.get("includeAssets") === "1";
   const caseStudies = db
     .prepare(
       `SELECT slug, eyebrow, title, description, tags, position, published,
@@ -56,18 +58,21 @@ export async function GET() {
     position: page.position,
   }));
 
-  const source = JSON.stringify({ caseStudies, insights, pages, experiences, configuration, analyticsEvents });
-  const filenames = [...source.matchAll(/\/uploads\/([^"'?#]+)/g)]
-    .map((match) => basename(match[1]))
-    .filter(Boolean);
-  const assets = await Promise.all([...new Set(filenames)].map(async (filename) => {
-    try {
-      const bytes = await readFile(join(getUploadsDir(), filename));
-      return { filename, content: bytes.toString("base64") };
-    } catch {
-      return null;
-    }
-  })).then((items) => items.filter((item): item is { filename: string; content: string } => item !== null));
+  let assets: { filename: string; content: string }[] | undefined;
+  if (includeAssets) {
+    const source = JSON.stringify({ caseStudies, insights, pages, experiences, configuration, analyticsEvents });
+    const filenames = [...source.matchAll(/\/uploads\/([^"'?#]+)/g)]
+      .map((match) => basename(match[1]))
+      .filter(Boolean);
+    assets = await Promise.all([...new Set(filenames)].map(async (filename) => {
+      try {
+        const bytes = await readFile(join(getUploadsDir(), filename));
+        return { filename, content: bytes.toString("base64") };
+      } catch {
+        return null;
+      }
+    })).then((items) => items.filter((item): item is { filename: string; content: string } => item !== null));
+  }
 
   return new Response(
     JSON.stringify(
@@ -82,7 +87,7 @@ export async function GET() {
         experiences,
         analyticsEvents,
         configuration,
-        assets,
+        ...(assets ? { assets } : {}),
       },
       null,
       2
@@ -90,7 +95,7 @@ export async function GET() {
     {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Content-Disposition": `attachment; filename="conscept-content-${new Date()
+        "Content-Disposition": `attachment; filename="conscept-content${includeAssets ? "-with-assets" : ""}-${new Date()
           .toISOString()
           .slice(0, 10)}.json"`,
         "Cache-Control": "no-store",

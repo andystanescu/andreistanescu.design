@@ -9,14 +9,14 @@ export default function ContentTransfer() {
   const [busy, setBusy] = useState(false);
   const [fileName, setFileName] = useState("");
 
-  async function exportContent() {
+  async function exportContent(includeAssets = false) {
     setBusy(true);
     setMessage("");
     try {
-      const response = await fetch("/api/admin/content-export");
+      const response = await fetch(`/api/admin/content-export${includeAssets ? "?includeAssets=1" : ""}`);
       if (!response.ok) throw new Error("Export failed.");
       const blob = await response.blob();
-      const suggestedName = `conscept-content-${new Date().toISOString().slice(0, 10)}.json`;
+      const suggestedName = `conscept-content${includeAssets ? "-with-assets" : ""}-${new Date().toISOString().slice(0, 10)}.json`;
       const picker = (window as Window & { showSaveFilePicker?: (options?: unknown) => Promise<{ createWritable: () => Promise<{ write: (data: Blob) => Promise<void>; close: () => Promise<void> }> }> }).showSaveFilePicker;
       if (picker) {
         const handle = await picker({ suggestedName, types: [{ description: "JSON content export", accept: { "application/json": [".json"] } }] });
@@ -31,7 +31,7 @@ export default function ContentTransfer() {
         anchor.click();
         URL.revokeObjectURL(url);
       }
-      setMessage("Content export saved.");
+      setMessage(includeAssets ? "Full backup with images saved." : "Content export saved. Image paths were retained without embedding image files.");
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setMessage(error instanceof Error ? error.message : "Export failed.");
@@ -82,12 +82,15 @@ export default function ContentTransfer() {
       <p className="label-eyebrow">CONTENT TRANSFER</p>
       <h1 className="heading-01">Move your content</h1>
       <p className={`body-small ${styles.helper}`} style={{ maxWidth: 680 }}>
-        Export content, uploaded assets, configuration, and view metrics, then import the JSON into another ConScept deployment. Existing content is updated and analytics events are matched safely, so importing the same file twice does not duplicate the metrics. Visitor identifiers remain one-way hashes.
+        Export content, configuration, image paths, and view metrics, then import the JSON into another ConScept deployment. Images remain on the persistent disk unless you explicitly create a full backup. Existing content is updated and analytics events are matched safely, so importing the same file twice does not duplicate the metrics. Visitor identifiers remain one-way hashes.
       </p>
       <div className={`${styles.transferPanel}`}>
         <div className={styles.transferActions}>
-          <button className={styles.submit} type="button" onClick={exportContent} disabled={busy}>
+          <button className={styles.submit} type="button" onClick={() => exportContent(false)} disabled={busy}>
             {busy ? "Working…" : "Export content"}
+          </button>
+          <button className={styles.tertiaryButton} type="button" onClick={() => exportContent(true)} disabled={busy}>
+            Export full backup with images
           </button>
           <button className={styles.secondaryButton} type="button" onClick={importContent} disabled={busy}>
             Import content
