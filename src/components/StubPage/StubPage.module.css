@@ -7,3 +7,8 @@
   padding: var(--space-1200) var(--space-800);
   flex: 1 0 auto;
 }
+
+@media (max-width: 640px) {
+  .main, .main h1, .main > p { width: 100%; max-width: none; box-sizing: border-box; }
+  .main { padding-inline: var(--space-400); }
+}

@@ -167,6 +167,13 @@
 /* Foundations/System legend: only worth the space on tablet and up — on
    phones the diagram alone (plus the headline/copy) already says enough. */
 @media (max-width: 640px) {
+  .copy,
+  .headline,
+  .copy > p {
+    width: 100%;
+    max-width: none;
+  }
+
   .legend {
     display: none;
   }

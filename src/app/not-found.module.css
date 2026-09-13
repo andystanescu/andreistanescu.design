@@ -10,3 +10,4 @@
 .reassurance h2 { color: var(--text-on-deep-primary); margin-bottom: var(--space-200); }
 @media (max-width: 800px) { .heroInner { grid-template-columns: 1fr; min-height: 0; } .lattice { justify-content: flex-start; } }
 @media (max-width: 560px) { .heroInner { padding-block: var(--space-800); } .code { font-size: 112px; } }
+@media (max-width: 560px) { .copy, .copy h1, .copy > p:not(.code) { width: 100%; max-width: none; } }

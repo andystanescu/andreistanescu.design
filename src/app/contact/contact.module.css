@@ -19,3 +19,8 @@
   .heroInner { padding-block: var(--space-800); }
   .form { padding: var(--space-400); }
 }
+
+@media (max-width: 560px) {
+  .intro, .intro h1, .introDescription,
+  .reassurance h2, .reassuranceInner > p { width: 100%; max-width: none; }
+}

@@ -77,3 +77,8 @@
 }
 @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
 .card{text-align:left;cursor:pointer}
+
+@media (max-width: 600px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 320px) { .grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }

@@ -8,3 +8,7 @@
 .heroDescription { max-width:60vw; }
 .heroDescription :global(.content) { max-width:none; }
 .empty { padding-block:var(--space-1200); }
+
+@media (max-width: 640px) {
+  .hero h1, .heroDescription { width: 100%; max-width: none; }
+}

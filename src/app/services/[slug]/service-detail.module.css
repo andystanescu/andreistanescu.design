@@ -133,3 +133,14 @@
 .collaborationDirectionLabel { font-size:9px; }
 .collaborationMeta { fill:var(--text-accent); font:600 9px/1 var(--font-family-body); letter-spacing:.1em; }
 @media (max-width:600px) { .collaborationAlignmentGraphic { min-height:280px; } .collaborationGroupLabel { font-size:8px; } .collaborationCoreLabel, .collaborationDirectionLabel { font-size:7px; } .collaborationMeta { font-size:7px; } }
+
+@media (max-width: 600px) {
+  .heroCopy, .heroCopy h1, .heroLead, .heroDescription, .deliveryCopy, .deliveryIntro, .approach h2, .audience h2, .audienceLead { width: 100%; max-width: none; }
+  .benefitsGrid, .audienceGrid, .approachGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 320px) { .benefitsGrid, .audienceGrid, .approachGrid { grid-template-columns: 1fr; } }
+
+@media (max-width: 600px) {
+  .benefit h2, .benefit p, .step h3, .step p,
+  .audienceCard h3, .audienceCard p { width: 100%; max-width: none; }
+}

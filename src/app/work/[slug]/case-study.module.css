@@ -98,3 +98,22 @@
 
 .assessmentScoreMeta{display:flex;min-width:0;flex-direction:column;align-items:flex-start;gap:6px;justify-self:start;text-align:left}.assessmentScoreMeta>span{font:700 14px/1.4 var(--font-family-body)}.assessmentScoreValue{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-100)}.assessmentScoreValue strong{display:inline;color:var(--text-accent);font:600 14px/1.2 var(--font-family-body)}
 @media (max-width:800px){.assessmentScore{align-items:start;row-gap:var(--space-150)}.metricIcon{align-self:start;margin-top:1px}.assessmentScoreMeta{grid-column:2}.assessmentScoreValue{min-height:24px}.assessmentScore .scoreTrack{grid-column:2;margin-top:0}}
+
+@media (max-width: 640px) {
+  .heroCopy, .heroCopy h1, .inProgressContent h2, .inProgressContent p { width: 100%; max-width: none; }
+  .relatedGrid, .activityCards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 320px) { .relatedGrid, .activityCards { grid-template-columns: 1fr; } }
+
+@media (max-width: 640px) {
+  .outcomeIntro, .outcomeTitle,
+  .assessmentHeader, .assessmentHeader h2, .assessmentHeader .body-default,
+  .related h2 { width: 100%; max-width: none; }
+  .assessmentLists { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 320px) { .assessmentLists { grid-template-columns: 1fr; } }
+
+@media (min-width: 641px) and (max-width: 900px) {
+  .relatedGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) { .relatedGrid { grid-template-columns: 1fr; } }

@@ -116,3 +116,13 @@
   .list { grid-template-columns: 1fr; }
   .largeItem { grid-column: auto; }
 }
+
+@media (max-width: 640px) {
+  .heroCopy h1, .heroDescription { width: 100%; max-width: none; }
+  .list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .largeItem { grid-column: span 2; }
+}
+@media (max-width: 320px) {
+  .list { grid-template-columns: 1fr; }
+  .largeItem { grid-column: auto; }
+}

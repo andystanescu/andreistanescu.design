@@ -593,4 +593,14 @@ svg {
     font-size: 28px;
     letter-spacing: -0.6px;
   }
+
+  /* Public section copy uses the full available row on phones. Component
+     grids still provide the natural constraint when copy shares a row. */
+  main section h1,
+  main section h2,
+  main section .body-large,
+  main section .body-default {
+    width: 100%;
+    max-width: none;
+  }
 }

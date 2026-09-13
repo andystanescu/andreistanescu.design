@@ -22,3 +22,11 @@
   .outcomeGrid { grid-template-columns:1fr; gap:var(--space-300); }
 }
 @media (max-width:600px) { .featuredCopy { padding:var(--space-400); } }
+
+@media (max-width: 640px) {
+  .main > h1, .heroDescription, .outcomeGrid h2, .outcomeGrid p { width: 100%; max-width: none; }
+}
+
+@media (max-width: 640px) {
+  .featuredCopy, .featuredCopy h2 { width: 100%; max-width: none; }
+}

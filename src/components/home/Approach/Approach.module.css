@@ -47,3 +47,14 @@
     max-width: 100%;
   }
 }
+
+@media (max-width: 640px) {
+  .intro, .steps { width: 100%; min-width: 0; flex-basis: 100%; }
+  .steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .step { min-width: 0; }
+}
+@media (max-width: 320px) { .steps { grid-template-columns: 1fr; } }
+
+@media (max-width: 640px) {
+  .intro h2, .intro p, .step h3, .step p { width: 100%; max-width: none; }
+}

@@ -38,3 +38,11 @@
 .loadMore:hover, .loadMore:focus-visible { color: var(--text-accent); }
 @media (max-width: 800px) { .featured { grid-template-columns: 1fr; } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .featuredCopy { padding: var(--space-400); } .grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 560px) {
+  .featuredCopy h2 { width: 100%; max-width: none; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 320px) { .grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }

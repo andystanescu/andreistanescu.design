@@ -31,3 +31,14 @@
 .audienceCard p { margin-top: var(--space-300); }
 @media (max-width: 900px) { .heroInner, .principleInner { grid-template-columns: 1fr; } .heroInner { min-height: 0; } .heroCopy { padding-block: var(--space-800); } .heroLattice { padding-bottom: var(--space-800); } .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .heroLattice { justify-content: flex-start; } .steps, .leaveGrid, .audienceGrid { grid-template-columns: 1fr; } }
+
+@media (max-width: 600px) {
+  .heroCopy, .heroCopy h1, .heroDescription,
+  .principle h2, .principleInner > p,
+  .process > h2, .shared > h2, .shared > p,
+  .leaveCard > p:last-child { width: 100%; max-width: none; }
+  .steps, .leaveGrid, .audienceGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 320px) {
+  .steps, .leaveGrid, .audienceGrid { grid-template-columns: 1fr; }
+}

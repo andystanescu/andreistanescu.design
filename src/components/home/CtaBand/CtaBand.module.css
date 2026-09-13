@@ -29,3 +29,7 @@
     padding: var(--space-800) var(--space-400);
   }
 }
+
+@media (max-width: 640px) {
+  .band h2, .band p { width: 100%; max-width: none; }
+}

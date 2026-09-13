@@ -86,3 +86,10 @@
 .legal a:focus-visible {
   color: var(--text-primary) !important;
 }
+
+@media (max-width: 640px) {
+  .brand, .connect, .linksGroup { width: 100%; min-width: 0; }
+  .linksGroup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-400); }
+  .column { width: 100%; min-width: 0; }
+}
+@media (max-width: 320px) { .linksGroup { grid-template-columns: 1fr; } }
