@@ -146,6 +146,14 @@
     --space-1200: 56px;
     --space-1600: 32px;
   }
+
+  :where(h1, h2, h3, h4, h5, h6, p, li, blockquote) {
+    max-width: 100% !important;
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: manual;
+    text-wrap: wrap;
+  }
 }
 
 @media (prefers-color-scheme: dark) {

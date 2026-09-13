@@ -124,7 +124,8 @@ export function CaseStudyEditor({ study, metrics, assessment, services, password
       </section>
 
       <section id="case-study-panel-visibility" role="tabpanel" aria-labelledby="case-study-tab-visibility" hidden={tab !== "visibility"} className={styles.panel} aria-label="Case study visibility">
-        <div className={styles.sectionIntro}><span className="label-eyebrow">Visibility</span><p className="body-default">Control whether this case study can be viewed publicly without an access password.</p></div>
+        <div className={styles.sectionIntro}><span className="label-eyebrow">Visibility</span><p className="body-default">Control what visitors can see while you develop and publish this case study.</p></div>
+        <label className={styles.visibilitySwitch}><span><strong>In progress</strong><small>Keep the introduction and outcomes live, while replacing the assessment and full write-up with an In Progress message.</small></span><input type="checkbox" name="in_progress" defaultChecked={Boolean(study.in_progress)} /><span aria-hidden="true" /></label>
         <label className={styles.visibilitySwitch}><span><strong>Password required</strong><small>When enabled, visitors must enter one of the accepted passwords before viewing this case study.</small></span><input type="checkbox" name="password_required" defaultChecked={passwordRequired} /><span aria-hidden="true" /></label>
         <div className={styles.passwordManager}><div className={styles.passwordManagerHeader}><div><h2 className="heading-03">Accepted passwords</h2><p className="body-small">{passwordEntries.length} active {passwordEntries.length === 1 ? "password" : "passwords"}. New passwords remain visible until this draft is saved.</p></div></div><PasswordManager passwordEntries={passwordEntries} onCommit={scheduleDraftSave} /></div>
       </section>
@@ -133,10 +134,10 @@ export function CaseStudyEditor({ study, metrics, assessment, services, password
       <aside className={styles.sidePanels} aria-label="Case study summary">
         <div className={styles.sidePanel}>
           <h2 className="heading-03">Visibility</h2>
-          <p><span>Status</span><strong>{study.published ? "Published" : "Draft"}</strong></p>
+          <p><span>Status</span><strong>{study.published ? study.in_progress ? "In progress" : "Published" : "Draft"}</strong></p>
           <p><span>Author</span><strong>{studyAuthor || "Not set"}</strong></p>
           <hr />
-          <small>{study.published ? "Visible on the live site." : "Not visible on the live site until published."}</small>
+          <small>{study.published ? study.in_progress ? "The introduction and outcomes are live; the full write-up remains hidden." : "Visible on the live site." : "Not visible on the live site until published."}</small>
         </div>
         <div className={styles.sidePanel}>
           <h2 className="heading-03">Media</h2>

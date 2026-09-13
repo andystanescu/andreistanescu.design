@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
   const noIndex = form.get("no_index") === "on" ? 1 : 0;
   const body = applyHeadingAccents(String(form.get("body") ?? "").trim());
   const published = form.get("intent") === "publish" ? 1 : 0;
+  const inProgress = form.get("in_progress") === "on" ? 1 : 0;
   const author = getSettings().author_name;
   const publishedAt = dateInputValue(String(form.get("published_at") ?? "").trim());
 
@@ -39,8 +40,8 @@ export async function POST(request: NextRequest) {
 
   try {
     db.prepare(
-      `INSERT INTO case_studies (slug, eyebrow, title, description, tags, body, cover_image, thumbnail_image, position, published, author, published_at, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO case_studies (slug, eyebrow, title, description, tags, body, cover_image, thumbnail_image, position, published, in_progress, author, published_at, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       slug,
       eyebrow,
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
       thumbnailImage,
       maxPosition.max + 1,
       published,
+      inProgress,
       author,
       publishedAt,
       metaTitle,

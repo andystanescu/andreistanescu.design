@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   const includeAssets = request.nextUrl.searchParams.get("includeAssets") === "1";
   const caseStudies = db
     .prepare(
-      `SELECT slug, eyebrow, title, description, tags, position, published,
+      `SELECT slug, eyebrow, title, description, tags, position, published, in_progress,
               body, cover_image, thumbnail_image, category, year,
               outcome_eyebrow, outcome_title, metrics, assessment,
               password_required, author, published_at,

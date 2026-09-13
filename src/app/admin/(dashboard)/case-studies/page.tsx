@@ -41,6 +41,9 @@ export default function AdminCaseStudiesPage() {
                     {!study.published && (
                       <span className={styles.unpublished}> — unpublished</span>
                     )}
+                    {Boolean(study.published && study.in_progress) && (
+                      <span className={styles.unpublished}> — in progress</span>
+                    )}
                   </p>
                   <p className="body-small" style={{ color: "var(--text-tertiary)" }}>
                     /work/{study.slug}

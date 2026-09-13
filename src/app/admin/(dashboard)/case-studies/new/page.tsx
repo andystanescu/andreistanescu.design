@@ -12,7 +12,7 @@ export default async function NewCaseStudyPage({
   const settings = getSettings();
   const blankStudy = {
     id: 0, slug: "", eyebrow: "", category: "", year: "", title: "", description: "", tags: "", body: "",
-    cover_image: "", thumbnail_image: "", position: 0, published: 0, outcome_eyebrow: "OUTCOMES", outcome_title: "",
+    cover_image: "", thumbnail_image: "", position: 0, published: 0, in_progress: 0, outcome_eyebrow: "OUTCOMES", outcome_title: "",
     metrics: "[]", assessment: "{}", password_required: 0, password_hashes: "[]", author: settings.author_name,
     published_at: "", meta_title: "", meta_description: "", meta_keywords: "", canonical_url: "", og_image: "", no_index: 0,
   } satisfies CaseStudy;

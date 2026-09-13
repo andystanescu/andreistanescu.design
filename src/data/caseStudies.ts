@@ -17,6 +17,7 @@ export type CaseStudy = {
   thumbnail_image: string;
   position: number;
   published: number;
+  in_progress: number;
   outcome_eyebrow: string;
   outcome_title: string;
   metrics: string;

@@ -46,6 +46,7 @@ function initializeDatabase() {
     thumbnail_image TEXT NOT NULL DEFAULT '',
     position INTEGER NOT NULL DEFAULT 0,
     published INTEGER NOT NULL DEFAULT 1,
+    in_progress INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     meta_title TEXT NOT NULL DEFAULT '',
     meta_description TEXT NOT NULL DEFAULT '',
@@ -245,6 +246,7 @@ addColumnIfMissing("case_studies", "meta_keywords", "meta_keywords TEXT NOT NULL
 addColumnIfMissing("case_studies", "canonical_url", "canonical_url TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "og_image", "og_image TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "no_index", "no_index INTEGER NOT NULL DEFAULT 0");
+addColumnIfMissing("case_studies", "in_progress", "in_progress INTEGER NOT NULL DEFAULT 0");
 addColumnIfMissing(
   "case_studies",
   "cover_image",

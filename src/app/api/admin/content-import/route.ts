@@ -138,15 +138,16 @@ export async function POST(request: NextRequest) {
 
       const upsertCaseStudy = db.prepare(
         `INSERT INTO case_studies
-          (slug, eyebrow, title, description, tags, position, published, body,
+          (slug, eyebrow, title, description, tags, position, published, in_progress, body,
            cover_image, thumbnail_image, category, year, outcome_eyebrow,
            outcome_title, metrics, assessment, password_required, password_hashes,
            author, published_at, meta_title, meta_description, meta_keywords,
            canonical_url, og_image, no_index)
-         VALUES (${Array(26).fill("?").join(",")})
+         VALUES (${Array(27).fill("?").join(",")})
          ON CONFLICT(slug) DO UPDATE SET
           eyebrow=excluded.eyebrow, title=excluded.title, description=excluded.description,
           tags=excluded.tags, position=excluded.position, published=excluded.published,
+          in_progress=excluded.in_progress,
           body=excluded.body, cover_image=excluded.cover_image,
           thumbnail_image=excluded.thumbnail_image, category=excluded.category,
           year=excluded.year, outcome_eyebrow=excluded.outcome_eyebrow,
@@ -164,7 +165,7 @@ export async function POST(request: NextRequest) {
         if (!slug || !title) continue;
         upsertCaseStudy.run(
           slug, text(record, "eyebrow"), title, text(record, "description"),
-          text(record, "tags"), integer(record, "position"), integer(record, "published", 1),
+          text(record, "tags"), integer(record, "position"), integer(record, "published", 1), integer(record, "in_progress"),
           text(record, "body"), text(record, "cover_image"), text(record, "thumbnail_image"),
           text(record, "category"), text(record, "year"), text(record, "outcome_eyebrow", "OUTCOMES"),
           text(record, "outcome_title"), list(record.metrics), list(record.assessment),
