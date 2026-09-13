@@ -5,6 +5,7 @@ import { getVisibleSection, getSectionOrder } from "@/lib/homepage";
 import { LatticeDiagram } from "./LatticeDiagram";
 import { LatticeInteractive } from "./LatticeInteractive";
 import { DiagramLayout } from "./DiagramLayout";
+import { HeroCollage } from "./HeroCollage";
 import { getSettings } from "@/lib/settings";
 import styles from "./Hero.module.css";
 
@@ -19,6 +20,7 @@ export function Hero() {
 
   return (
     <section className={styles.hero}>
+      <HeroCollage />
       <div className={`container ${styles.heroInner}`}>
         <div className={styles.copy}>
           <h1 className={`display-large ${styles.headline}`}>
