@@ -12,11 +12,11 @@ const GROUPS = [
 ] as const;
 const NESTED_UNDER: Record<string, string> = { "/admin/about-philosophy": "/admin/about", "/admin/about-highlights": "/admin/about" };
 
-export function AdminNav() {
+export function AdminNav({ collapsed = false }: { collapsed?: boolean }) {
   const pathname = usePathname();
   const effectivePath = NESTED_UNDER[pathname] ?? pathname;
   const isActive = (href: string) => href === "/admin" ? effectivePath === href : effectivePath.startsWith(href);
-  return <nav className={styles.nav} aria-label="Admin">{GROUPS.map((group) => <div className={styles.group} key={group.label || "dashboard"}>{group.label && <p className={styles.groupLabel}>{group.label}</p>}<div className={styles.groupItems}>{group.items.map((item) => <Link key={item.href} href={item.href} aria-current={isActive(item.href) ? "page" : undefined} className={`${styles.navLink} ${isActive(item.href) ? styles.navLinkActive : ""}`}><AdminIcon name={item.icon} />{item.label}</Link>)}</div></div>)}</nav>;
+  return <nav className={`${styles.nav} ${collapsed ? styles.navCollapsed : ""}`} aria-label="Admin">{GROUPS.map((group) => <div className={styles.group} key={group.label || "dashboard"}>{group.label && <p className={styles.groupLabel}>{group.label}</p>}<div className={styles.groupItems}>{group.items.map((item) => <Link key={item.href} href={item.href} aria-label={item.label} aria-current={isActive(item.href) ? "page" : undefined} className={`${styles.navLink} ${isActive(item.href) ? styles.navLinkActive : ""}`}><AdminIcon name={item.icon} /><span className={styles.linkLabel}>{item.label}</span></Link>)}</div></div>)}</nav>;
 }
 
 function AdminIcon({ name }: { name: string }) {

@@ -34,11 +34,12 @@ export async function POST(request: NextRequest) {
   const coverImage = await resolveImageField(form, "cover_image", "");
   const thumbnailImage = await resolveImageField(form, "thumbnail_image", "");
 
-  const maxPosition = db
-    .prepare("SELECT COALESCE(MAX(position), -1) AS max FROM insights")
-    .get() as { max: number };
-
+  db.exec("BEGIN IMMEDIATE;");
   try {
+    // New articles lead the curated order immediately, including drafts and
+    // scheduled articles. Scheduled entries remain hidden until their date,
+    // then become the featured public article without another manual reorder.
+    db.prepare("UPDATE insights SET position = position + 1").run();
     db.prepare(
       `INSERT INTO insights (slug, title, excerpt, body, cover_image, thumbnail_image, published_at, scheduled_at, position, published, category, author, tags, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
       thumbnailImage,
       publishedAt || todayInputValue(),
       scheduledAt,
-      maxPosition.max + 1,
+      0,
       published,
       category,
       author,
@@ -63,7 +64,9 @@ export async function POST(request: NextRequest) {
       ogImage,
       noIndex
     );
+    db.exec("COMMIT;");
   } catch {
+    db.exec("ROLLBACK;");
     const url = new URL("/admin/insights/new", request.url);
     url.searchParams.set("error", `An insight with slug "${slug}" already exists.`);
     return relativeRedirect(url.pathname + url.search);
