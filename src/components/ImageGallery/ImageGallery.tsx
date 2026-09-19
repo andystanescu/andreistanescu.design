@@ -9,7 +9,11 @@ export type GalleryImage = { src: string; alt?: string; caption?: string };
 export function ImageGallery({ images }: { images: GalleryImage[] }) {
   const [active, setActive] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const stageRef = useRef<HTMLDivElement | null>(null);
   const tileRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const dragRef = useRef({ pointerId: -1, startX: 0, startScrollLeft: 0, moved: false });
+  const suppressClickRef = useRef(false);
   const count = images.length;
 
   useEffect(() => {
@@ -36,16 +40,75 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
   const move = (direction: -1 | 1) => setActive((value) => (value + direction + count) % count);
   const current = images[active];
 
+  const selectNearestImage = () => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const stageCenter = stage.getBoundingClientRect().left + stage.clientWidth / 2;
+    let nearestIndex = active;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    tileRefs.current.forEach((tile, index) => {
+      if (!tile) return;
+      const bounds = tile.getBoundingClientRect();
+      const distance = Math.abs(bounds.left + bounds.width / 2 - stageCenter);
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestIndex = index;
+      }
+    });
+    setActive(nearestIndex);
+  };
+
+  const finishDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const stage = stageRef.current;
+    if (!stage || dragRef.current.pointerId !== event.pointerId) return;
+    if (stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
+    suppressClickRef.current = dragRef.current.moved;
+    dragRef.current.pointerId = -1;
+    setDragging(false);
+    selectNearestImage();
+    window.setTimeout(() => { suppressClickRef.current = false; }, 0);
+  };
+
   return (
     <div className={styles.gallery}>
-      <div className={styles.stage}>
+      <div
+        ref={stageRef}
+        className={`${styles.stage} ${dragging ? styles.stageDragging : ""}`}
+        onPointerDown={(event) => {
+          if (!event.isPrimary || event.button !== 0) return;
+          const stage = stageRef.current;
+          if (!stage) return;
+          dragRef.current = {
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startScrollLeft: stage.scrollLeft,
+            moved: false,
+          };
+          stage.setPointerCapture(event.pointerId);
+          setDragging(true);
+        }}
+        onPointerMove={(event) => {
+          const stage = stageRef.current;
+          if (!stage || dragRef.current.pointerId !== event.pointerId) return;
+          const distance = event.clientX - dragRef.current.startX;
+          if (Math.abs(distance) > 6) dragRef.current.moved = true;
+          if (dragRef.current.moved) stage.scrollLeft = dragRef.current.startScrollLeft - distance;
+        }}
+        onPointerUp={finishDrag}
+        onPointerCancel={finishDrag}
+        aria-label="Image gallery. Drag horizontally to browse images."
+      >
         {images.map((image, index) => (
           <button
             type="button"
             key={`${image.src}-${index}`}
             ref={(element) => { tileRefs.current[index] = element; }}
             className={`${styles.tile} ${index === active ? styles.tileActive : ""}`}
-            onClick={() => { setActive(index); setLightboxOpen(true); }}
+            onClick={() => {
+              if (suppressClickRef.current) return;
+              setActive(index);
+              setLightboxOpen(true);
+            }}
             aria-label={`Open image ${index + 1} of ${count}`}
           >
             {/* User-managed uploads are served by the application's upload route. */}
