@@ -22,7 +22,13 @@ export default function AdminHomePage() {
   const contactSubmissions = countSubmissionsSince();
   const previousContactSubmissions = countSubmissionsPeriod(60, 30);
   const visitorBreakdown = getVisitorBreakdown();
-  const mostRead = db.prepare(`SELECT analytics_events.content_id AS slug, analytics_events.content_type AS contentType, COUNT(*) AS views, COALESCE(case_studies.title, insights.title) AS title FROM analytics_events LEFT JOIN case_studies ON analytics_events.content_type = 'case_study' AND case_studies.slug = analytics_events.content_id LEFT JOIN insights ON analytics_events.content_type = 'article' AND insights.slug = analytics_events.content_id WHERE analytics_events.event_type = 'view' AND analytics_events.content_type IN ('case_study', 'article') AND analytics_events.created_at >= datetime('now', '-30 days') GROUP BY analytics_events.content_type, analytics_events.content_id HAVING COUNT(*) >= 1 ORDER BY views DESC, title ASC`).all() as MostReadItem[];
+  const mostReadRows = db.prepare(`SELECT analytics_events.content_id AS slug, analytics_events.content_type AS contentType, COUNT(*) AS views, COALESCE(case_studies.title, insights.title) AS title FROM analytics_events LEFT JOIN case_studies ON analytics_events.content_type = 'case_study' AND case_studies.slug = analytics_events.content_id LEFT JOIN insights ON analytics_events.content_type = 'article' AND insights.slug = analytics_events.content_id WHERE analytics_events.event_type = 'view' AND analytics_events.content_type IN ('case_study', 'article') AND analytics_events.created_at >= datetime('now', '-30 days') GROUP BY analytics_events.content_type, analytics_events.content_id HAVING COUNT(*) >= 1 ORDER BY views DESC, title ASC`).all() as MostReadItem[];
+  const mostRead = mostReadRows.map((item) => ({
+    slug: item.slug,
+    contentType: item.contentType,
+    views: item.views,
+    title: item.title,
+  }));
   const attention = [...caseStudies.filter((item) => !item.thumbnail_image).map((item) => ({ label: `${item.title} is missing a thumbnail`, href: `/admin/case-studies/${item.id}` })), ...insights.filter((item) => !item.tags.trim()).map((item) => ({ label: `${item.title} has no tags`, href: `/admin/insights/${item.id}` }))].slice(0, 5);
 
   return <>
