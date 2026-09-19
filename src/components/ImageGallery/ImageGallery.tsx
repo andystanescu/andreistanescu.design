@@ -84,14 +84,16 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
             startScrollLeft: stage.scrollLeft,
             moved: false,
           };
-          stage.setPointerCapture(event.pointerId);
-          setDragging(true);
         }}
         onPointerMove={(event) => {
           const stage = stageRef.current;
           if (!stage || dragRef.current.pointerId !== event.pointerId) return;
           const distance = event.clientX - dragRef.current.startX;
-          if (Math.abs(distance) > 6) dragRef.current.moved = true;
+          if (Math.abs(distance) > 6 && !dragRef.current.moved) {
+            dragRef.current.moved = true;
+            stage.setPointerCapture(event.pointerId);
+            setDragging(true);
+          }
           if (dragRef.current.moved) stage.scrollLeft = dragRef.current.startScrollLeft - distance;
         }}
         onPointerUp={finishDrag}

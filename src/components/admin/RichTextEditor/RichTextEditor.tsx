@@ -395,6 +395,7 @@ export function RichTextEditor({
   const comparisonInsertPosRef = useRef<number | null>(null);
   const galleryInsertPosRef = useRef<number | null>(null);
   const relatedInsightInsertPosRef = useRef<number | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const typeStyleRef = useRef<HTMLDivElement>(null);
   const [typeStyleOpen, setTypeStyleOpen] = useState(false);
@@ -407,6 +408,7 @@ export function RichTextEditor({
   const [relatedInsightOpen, setRelatedInsightOpen] = useState(false);
   const [relatedInsightSlug, setRelatedInsightSlug] = useState("");
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryAnchor, setGalleryAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
   const [galleryImages, setGalleryImages] = useState<Array<{ id: string; file: File; preview: string; alt: string; caption: string }>>([]);
 
   const editor = useEditor({
@@ -637,10 +639,29 @@ render(<BeforeAfterComparison />);`;
     setGalleryImages((images) => [...images, { id: crypto.randomUUID(), file, preview: URL.createObjectURL(file), alt: "", caption: "" }]);
   };
 
+  const openGalleryAtSelection = () => {
+    const position = editor.state.selection.from;
+    galleryInsertPosRef.current = position;
+    const wrapper = wrapperRef.current;
+    if (wrapper) {
+      const wrapperBounds = wrapper.getBoundingClientRect();
+      const editorBounds = editor.view.dom.getBoundingClientRect();
+      const caret = editor.view.coordsAtPos(position);
+      setGalleryAnchor({
+        top: caret.bottom - wrapperBounds.top + 8,
+        left: editorBounds.left - wrapperBounds.left,
+        width: editorBounds.width,
+      });
+    }
+    setGalleryOpen(true);
+    setInsertMenuOpen(false);
+  };
+
   const closeGallery = () => {
     galleryImages.forEach((image) => URL.revokeObjectURL(image.preview));
     setGalleryImages([]);
     setGalleryOpen(false);
+    setGalleryAnchor(null);
     galleryInsertPosRef.current = null;
   };
 
@@ -663,7 +684,7 @@ render(<BeforeAfterComparison />);`;
   };
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} ref={wrapperRef}>
       <div
         ref={toolbarRef}
         className={`${styles.toolbar} ${toolbarOverflowed ? styles.toolbarOverflowed : ""}`}
@@ -814,7 +835,7 @@ render(<BeforeAfterComparison />);`;
         >
           Compare
         </button>
-        <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={() => { galleryInsertPosRef.current = editor.state.selection.from; setGalleryOpen(true); setInsertMenuOpen(false); }} aria-label="Insert image gallery" title="Insert gallery">Gallery</button>
+        <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={openGalleryAtSelection} aria-label="Insert image gallery" title="Insert gallery">Gallery</button>
         {relatedInsights.length > 0 && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={() => { relatedInsightInsertPosRef.current = editor.state.selection.from; setRelatedInsightSlug(relatedInsights[0]?.slug || ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }} aria-label="Insert related insight" title="Insert related insight">Related insight</button>}
         <button
           type="button"
@@ -839,7 +860,7 @@ render(<BeforeAfterComparison />);`;
         )}
         {toolbarOverflowed && insertMenuOpen && <div className={styles.insertMenu} role="menu">
           <button type="button" role="menuitem" onClick={() => { comparisonInsertPosRef.current = editor.state.selection.from; setInsertMenuOpen(false); setComparisonOpen(true); }}>Comparison</button>
-          <button type="button" role="menuitem" onClick={() => { galleryInsertPosRef.current = editor.state.selection.from; setInsertMenuOpen(false); setGalleryOpen(true); }}>Gallery</button>
+          <button type="button" role="menuitem" onClick={openGalleryAtSelection}>Gallery</button>
           {relatedInsights.length > 0 && <button type="button" role="menuitem" onClick={() => { relatedInsightInsertPosRef.current = editor.state.selection.from; setRelatedInsightSlug(relatedInsights[0]?.slug || ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }}>Related insight</button>}
           <button type="button" role="menuitem" onClick={() => { setInsertMenuOpen(false); editor.chain().focus().setHorizontalRule().run(); }}>Separator</button>
         </div>}
@@ -887,7 +908,12 @@ render(<BeforeAfterComparison />);`;
         </div>
       )}
       {galleryOpen && (
-        <div className={styles.comparisonWidget} role="dialog" aria-label="Create image gallery">
+        <div
+          className={`${styles.comparisonWidget} ${styles.galleryWidgetInline}`}
+          style={galleryAnchor ?? undefined}
+          role="dialog"
+          aria-label="Create image gallery"
+        >
           <div className={styles.comparisonWidgetHeader}>
             <div><p className={styles.comparisonWidgetEyebrow}>GALLERY</p><p className={styles.comparisonWidgetTitle}>Add images one at a time</p></div>
             <button type="button" className={styles.comparisonClose} onClick={closeGallery} aria-label="Close gallery setup">×</button>

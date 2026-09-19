@@ -1,4 +1,5 @@
 .wrapper {
+  position: relative;
   display: block;
   width: 100%;
   overflow: visible;
@@ -407,6 +408,14 @@
     grid-template-columns: 1fr;
   }
 
+}
+
+.galleryWidgetInline {
+  position: absolute;
+  z-index: 5;
+  max-height: min(620px, 72vh);
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .content:global(.ProseMirror) p {
