@@ -410,6 +410,9 @@
 
 }
 
+.runtimeControl{display:inline-flex;min-height:36px;align-items:center;gap:var(--space-75);padding-inline:var(--space-100);color:var(--text-tertiary);font:500 11px/1 var(--font-family-body)}
+.runtimeControl select{min-height:30px;padding:0 24px 0 8px;border:1px solid var(--border-field);border-radius:var(--radius-sm);background:var(--bg-field);color:var(--text-primary);font:500 12px/1 var(--font-family-body)}
+
 .galleryWidgetInline {
   position: absolute;
   z-index: 5;
@@ -468,7 +471,7 @@
 }
 
 .content:global(.ProseMirror) pre[data-interactive="true"]::before {
-  content: "⚡ Live component";
+  content: "⚡ Live preview · " attr(data-runtime);
   display: block;
   margin-bottom: var(--space-100);
   color: var(--accent-foundation);

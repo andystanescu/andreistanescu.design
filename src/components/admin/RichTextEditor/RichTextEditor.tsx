@@ -39,6 +39,14 @@ const InteractiveCodeBlock = CodeBlockLowlight.extend({
         renderHTML: (attributes: { chrome?: string }) =>
           attributes.chrome === "minimal" ? { "data-chrome": "minimal" } : {},
       },
+      runtime: {
+        default: "auto",
+        parseHTML: (element: HTMLElement) => {
+          const runtime = element.getAttribute("data-runtime");
+          return runtime === "react" || runtime === "html" || runtime === "static" ? runtime : "auto";
+        },
+        renderHTML: (attributes: { runtime?: string }) => ({ "data-runtime": attributes.runtime || "auto" }),
+      },
     };
   },
 });
@@ -363,6 +371,8 @@ function readToolbarState(editor: Editor | null) {
     interactive: editor?.isActive("codeBlock") ?? false,
     inlineCode: editor?.isActive("code") ?? false,
     chrome: (editor?.getAttributes("codeBlock").chrome as "framed" | "minimal" | undefined) ?? "framed",
+    runtime: (editor?.getAttributes("codeBlock").runtime as "auto" | "react" | "html" | "static" | undefined) ?? "auto",
+    language: (editor?.getAttributes("codeBlock").language as string | undefined) ?? "",
     blockType: (editor?.isActive("codeBlock") || editor?.isActive("code")
       ? "code"
       : editor?.isActive("paragraph", { className: "label-eyebrow" })
@@ -808,6 +818,23 @@ render(<BeforeAfterComparison />);`;
         >
           <ToolbarIcon name="code" />
         </button>
+        {state.codeBlock && <label className={styles.runtimeControl}>
+          <span>Preview as</span>
+          <select
+            value={state.runtime}
+            aria-label="Live code preview type"
+            onChange={(event) => {
+              const runtime = event.target.value as "auto" | "react" | "html" | "static";
+              const language = runtime === "react" ? "tsx" : runtime === "html" ? "html" : state.language || null;
+              editor.chain().focus().updateAttributes("codeBlock", { runtime, language }).run();
+            }}
+          >
+            <option value="auto">Automatic</option>
+            <option value="react">React / TSX</option>
+            <option value="html">HTML / CSS / JS</option>
+            <option value="static">Static code</option>
+          </select>
+        </label>}
         <span className={styles.toolbarDivider} />
         <button
           type="button"
@@ -965,7 +992,7 @@ render(<BeforeAfterComparison />);`;
       {state.interactive && state.liveCode.trim() && (
         <div className={styles.editorPreview}>
           <p className={styles.editorPreviewLabel}>⚡ Live preview</p>
-          <LiveComponentBlock code={state.liveCode} />
+          <LiveComponentBlock code={state.liveCode} runtime={state.runtime} language={state.language} />
         </div>
       )}
       <input

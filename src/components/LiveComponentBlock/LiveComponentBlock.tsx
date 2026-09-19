@@ -7,6 +7,8 @@ import styles from "./LiveComponentBlock.module.css";
 type LiveComponentBlockProps = {
   code: string;
   chrome?: "framed" | "minimal";
+  runtime?: "auto" | "react" | "html" | "static";
+  language?: string;
 };
 
 type PreviewMode = "react" | "html" | "none";
@@ -66,8 +68,12 @@ function detectPreviewMode(source: string): PreviewMode {
 
 function prepareHtmlPreview(source: string): string {
   const code = source.trim();
-  if (/<!doctype\s+html|<html(?:\s|>)/i.test(code)) return code;
-  return `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>
+  const security = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob: https:; media-src data: blob: https:; connect-src 'none'; font-src data:; form-action 'none'; base-uri 'none'">`;
+  if (/<!doctype\s+html|<html(?:\s|>)/i.test(code)) {
+    if (/<head(?:\s|>)/i.test(code)) return code.replace(/<head([^>]*)>/i, `<head$1>${security}`);
+    return code.replace(/<html([^>]*)>/i, `<html$1><head>${security}</head>`);
+  }
+  return `<!doctype html><html><head>${security}<meta name="viewport" content="width=device-width, initial-scale=1"><style>
     :root { --bg-deep: #0a1020; --text-on-deep-primary: #ffffff; }
     * { box-sizing: border-box; }
     body { margin: 0; padding: 24px; color: var(--text-on-deep-primary); background: var(--bg-deep); font: 16px/1.5 system-ui, sans-serif; }
@@ -80,14 +86,14 @@ function prepareHtmlPreview(source: string): string {
 // render(<YourComponent />) — react-live's convention for this mode
 // (noInline), which keeps definitions above it in normal function/const
 // syntax rather than requiring a single trailing JSX expression.
-export function LiveComponentBlock({ code, chrome = "framed" }: LiveComponentBlockProps) {
-  const mode = detectPreviewMode(code);
+export function LiveComponentBlock({ code, chrome = "framed", runtime = "auto", language }: LiveComponentBlockProps) {
+  const mode: PreviewMode = runtime === "auto" ? detectPreviewMode(code) : runtime === "static" ? "none" : runtime;
   const displayChrome = /\bBeforeAfterComparison\b/.test(code) ? "minimal" : chrome;
   if (mode === "html") {
-    return <HtmlComponentSurface code={code} chrome={displayChrome} />;
+    return <HtmlComponentSurface code={code} chrome={displayChrome} language={language || "html"} />;
   }
   if (mode === "none") {
-    return <StaticCodeSurface code={code} chrome={displayChrome} />;
+    return <StaticCodeSurface code={code} chrome={displayChrome} language={language || "code"} />;
   }
 
   const preparedCode = prepareLiveCode(code);
@@ -104,16 +110,16 @@ export function LiveComponentBlock({ code, chrome = "framed" }: LiveComponentBlo
   );
 }
 
-function StaticCodeSurface({ code, chrome }: { code: string; chrome: "framed" | "minimal" }) {
+function StaticCodeSurface({ code, chrome, language }: { code: string; chrome: "framed" | "minimal"; language: string }) {
   return (
     <div className={chrome === "framed" ? styles.frame : styles.minimal}>
-      {chrome === "framed" && <div className={styles.header}><span className={styles.language}>code</span></div>}
+      {chrome === "framed" && <div className={styles.header}><span className={styles.language}>{language}</span></div>}
       <pre className={styles.code}><code>{code}</code></pre>
     </div>
   );
 }
 
-function HtmlComponentSurface({ code, chrome }: { code: string; chrome: "framed" | "minimal" }) {
+function HtmlComponentSurface({ code, chrome, language }: { code: string; chrome: "framed" | "minimal"; language: string }) {
   const [view, setView] = React.useState<"preview" | "code">("preview");
   const [copied, setCopied] = React.useState(false);
   const html = prepareHtmlPreview(code);
@@ -131,7 +137,7 @@ function HtmlComponentSurface({ code, chrome }: { code: string; chrome: "framed"
   return (
     <div className={chrome === "framed" ? styles.frame : styles.minimal}>
       {chrome === "framed" && <div className={styles.header}>
-        <span className={styles.language}>html</span>
+        <span className={styles.language}>{language}</span>
         <div className={styles.headerActions}>
           <div className={styles.switcher} role="tablist" aria-label="HTML component view">
             <button type="button" role="tab" aria-selected={view === "preview"} className={view === "preview" ? styles.switcherActive : ""} onClick={() => setView("preview")}>Preview</button>
