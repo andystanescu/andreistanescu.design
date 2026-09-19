@@ -576,6 +576,16 @@
   line-height: 0;
 }
 .relatedInsightBlock{display:flex;align-items:center;min-height:72px;margin-block:var(--space-200);padding:var(--space-300);border:1px solid var(--accent-foundation);border-radius:var(--radius-md);background:color-mix(in srgb,var(--text-accent) 8%,var(--bg-surface));color:var(--text-primary);font:600 14px/1.4 var(--font-family-body)}.relatedInsightSelect{width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--border-field);border-radius:var(--radius-md);background:var(--bg-field);color:var(--text-primary);font:14px/1.4 var(--font-family-body)}
+.galleryBlock{display:flex;align-items:center;min-height:96px;margin-block:var(--space-200);padding:var(--space-300);border:1px solid var(--accent-foundation);border-radius:var(--radius-md);background:color-mix(in srgb,var(--text-accent) 8%,var(--bg-surface));color:var(--text-primary);font:600 14px/1.4 var(--font-family-body)}
+.galleryComposerList{display:flex;max-height:360px;flex-direction:column;gap:var(--space-150);overflow-y:auto}
+.galleryComposerItem{display:grid;grid-template-columns:96px minmax(0,1fr) 40px;align-items:center;gap:var(--space-200);padding:var(--space-150);border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-subtle)}
+.galleryComposerItem>img{display:block;width:96px;height:72px;object-fit:contain;background:var(--bg-deep);border-radius:var(--radius-sm)}
+.galleryComposerItem>div{display:flex;min-width:0;flex-direction:column;gap:var(--space-100)}
+.galleryComposerItem input{width:100%;min-height:38px;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border-field);border-radius:var(--radius-sm);background:var(--bg-field);color:var(--text-primary);font:13px/1.4 var(--font-family-body)}
+.galleryComposerItem>button{width:40px;height:40px;color:var(--text-secondary);font-size:22px}
+.galleryAddButton{align-self:flex-start;min-height:44px;padding:0 var(--space-200);border:1px solid var(--border-strong);border-radius:var(--radius-md);color:var(--text-primary);font:500 14px/1.2 var(--font-family-body)}
+.galleryAddButton:hover,.galleryAddButton:focus-visible{border-color:var(--accent-foundation);color:var(--text-accent)}
+@media(max-width:600px){.galleryComposerItem{grid-template-columns:72px minmax(0,1fr) 40px}.galleryComposerItem>img{width:72px;height:72px}}
 
 .content:global(.ProseMirror) :global([data-resizable-image]) img {
   display: block;

@@ -148,6 +148,28 @@ const RelatedInsightBlock = TiptapNode.create({
   },
 });
 
+const GalleryBlock = TiptapNode.create({
+  name: "imageGallery",
+  group: "block",
+  atom: true,
+  addAttributes() {
+    return { images: { default: "", parseHTML: (element: HTMLElement) => element.getAttribute("data-image-gallery") || "", renderHTML: (attributes: { images?: string }) => ({ "data-image-gallery": attributes.images || "" }) } };
+  },
+  parseHTML() { return [{ tag: "aside[data-image-gallery]" }]; },
+  renderHTML({ HTMLAttributes }) { return ["aside", HTMLAttributes]; },
+  addNodeView() {
+    return ({ node }) => {
+      const element = document.createElement("aside");
+      element.className = styles.galleryBlock;
+      element.contentEditable = "false";
+      let count = 0;
+      try { count = JSON.parse(decodeURIComponent(node.attrs.images || "")).length; } catch { /* Show malformed data as an empty gallery. */ }
+      element.textContent = `Image gallery · ${count} image${count === 1 ? "" : "s"}`;
+      return { dom: element };
+    };
+  },
+});
+
 // Images remain ordinary HTML images when the editor is saved, but in the
 // editor they get a small native corner handle for manual resizing.
 const ResizableImage = Image.extend({
@@ -369,7 +391,9 @@ export function RichTextEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const comparisonBeforeInputRef = useRef<HTMLInputElement>(null);
   const comparisonAfterInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const comparisonInsertPosRef = useRef<number | null>(null);
+  const galleryInsertPosRef = useRef<number | null>(null);
   const relatedInsightInsertPosRef = useRef<number | null>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const typeStyleRef = useRef<HTMLDivElement>(null);
@@ -382,6 +406,8 @@ export function RichTextEditor({
   const [comparisonAfter, setComparisonAfter] = useState<{ file: File; preview: string } | null>(null);
   const [relatedInsightOpen, setRelatedInsightOpen] = useState(false);
   const [relatedInsightSlug, setRelatedInsightSlug] = useState("");
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<Array<{ id: string; file: File; preview: string; alt: string; caption: string }>>([]);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -394,6 +420,7 @@ export function RichTextEditor({
       }),
       StyledParagraph,
       RelatedInsightBlock,
+      GalleryBlock,
       Link.configure({ openOnClick: false }),
       AttributedBlockquote,
       InteractiveCodeBlock.configure({ lowlight }),
@@ -605,6 +632,31 @@ render(<BeforeAfterComparison />);`;
     relatedInsightInsertPosRef.current = null;
   };
 
+  const addGalleryImage = (file: File | undefined) => {
+    if (!file) return;
+    setGalleryImages((images) => [...images, { id: crypto.randomUUID(), file, preview: URL.createObjectURL(file), alt: "", caption: "" }]);
+  };
+
+  const closeGallery = () => {
+    galleryImages.forEach((image) => URL.revokeObjectURL(image.preview));
+    setGalleryImages([]);
+    setGalleryOpen(false);
+    galleryInsertPosRef.current = null;
+  };
+
+  const handleGalleryInsert = async () => {
+    if (!galleryImages.length) return;
+    const uploaded: Array<{ src: string; alt?: string; caption?: string }> = [];
+    for (const image of galleryImages) {
+      const src = await uploadImage(image.file);
+      if (!src) return;
+      uploaded.push({ src, alt: image.alt.trim() || undefined, caption: image.caption.trim() || undefined });
+    }
+    const position = galleryInsertPosRef.current ?? editor.state.selection.from;
+    editor.chain().insertContentAt(position, { type: "imageGallery", attrs: { images: encodeURIComponent(JSON.stringify(uploaded)) } }).focus().run();
+    closeGallery();
+  };
+
   const handleLink = () => {
     const href = window.prompt("Enter a URL", editor.getAttributes("link").href || "https://");
     if (href) editor.chain().focus().setLink({ href }).run();
@@ -762,6 +814,7 @@ render(<BeforeAfterComparison />);`;
         >
           Compare
         </button>
+        <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={() => { galleryInsertPosRef.current = editor.state.selection.from; setGalleryOpen(true); setInsertMenuOpen(false); }} aria-label="Insert image gallery" title="Insert gallery">Gallery</button>
         {relatedInsights.length > 0 && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={() => { relatedInsightInsertPosRef.current = editor.state.selection.from; setRelatedInsightSlug(relatedInsights[0]?.slug || ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }} aria-label="Insert related insight" title="Insert related insight">Related insight</button>}
         <button
           type="button"
@@ -786,6 +839,7 @@ render(<BeforeAfterComparison />);`;
         )}
         {toolbarOverflowed && insertMenuOpen && <div className={styles.insertMenu} role="menu">
           <button type="button" role="menuitem" onClick={() => { comparisonInsertPosRef.current = editor.state.selection.from; setInsertMenuOpen(false); setComparisonOpen(true); }}>Comparison</button>
+          <button type="button" role="menuitem" onClick={() => { galleryInsertPosRef.current = editor.state.selection.from; setInsertMenuOpen(false); setGalleryOpen(true); }}>Gallery</button>
           {relatedInsights.length > 0 && <button type="button" role="menuitem" onClick={() => { relatedInsightInsertPosRef.current = editor.state.selection.from; setRelatedInsightSlug(relatedInsights[0]?.slug || ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }}>Related insight</button>}
           <button type="button" role="menuitem" onClick={() => { setInsertMenuOpen(false); editor.chain().focus().setHorizontalRule().run(); }}>Separator</button>
         </div>}
@@ -830,6 +884,30 @@ render(<BeforeAfterComparison />);`;
             <button type="button" className={styles.comparisonCancel} onClick={() => setComparisonOpen(false)}>Cancel</button>
             <button type="button" className={styles.comparisonInsert} disabled={!comparisonBefore || !comparisonAfter} onClick={() => void handleComparisonInsert()}>Insert comparison</button>
           </div>
+        </div>
+      )}
+      {galleryOpen && (
+        <div className={styles.comparisonWidget} role="dialog" aria-label="Create image gallery">
+          <div className={styles.comparisonWidgetHeader}>
+            <div><p className={styles.comparisonWidgetEyebrow}>GALLERY</p><p className={styles.comparisonWidgetTitle}>Add images one at a time</p></div>
+            <button type="button" className={styles.comparisonClose} onClick={closeGallery} aria-label="Close gallery setup">×</button>
+          </div>
+          <p className={styles.comparisonWidgetHint}>Add as many images as needed. Their original aspect ratios will be preserved.</p>
+          <div className={styles.galleryComposerList}>
+            {galleryImages.map((image, index) => <div className={styles.galleryComposerItem} key={image.id}>
+              {/* Local previews use temporary blob URLs. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={image.preview} alt="" />
+              <div>
+                <input type="text" value={image.alt} placeholder="Alternative text" aria-label={`Alternative text for image ${index + 1}`} onChange={(event) => setGalleryImages((items) => items.map((item) => item.id === image.id ? { ...item, alt: event.target.value } : item))} />
+                <input type="text" value={image.caption} placeholder="Optional lightbox caption" aria-label={`Caption for image ${index + 1}`} onChange={(event) => setGalleryImages((items) => items.map((item) => item.id === image.id ? { ...item, caption: event.target.value } : item))} />
+              </div>
+              <button type="button" onClick={() => { URL.revokeObjectURL(image.preview); setGalleryImages((items) => items.filter((item) => item.id !== image.id)); }} aria-label={`Remove image ${index + 1}`}>×</button>
+            </div>)}
+          </div>
+          <button type="button" className={styles.galleryAddButton} onClick={() => galleryInputRef.current?.click()}>+ Add image</button>
+          <input ref={galleryInputRef} type="file" accept="image/*" hidden onChange={(event) => { addGalleryImage(event.target.files?.[0]); event.target.value = ""; }} />
+          <div className={styles.comparisonWidgetActions}><button type="button" className={styles.comparisonCancel} onClick={closeGallery}>Cancel</button><button type="button" className={styles.comparisonInsert} disabled={!galleryImages.length} onClick={() => void handleGalleryInsert()}>Insert gallery</button></div>
         </div>
       )}
       {relatedInsightOpen && (

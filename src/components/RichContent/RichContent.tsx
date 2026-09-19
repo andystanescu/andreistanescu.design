@@ -2,6 +2,7 @@ import { highlightCodeBlocks } from "@/lib/highlightCode";
 import { splitInteractiveBlocks } from "@/lib/interactiveBlocks";
 import { LiveComponentBlock } from "@/components/LiveComponentBlock/LiveComponentBlock";
 import { RelatedInsightCard } from "@/components/RelatedInsightCard/RelatedInsightCard";
+import { ImageGallery } from "@/components/ImageGallery/ImageGallery";
 import styles from "./RichContent.module.css";
 
 type RichContentProps = {
@@ -35,6 +36,8 @@ export function RichContent({ html }: RichContentProps) {
           <LiveComponentBlock key={index} code={segment.code} chrome={segment.chrome} />
         ) : segment.type === "relatedInsight" ? (
           <RelatedInsightCard key={index} slug={segment.slug} />
+        ) : segment.type === "gallery" ? (
+          <ImageGallery key={index} images={segment.images} />
         ) : segment.content.trim() ? (
           <div
             key={index}

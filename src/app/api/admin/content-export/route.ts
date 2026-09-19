@@ -61,7 +61,11 @@ export async function GET(request: NextRequest) {
   let assets: { filename: string; content: string }[] | undefined;
   if (includeAssets) {
     const source = JSON.stringify({ caseStudies, insights, pages, experiences, configuration, analyticsEvents });
-    const filenames = [...source.matchAll(/\/uploads\/([^"'?#]+)/g)]
+    // Gallery blocks URI-encode their JSON payload inside an HTML attribute.
+    // Normalize only the upload-path prefix so their files are discovered by
+    // the same asset collector as ordinary images.
+    const assetSource = source.replace(/%2Fuploads%2F/gi, "/uploads/");
+    const filenames = [...assetSource.matchAll(/\/uploads\/([^"'?#%]+)/g)]
       .map((match) => basename(match[1]))
       .filter(Boolean);
     assets = await Promise.all([...new Set(filenames)].map(async (filename) => {
