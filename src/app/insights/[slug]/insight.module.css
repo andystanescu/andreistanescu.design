@@ -102,8 +102,13 @@
   flex-direction: column;
   gap: var(--space-200);
   width: 20vw;
+  max-height: calc(100dvh - var(--nav-height) - var(--space-600));
   flex-shrink: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
+
+.toc::-webkit-scrollbar { display: none; }
 
 .toc ul {
   display: flex;
@@ -251,12 +256,14 @@
     margin-inline: calc(50% - 50vw);
     box-sizing: border-box;
     overflow-y: auto;
+    scrollbar-width: none;
     padding-inline: var(--space-400);
     border-block: 1px solid var(--border-default);
     border-radius: 0;
     background: var(--bg-surface);
     box-shadow: var(--shadow-level-1);
   }
+  :global(.mobileToc::-webkit-scrollbar) { display: none; }
   :global(.mobileToc summary) { min-height: 48px; box-sizing: border-box; }
 }
 @media (max-width: 320px) { .moreGrid { grid-template-columns: 1fr; } }
