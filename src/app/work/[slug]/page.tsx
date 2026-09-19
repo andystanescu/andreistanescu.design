@@ -25,6 +25,7 @@ import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth";
 import { EngagementActivities } from "./EngagementActivities";
 import { getRelatedReadingReferences } from "@/lib/interactiveBlocks";
 import { RelatedReadingList } from "@/components/RelatedReadingList/RelatedReadingList";
+import { resolveRelatedReadings } from "@/lib/relatedReadings";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +72,7 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
   const accessToken = cookieStore.get(caseStudyAccessCookieName(study.slug))?.value;
   const accessGranted = preview || !study.password_required || verifyCaseStudyAccessToken(accessToken, study.slug, passwordHashes);
   const { html: bodyHtml, toc } = addHeadingIds(study.body);
-  const relatedReadings = getRelatedReadingReferences(study.body);
+  const relatedReadings = resolveRelatedReadings(getRelatedReadingReferences(study.body));
   const studies = getCaseStudies();
   const index = studies.findIndex((item) => item.slug === study.slug);
   const previous = index > 0 ? studies[index - 1] : undefined;
@@ -125,7 +126,7 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
       {metrics.length > 0 && <section className={`${styles.outcomes} section-dark`}><div className={`container ${styles.outcomesGrid}`}><div className={styles.outcomeIntro}><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>{study.outcome_eyebrow || "OUTCOMES"}</p><h2 className={styles.outcomeTitle}>{study.outcome_title}</h2></div><div className={styles.metrics}>{metrics.map((metric) => <div key={`${metric.value}-${metric.label}`} className={styles.metric}><strong>{metric.value}</strong><span>{metric.label}</span></div>)}</div></div></section>}
       {showInProgress && <section className={`container ${styles.inProgress}`}><span className={styles.inProgressBadge}>Write-up in progress</span><h2>The results are in. The story behind them is still being written.</h2><p>This case study is being written up in full—the challenge, the shift in approach, and what was built. The outcomes above are real and already delivered; the full narrative is still being prepared.</p></section>}
       {!showInProgress && <div className={`container ${styles.layout}`}>
-        {(pageToc.length > 0 || relatedReadings.length > 0) && <aside className={styles.toc}>{pageToc.length > 0 && <><TableOfContents items={pageToc} /><p className="label-small">ON THIS PAGE</p><nav aria-label="On this page"><ul>{pageToc.map((item) => <li key={item.id}><a href={`#${item.id}`}>{item.text}</a></li>)}</ul></nav></>}<RelatedReadingList items={relatedReadings} /></aside>}
+        {(pageToc.length > 0 || relatedReadings.length > 0) && <aside className={styles.toc}><TableOfContents items={pageToc} relatedReadings={relatedReadings} />{pageToc.length > 0 && <><p className="label-small">ON THIS PAGE</p><nav aria-label="On this page"><ul>{pageToc.map((item) => <li key={item.id}><a href={`#${item.id}`}>{item.text}</a></li>)}</ul></nav></>}<RelatedReadingList items={relatedReadings} desktopOnly /></aside>}
         <article className={styles.articleBody}>{hasAssessment && <section id="engagement-assessment" className={styles.assessment}><div className={styles.assessmentHeader}><div><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>CONSCEPT ENGAGEMENT ASSESSMENT</p><h2 id="assessment-overview" className="heading-02">A clearer view of the work ahead.</h2><p className="body-default">A practical record of the complexity observed, the activities likely to help, and the work that was actually conducted.</p></div></div><div className={styles.assessmentGrid}><div className={styles.assessmentScores}><h3 id="complexity-profile" className="heading-03">Complexity profile</h3>{assessmentCriteriaList.map((criterion) => { const score=assessment.scores[criterion.key] || 0; return <div className={styles.assessmentScore} key={criterion.key}><ComplexityMetricIcon criterion={criterion.key} /><div className={styles.assessmentScoreMeta}><span>{criterion.label}</span><div className={styles.assessmentScoreValue}><strong>{score ? `${score} / 5` : "—"}</strong>{primaryDrivers.includes(criterion.key) && <em className={styles.primaryDriver}>Primary driver</em>}</div></div><div className={styles.scoreTrack}><i style={{ width: `${Math.min(100, score / 5 * 100)}%` }} /></div></div>; })}</div><div className={styles.assessmentAside}>{assessment.overall && <div className={styles.assessmentSummary}><span>OVERALL COMPLEXITY</span><strong>{assessment.overall}</strong><p>{assessment.overallDescription}</p></div>}<div className={styles.assessmentLists}><div><h3 id="likely-engagement" className="heading-03">Likely engagement</h3><EngagementActivities visibleActivities={likelyDisplayed} additionalActivities={likelyAdditional} conductedActivities={assessment.conducted} /></div></div></div></div></section>}
         <RichContent html={bodyHtml} />
       </article>
