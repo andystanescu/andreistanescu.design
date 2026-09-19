@@ -4,6 +4,7 @@ import type { Insight } from "@/data/insights";
 import { getServiceItems } from "@/lib/serviceItems";
 import { getSettings } from "@/lib/settings";
 import { InsightEditor } from "@/components/admin/InsightEditor/InsightEditor";
+import { getRelatedReadingOptions } from "@/lib/relatedReadings";
 
 export const dynamic = "force-dynamic";
 
@@ -15,5 +16,5 @@ export default async function EditInsightPage({ params, searchParams }: { params
   const categories = getServiceItems().map((service) => ({ id: service.id, title: service.title }));
   const clientInsight = { ...insight };
   const settings = getSettings();
-  return <>{error && <p style={{ color: "var(--border-error)" }}>{error}</p>}<InsightEditor action={`/api/admin/insights/${insight.id}`} categories={categories} settingsAuthor={settings.author_name} authorAvatarUrl={settings.about_hero_image} insight={clientInsight} /></>;
+  return <>{error && <p style={{ color: "var(--border-error)" }}>{error}</p>}<InsightEditor action={`/api/admin/insights/${insight.id}`} categories={categories} settingsAuthor={settings.author_name} relatedReadings={getRelatedReadingOptions({ slug: insight.slug, contentType: "article" })} authorAvatarUrl={settings.about_hero_image} insight={clientInsight} /></>;
 }

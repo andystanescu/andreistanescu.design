@@ -35,7 +35,7 @@ export function RichContent({ html }: RichContentProps) {
         segment.type === "live" ? (
           <LiveComponentBlock key={index} code={segment.code} chrome={segment.chrome} />
         ) : segment.type === "relatedInsight" ? (
-          <RelatedInsightCard key={index} slug={segment.slug} />
+          <RelatedInsightCard key={index} slug={segment.slug} contentType={segment.contentType} />
         ) : segment.type === "gallery" ? (
           <ImageGallery key={index} images={segment.images} />
         ) : segment.content.trim() ? (

@@ -12,13 +12,14 @@ import adminStyles from "@/app/admin/(dashboard)/admin.module.css";
 import { dateInputValue } from "@/lib/dateUtils";
 import { MetadataFields } from "@/components/admin/MetadataFields/MetadataFields";
 import Link from "next/link";
+import type { RelatedReadingOption } from "@/lib/relatedReadings";
 
 type ServiceOption = { slug: string; title: string };
 type PasswordEntry = { name: string; masked: string };
-type Props = { study: CaseStudy; metrics: CaseStudyMetric[]; assessment: CaseStudyAssessment; services: ServiceOption[]; relatedInsights: Array<{ slug: string; title: string }>; passwordRequired: boolean; passwordEntries: PasswordEntry[]; authorAvatarUrl?: string; action?: string };
+type Props = { study: CaseStudy; metrics: CaseStudyMetric[]; assessment: CaseStudyAssessment; services: ServiceOption[]; relatedReadings: RelatedReadingOption[]; passwordRequired: boolean; passwordEntries: PasswordEntry[]; authorAvatarUrl?: string; action?: string };
 type Tab = "details" | "outcomes" | "assessment" | "content" | "metadata" | "visibility";
 
-export function CaseStudyEditor({ study, metrics, assessment, services, relatedInsights, passwordRequired, passwordEntries, authorAvatarUrl, action }: Props) {
+export function CaseStudyEditor({ study, metrics, assessment, services, relatedReadings, passwordRequired, passwordEntries, authorAvatarUrl, action }: Props) {
   const editing = study.id > 0;
   const [tab, setTab] = useState<Tab>(editing ? "content" : "details");
   const studyAuthor = "author" in study && typeof study.author === "string" ? study.author : "";
@@ -115,7 +116,7 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedI
 
       <section id="case-study-panel-content" role="tabpanel" aria-labelledby="case-study-tab-content" hidden={tab !== "content"} className={styles.panel} aria-label="Case study content">
         <p className="body-small">Your changes save automatically as a draft. Use Publish when the case study is ready to go live.</p>
-        <div className={`${adminStyles.field} ${adminStyles.fieldWide}`}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Body</span><RichTextEditor name="body" defaultValue={study.body} onContentChange={scheduleDraftSave} relatedInsights={relatedInsights} /></div>
+        <div className={`${adminStyles.field} ${adminStyles.fieldWide}`}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Body</span><RichTextEditor name="body" defaultValue={study.body} onContentChange={scheduleDraftSave} relatedReadings={relatedReadings} /></div>
       </section>
 
       <section id="case-study-panel-metadata" role="tabpanel" aria-labelledby="case-study-tab-metadata" hidden={tab !== "metadata"} className={styles.panel} aria-label="Case study metadata and SEO">

@@ -10,10 +10,11 @@ import tagStyles from "@/components/admin/CaseStudyEditor/CaseStudyEditor.module
 import editorStyles from "@/components/admin/CaseStudyEditor/CaseStudyEditor.module.css";
 import { dateInputValue, todayInputValue, ukDateTimeValue } from "@/lib/dateUtils";
 import Link from "next/link";
+import type { RelatedReadingOption } from "@/lib/relatedReadings";
 
-type Props = { action: string; categories: Array<{ id: number; title: string }>; settingsAuthor: string; authorAvatarUrl?: string; insight?: Insight };
+type Props = { action: string; categories: Array<{ id: number; title: string }>; settingsAuthor: string; relatedReadings: RelatedReadingOption[]; authorAvatarUrl?: string; insight?: Insight };
 
-export function InsightEditor({ action, categories, settingsAuthor, authorAvatarUrl, insight }: Props) {
+export function InsightEditor({ action, categories, settingsAuthor, relatedReadings, authorAvatarUrl, insight }: Props) {
   const editing = Boolean(insight);
   const [tab, setTab] = useState<"details" | "body" | "metadata">("details");
   const value = (key: keyof Insight) => insight?.[key] ?? "";
@@ -39,7 +40,7 @@ export function InsightEditor({ action, categories, settingsAuthor, authorAvatar
         <label className={styles.checkboxField}><input type="checkbox" name="published" defaultChecked={Boolean(insight?.published)} /><span className={styles.switch} aria-hidden="true" /><span className="body-default">Published</span></label>
     </section>
     <section id="insight-panel-body" role="tabpanel" aria-label="Body" hidden={tab !== "body"} className={editorStyles.panel}>
-        <div className={`${styles.field} ${styles.fieldWide}`}><span className="label-small">Body</span><RichTextEditor name="body" defaultValue={String(value("body"))} /></div>
+        <div className={`${styles.field} ${styles.fieldWide}`}><span className="label-small">Body</span><RichTextEditor name="body" defaultValue={String(value("body"))} relatedReadings={relatedReadings} /></div>
     </section>
     <section id="insight-panel-metadata" role="tabpanel" aria-label="Metadata and SEO" hidden={tab !== "metadata"} className={editorStyles.panel}>
       <div className={styles.helper}><span className="body-default">Search appearance</span><p className="body-small">Set the title, description, canonical URL, and social image used for this article.</p></div><MetadataFields values={insight} />

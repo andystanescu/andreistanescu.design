@@ -18,6 +18,8 @@ import { AuthorAvatar } from "@/components/AuthorAvatar/AuthorAvatar";
 import { ContentViewTracker } from "@/components/ContentViewTracker/ContentViewTracker";
 import { cookies } from "next/headers";
 import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth";
+import { getRelatedReadingReferences } from "@/lib/interactiveBlocks";
+import { RelatedReadingList } from "@/components/RelatedReadingList/RelatedReadingList";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +48,7 @@ export default async function InsightDetailPage({
   }
 
   const { html: bodyHtml, toc } = addHeadingIds(insight.body);
+  const relatedReadings = getRelatedReadingReferences(insight.body);
   const readingMinutes = calculateReadingTime(insight.body);
   const moreArticles = getRandomInsights(insight.slug, 3);
 
@@ -106,21 +109,14 @@ export default async function InsightDetailPage({
         <div className={styles.divider} />
 
         <div className={`container ${styles.layout}`}>
-          {toc.length > 0 && (
+          {(toc.length > 0 || relatedReadings.length > 0) && (
             <aside className={styles.toc}>
-              <TableOfContents items={toc} />
-              <p className="label-small" style={{ color: "var(--text-primary)" }}>
-                ON THIS PAGE
-              </p>
-              <nav aria-label="On this page">
-                <ul>
-                  {toc.map((item) => (
-                    <li key={item.id}>
-                      <a href={`#${item.id}`}>{item.text}</a>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
+              {toc.length > 0 && <>
+                <TableOfContents items={toc} />
+                <p className="label-small" style={{ color: "var(--text-primary)" }}>ON THIS PAGE</p>
+                <nav aria-label="On this page"><ul>{toc.map((item) => <li key={item.id}><a href={`#${item.id}`}>{item.text}</a></li>)}</ul></nav>
+              </>}
+              <RelatedReadingList items={relatedReadings} />
             </aside>
           )}
 

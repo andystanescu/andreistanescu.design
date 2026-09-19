@@ -14,6 +14,7 @@ import { Node as TiptapNode } from "@tiptap/core";
 import { createLowlight, common } from "lowlight";
 import { AccentMark } from "./AccentMark";
 import { LiveComponentBlock } from "@/components/LiveComponentBlock/LiveComponentBlock";
+import type { RelatedReadingOption } from "@/lib/relatedReadings";
 import styles from "./RichTextEditor.module.css";
 
 const lowlight = createLowlight(common);
@@ -133,6 +134,7 @@ const RelatedInsightBlock = TiptapNode.create({
     return {
       slug: { default: "", parseHTML: (element: HTMLElement) => element.getAttribute("data-related-insight") || "", renderHTML: (attributes: { slug?: string }) => ({ "data-related-insight": attributes.slug || "" }) },
       title: { default: "", parseHTML: (element: HTMLElement) => element.getAttribute("data-title") || "", renderHTML: (attributes: { title?: string }) => attributes.title ? { "data-title": attributes.title } : {} },
+      contentType: { default: "article", parseHTML: (element: HTMLElement) => element.getAttribute("data-content-type") === "case_study" ? "case_study" : "article", renderHTML: (attributes: { contentType?: string }) => ({ "data-content-type": attributes.contentType === "case_study" ? "case_study" : "article" }) },
     };
   },
   parseHTML() { return [{ tag: "aside[data-related-insight]" }]; },
@@ -142,7 +144,7 @@ const RelatedInsightBlock = TiptapNode.create({
       const element = document.createElement("aside");
       element.className = styles.relatedInsightBlock;
       element.contentEditable = "false";
-      element.textContent = `Related insight · ${node.attrs.title || node.attrs.slug}`;
+      element.textContent = `Related ${node.attrs.contentType === "case_study" ? "case study" : "article"} · ${node.attrs.title || node.attrs.slug}`;
       return { dom: element };
     };
   },
@@ -320,7 +322,7 @@ type RichTextEditorProps = {
   defaultValue?: string;
   placeholder?: string;
   onContentChange?: () => void;
-  relatedInsights?: Array<{ slug: string; title: string }>;
+  relatedReadings?: RelatedReadingOption[];
 };
 
 type BlockType = "paragraph" | "eyebrow" | "h1" | "h2" | "h3" | "quote" | "code";
@@ -385,7 +387,7 @@ export function RichTextEditor({
   defaultValue = "",
   placeholder = "Write the full story…",
   onContentChange,
-  relatedInsights = [],
+  relatedReadings = [],
 }: RichTextEditorProps) {
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -625,10 +627,10 @@ render(<BeforeAfterComparison />);`;
   };
 
   const handleRelatedInsightInsert = () => {
-    const insight = relatedInsights.find((item) => item.slug === relatedInsightSlug);
-    if (!insight) return;
+    const reading = relatedReadings.find((item) => `${item.contentType}:${item.slug}` === relatedInsightSlug);
+    if (!reading) return;
     const position = relatedInsightInsertPosRef.current ?? editor.state.selection.from;
-    editor.chain().insertContentAt(position, { type: "relatedInsight", attrs: { slug: insight.slug, title: insight.title } }).focus().run();
+    editor.chain().insertContentAt(position, { type: "relatedInsight", attrs: { slug: reading.slug, title: reading.title, contentType: reading.contentType } }).focus().run();
     setRelatedInsightOpen(false);
     setRelatedInsightSlug("");
     relatedInsightInsertPosRef.current = null;
@@ -836,7 +838,7 @@ render(<BeforeAfterComparison />);`;
           Compare
         </button>
         <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={openGalleryAtSelection} aria-label="Insert image gallery" title="Insert gallery">Gallery</button>
-        {relatedInsights.length > 0 && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={() => { relatedInsightInsertPosRef.current = editor.state.selection.from; setRelatedInsightSlug(relatedInsights[0]?.slug || ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }} aria-label="Insert related insight" title="Insert related insight">Related insight</button>}
+        {relatedReadings.length > 0 && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={() => { relatedInsightInsertPosRef.current = editor.state.selection.from; setRelatedInsightSlug(relatedReadings[0] ? `${relatedReadings[0].contentType}:${relatedReadings[0].slug}` : ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }} aria-label="Insert related reading" title="Insert related reading">Related reading</button>}
         <button
           type="button"
           className={`${styles.toolbarButton} ${styles.overflowable}`}
@@ -861,7 +863,7 @@ render(<BeforeAfterComparison />);`;
         {toolbarOverflowed && insertMenuOpen && <div className={styles.insertMenu} role="menu">
           <button type="button" role="menuitem" onClick={() => { comparisonInsertPosRef.current = editor.state.selection.from; setInsertMenuOpen(false); setComparisonOpen(true); }}>Comparison</button>
           <button type="button" role="menuitem" onClick={openGalleryAtSelection}>Gallery</button>
-          {relatedInsights.length > 0 && <button type="button" role="menuitem" onClick={() => { relatedInsightInsertPosRef.current = editor.state.selection.from; setRelatedInsightSlug(relatedInsights[0]?.slug || ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }}>Related insight</button>}
+          {relatedReadings.length > 0 && <button type="button" role="menuitem" onClick={() => { relatedInsightInsertPosRef.current = editor.state.selection.from; setRelatedInsightSlug(relatedReadings[0] ? `${relatedReadings[0].contentType}:${relatedReadings[0].slug}` : ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }}>Related reading</button>}
           <button type="button" role="menuitem" onClick={() => { setInsertMenuOpen(false); editor.chain().focus().setHorizontalRule().run(); }}>Separator</button>
         </div>}
       </div>
@@ -937,11 +939,11 @@ render(<BeforeAfterComparison />);`;
         </div>
       )}
       {relatedInsightOpen && (
-        <div className={styles.comparisonWidget} role="dialog" aria-label="Insert a related insight">
-          <div className={styles.comparisonWidgetHeader}><div><p className={styles.comparisonWidgetEyebrow}>RELATED INSIGHT</p><p className={styles.comparisonWidgetTitle}>Link an article to this section</p></div><button type="button" className={styles.comparisonClose} onClick={() => setRelatedInsightOpen(false)} aria-label="Close related insight picker">×</button></div>
-          <p className={styles.comparisonWidgetHint}>The card will stay synchronized with the selected article&apos;s title, excerpt, thumbnail, and publication date.</p>
-          <select className={styles.relatedInsightSelect} value={relatedInsightSlug} onChange={(event) => setRelatedInsightSlug(event.target.value)} aria-label="Article"><option value="">Select an article</option>{relatedInsights.map((insight) => <option key={insight.slug} value={insight.slug}>{insight.title}</option>)}</select>
-          <div className={styles.comparisonWidgetActions}><button type="button" className={styles.comparisonCancel} onClick={() => setRelatedInsightOpen(false)}>Cancel</button><button type="button" className={styles.comparisonInsert} disabled={!relatedInsightSlug} onClick={handleRelatedInsightInsert}>Insert related insight</button></div>
+        <div className={styles.comparisonWidget} role="dialog" aria-label="Insert related reading">
+          <div className={styles.comparisonWidgetHeader}><div><p className={styles.comparisonWidgetEyebrow}>RELATED READING</p><p className={styles.comparisonWidgetTitle}>Link an article or case study to this section</p></div><button type="button" className={styles.comparisonClose} onClick={() => setRelatedInsightOpen(false)} aria-label="Close related reading picker">×</button></div>
+          <p className={styles.comparisonWidgetHint}>The card will stay synchronized with the selected content&apos;s title, thumbnail, and reading time.</p>
+          <select className={styles.relatedInsightSelect} value={relatedInsightSlug} onChange={(event) => setRelatedInsightSlug(event.target.value)} aria-label="Related reading"><option value="">Select related reading</option><optgroup label="Articles">{relatedReadings.filter((item) => item.contentType === "article").map((item) => <option key={`article-${item.slug}`} value={`article:${item.slug}`}>{item.title}</option>)}</optgroup><optgroup label="Case studies">{relatedReadings.filter((item) => item.contentType === "case_study").map((item) => <option key={`case-study-${item.slug}`} value={`case_study:${item.slug}`}>{item.title}</option>)}</optgroup></select>
+          <div className={styles.comparisonWidgetActions}><button type="button" className={styles.comparisonCancel} onClick={() => setRelatedInsightOpen(false)}>Cancel</button><button type="button" className={styles.comparisonInsert} disabled={!relatedInsightSlug} onClick={handleRelatedInsightInsert}>Insert related reading</button></div>
         </div>
       )}
       <div

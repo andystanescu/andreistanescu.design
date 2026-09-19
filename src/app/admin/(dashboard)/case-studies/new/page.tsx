@@ -2,7 +2,7 @@ import { CaseStudyEditor } from "@/components/admin/CaseStudyEditor/CaseStudyEdi
 import { getServiceItems } from "@/lib/serviceItems";
 import { getSettings } from "@/lib/settings";
 import type { CaseStudy } from "@/data/caseStudies";
-import { getInsights } from "@/data/insights";
+import { getRelatedReadingOptions } from "@/lib/relatedReadings";
 
 export default async function NewCaseStudyPage({
   searchParams,
@@ -19,7 +19,7 @@ export default async function NewCaseStudyPage({
   } satisfies CaseStudy;
   const assessment = { scores: {}, likelyEngagement: [], conducted: [], notApplicable: [], overall: "", overallDescription: "", primaryDrivers: [] };
   const services = getServiceItems().map((service) => ({ slug: service.slug, title: service.title }));
-  const relatedInsights = getInsights().map(({ slug, title }) => ({ slug, title }));
+  const relatedReadings = getRelatedReadingOptions();
 
   return <>
     {error && <p style={{ color: "var(--border-error)" }}>{error}</p>}
@@ -28,7 +28,7 @@ export default async function NewCaseStudyPage({
       metrics={[]}
       assessment={assessment}
       services={services}
-      relatedInsights={relatedInsights}
+      relatedReadings={relatedReadings}
       passwordRequired={false}
       passwordEntries={[]}
       authorAvatarUrl={settings.about_hero_image}

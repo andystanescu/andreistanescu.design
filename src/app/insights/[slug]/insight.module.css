@@ -215,8 +215,7 @@
   }
 
   .toc {
-    position: static;
-    width: 100%;
+    display: contents;
   }
 
   .articleBody {
@@ -239,6 +238,20 @@
 @media (max-width: 640px) {
   .heroCopy, .title, .heroCopy > p { width: 100%; max-width: none; }
   .moreGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  :global(.mobileToc) {
+    width: 100%;
+    max-height: calc(100dvh - var(--nav-height) - 16px);
+    box-sizing: border-box;
+    overflow-y: auto;
+    padding-inline: var(--space-200);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-level-1);
+  }
 }
 @media (max-width: 320px) { .moreGrid { grid-template-columns: 1fr; } }
 
