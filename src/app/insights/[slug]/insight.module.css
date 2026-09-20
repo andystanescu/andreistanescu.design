@@ -5,83 +5,6 @@
   flex: 1 0 auto;
 }
 
-/* No .container here — the hero image bleeds to the true viewport edge
-   (per Figma), while the copy column gets the same left gutter .container
-   would give it via its own padding. */
-.hero {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  width: 100%;
-  max-width: 1920px;
-  margin-inline: auto;
-  min-height: 420px;
-  padding-block: var(--space-800);
-}
-
-.heroCopy {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-200);
-  flex: 0 0 50%;
-  min-width: 0;
-  max-width: none;
-  box-sizing: border-box;
-  padding-left: var(--space-800);
-  padding-right: var(--space-800);
-}
-
-.heroCopy:only-child { flex-basis: 100%; }
-
-.breadcrumb {
-  color: var(--text-tertiary);
-}
-
-.breadcrumb a {
-  color: var(--text-tertiary);
-  transition: color 0.15s ease;
-}
-
-.breadcrumb a:hover,
-.breadcrumb a:focus-visible {
-  color: var(--text-primary);
-}
-
-.title {
-  color: var(--text-primary);
-}
-
-.byline {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-50);
-  margin-top: var(--space-100);
-}
-
-.tags {
-  margin: 0;
-  color: var(--text-accent);
-  font-family: var(--font-family-body);
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.heroImage {
-  flex: 0 0 50%;
-  width: 50%;
-  flex-shrink: 0;
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-  overflow: hidden;
-}
-
-.heroImage img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
 .divider {
   width: 100%;
   height: 1px;
@@ -187,34 +110,9 @@
   border-top: 1px solid var(--border-default);
 }
 
-.moreGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-400);
-  margin-top: var(--space-400);
-}
+.moreGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-400); margin-top: var(--space-400); }
 
 @media (max-width: 900px) {
-  .hero {
-    flex-direction: column;
-    min-height: 0;
-    gap: var(--space-400);
-  }
-
-  .heroCopy {
-    max-width: none;
-    padding-left: var(--space-800);
-    padding-right: var(--space-800);
-  }
-
-  .heroImage {
-    flex: none;
-    width: 100%;
-    height: 260px;
-    border-radius: var(--radius-lg);
-    margin-right: 0;
-  }
-
   .layout {
     flex-direction: column;
   }
@@ -227,21 +125,6 @@
     width: 100%;
     max-width: 100%;
   }
-
-  .moreGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .heroCopy {
-    padding-left: var(--layout-gutter-narrative);
-    padding-right: var(--layout-gutter-narrative);
-  }
-}
-
-@media (max-width: 640px) {
-  .heroCopy, .title, .heroCopy > p { width: 100%; max-width: none; }
   .moreGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
@@ -266,13 +149,4 @@
   :global(.mobileToc::-webkit-scrollbar) { display: none; }
   :global(.mobileToc summary) { min-height: 48px; box-sizing: border-box; }
 }
-@media (max-width: 320px) { .moreGrid { grid-template-columns: 1fr; } }
-
-@media (max-width: 640px) {
-  .moreSection h2 { width: 100%; max-width: none; }
-}
-
-@media (min-width: 641px) and (max-width: 900px) {
-  .moreGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 640px) { .moreGrid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .moreGrid { grid-template-columns: 1fr; } .moreSection h2 { width:100%; max-width:none; } }

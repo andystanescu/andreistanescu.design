@@ -15,7 +15,7 @@
  .activityRevealIcon{display:inline-grid;width:20px;height:20px;place-items:center;font:500 20px/1 var(--font-family-body);text-decoration:none}
  .activityCards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-200)}
  .activityCard{padding:var(--space-300);border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface)}
- .activityCardHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-300)}
+ .activityCardHeader{display:flex;align-items:flex-start;flex-direction:column;justify-content:flex-start;gap:var(--space-150)}
  .activityCard h4{font:600 16px/1.3 var(--font-family-heading)}
  .activityCard p{margin-top:var(--space-200);color:var(--text-secondary);font:14px/1.5 var(--font-family-body)}
  .activityCard p strong{display:block;margin-bottom:4px;color:var(--text-primary);font:600 11px/1.3 var(--font-family-body);letter-spacing:.04em;text-transform:uppercase}
@@ -123,4 +123,36 @@
   :global(.mobileToc){top:0;z-index:20;width:100vw;max-width:100vw;min-height:48px;max-height:100dvh;margin-inline:calc(50% - 50vw);box-sizing:border-box;overflow-y:auto;scrollbar-width:none;padding-inline:var(--space-400);border-block:1px solid var(--border-default);border-radius:0;background:var(--bg-surface);box-shadow:var(--shadow-level-1)}
   :global(.mobileToc::-webkit-scrollbar){display:none}
   :global(.mobileToc summary){min-height:48px;box-sizing:border-box}
+}
+
+.assessmentDisclosure{display:block;scroll-margin-top:72px}
+.assessmentCompact{display:none}
+.assessmentDisclosure:not([open])>.assessmentDetail{display:block}
+.assessmentDetail{min-width:0}
+
+@media(max-width:900px){
+  .assessmentDisclosure{margin-block:var(--space-500);overflow:hidden;border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--bg-surface)}
+  .assessmentCompact{display:flex;flex-direction:column;gap:var(--space-200);padding:20px;color:var(--text-primary);cursor:pointer;list-style:none}
+  .assessmentCompact::-webkit-details-marker{display:none}
+  .assessmentCompactEyebrow{color:var(--text-accent);font:600 11px/1.3 var(--font-family-body);letter-spacing:.06em;text-transform:uppercase}
+  .assessmentCompact>strong{font:600 24px/1.2 var(--font-family-heading)}
+  .assessmentCompactInterpretation{color:var(--text-secondary);font:14px/1.5 var(--font-family-body)}
+  .assessmentCompactScores{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-150) var(--space-200);margin:var(--space-100) 0;padding:0;list-style:none}
+  .assessmentCompactScores>[role="listitem"]{display:flex;min-width:0;flex-direction:column;gap:6px}
+  .assessmentCompactScores>[role="listitem"]>span{overflow:hidden;color:var(--text-tertiary);font:500 10px/1.3 var(--font-family-body);text-overflow:ellipsis;white-space:nowrap}
+  .assessmentCompactScores i{display:block;height:4px;overflow:hidden;border-radius:999px;background:var(--bg-subtle)}
+  .assessmentCompactScores b{display:block;height:100%;border-radius:inherit;background:var(--accent-foundation)}
+  .assessmentCompactAction{display:flex;min-height:44px;align-items:center;justify-content:space-between;gap:var(--space-200);border-top:1px solid var(--border-default);color:var(--text-accent);font:600 14px/1.3 var(--font-family-body)}
+  .assessmentCompactAction>b{font:500 18px/1 var(--font-family-body);transition:transform .15s ease}
+  .assessmentDisclosure[open] .assessmentCompactAction>b{transform:rotate(180deg)}
+  .showLess{display:none}
+  .assessmentDisclosure[open] .showFull{display:none}
+  .assessmentDisclosure[open] .showLess{display:inline}
+  .assessmentDisclosure:not([open])>.assessmentDetail{display:none}
+  .assessmentDetail{padding-inline:20px;border-top:1px solid var(--border-default)}
+  .assessment{padding-block:var(--space-600);border-bottom:0}
+  .assessmentLists{grid-template-columns:minmax(0,1fr)!important}
+  .assessmentLists,.assessmentLists>div,.activityCards,.activityCard{width:100%;max-width:none;box-sizing:border-box}
+  .assessmentLists h3{width:max-content;max-width:100%}
+  .activityCards{grid-template-columns:minmax(0,1fr)!important;justify-items:stretch}
 }

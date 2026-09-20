@@ -4,23 +4,21 @@ import Link from "next/link";
 import { Nav } from "@/components/Nav/Nav";
 import { Footer } from "@/components/Footer/Footer";
 import { RichContent } from "@/components/RichContent/RichContent";
-import { ArticleCard } from "@/components/ArticleCard/ArticleCard";
+import { ArticlePreview } from "@/components/insights/ArticlePreview/ArticlePreview";
 import { getInsightBySlug, getRandomInsights } from "@/data/insights";
 import { addHeadingIds } from "@/lib/tableOfContents";
 import { TableOfContents } from "@/components/TableOfContents/TableOfContents";
 import { calculateReadingTime } from "@/lib/readingTime";
-import { ShareArticle } from "@/components/ShareArticle/ShareArticle";
-import { BackButton } from "@/components/BackButton/BackButton";
 import styles from "./insight.module.css";
 import { contentMetadata, absoluteUrl } from "@/lib/seo";
-import { displayDate } from "@/lib/dateUtils";
-import { AuthorAvatar } from "@/components/AuthorAvatar/AuthorAvatar";
+import { displayCompactDate } from "@/lib/dateUtils";
 import { ContentViewTracker } from "@/components/ContentViewTracker/ContentViewTracker";
 import { cookies } from "next/headers";
 import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth";
 import { getRelatedReadingReferences } from "@/lib/interactiveBlocks";
 import { RelatedReadingList } from "@/components/RelatedReadingList/RelatedReadingList";
 import { resolveRelatedReadings } from "@/lib/relatedReadings";
+import { ArticleHero } from "@/components/insights/ArticleHero/ArticleHero";
 
 export const dynamic = "force-dynamic";
 
@@ -64,48 +62,7 @@ export default async function InsightDetailPage({
       <Nav />
       {preview && <aside className={styles.previewBanner}><strong>Preview mode</strong><span>This is the latest saved version and may not be published.</span><Link href={`/admin/insights/${insight.id}`}>Return to editor</Link></aside>}
       <main className={styles.main}>
-        <section className={styles.hero}>
-          <div className={styles.heroCopy}>
-            <BackButton label="Back to insights" fallbackHref="/insights" />
-            <p className={`body-small ${styles.breadcrumb}`}>
-              <Link href="/insights">Insights</Link>
-              {insight.category && <> &nbsp;/&nbsp; {insight.category}</>}
-            </p>
-
-            {insight.category && (
-              <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>
-                {insight.category}
-              </p>
-            )}
-
-            <h1 className={`display-small ${styles.title}`}>{insight.title}</h1>
-
-            <p className="body-large" style={{ color: "var(--text-secondary)" }}>
-              {insight.excerpt}
-            </p>
-
-            <div className={styles.byline}>
-              <p className="body-small" style={{ color: "var(--text-secondary)" }}>
-                <AuthorAvatar author={insight.author} />
-              </p>
-              <p className="body-small" style={{ color: "var(--text-tertiary)" }}>
-                {displayDate(insight.published_at)} &nbsp;•&nbsp; {readingMinutes} min read
-              </p>
-              {insight.tags && (
-                <p className={styles.tags}>{insight.tags}</p>
-              )}
-            </div>
-
-            <ShareArticle title={insight.title} />
-          </div>
-
-          {insight.cover_image && (
-            <div className={styles.heroImage}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={insight.cover_image} alt="" />
-            </div>
-          )}
-        </section>
+        <ArticleHero category={insight.category} title={insight.title} excerpt={insight.excerpt} author={insight.author} publishedAt={insight.published_at} dateLabel={displayCompactDate(insight.published_at)} readingMinutes={readingMinutes} coverImage={insight.cover_image} mediaVariant="wide" />
 
         <div className={styles.divider} />
 
@@ -124,20 +81,10 @@ export default async function InsightDetailPage({
 
         {moreArticles.length > 0 && (
           <section className={`container ${styles.moreSection}`}>
-            <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>
-              Keep reading
-            </p>
+            <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>Keep reading</p>
             <h2 className="heading-01">More articles</h2>
             <div className={styles.moreGrid}>
-              {moreArticles.map((article) => (
-                <ArticleCard
-                  key={article.slug}
-                  slug={article.slug}
-                  title={article.title}
-                  excerpt={article.excerpt}
-                  thumbnail={article.thumbnail_image}
-                />
-              ))}
+              {moreArticles.map((article) => <ArticlePreview key={article.slug} slug={article.slug} category={article.category} title={article.title} excerpt={article.excerpt} minutes={calculateReadingTime(article.body)} />)}
             </div>
           </section>
         )}

@@ -17,6 +17,11 @@ export function displayDate(value: string) {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 
+export function displayCompactDate(value: string) {
+  const parsed = new Date(`${dateInputValue(value)}T12:00:00`);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+}
+
 export function displayMonthYear(value: string) {
   const parsed = new Date(`${dateInputValue(value)}T12:00:00`);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
