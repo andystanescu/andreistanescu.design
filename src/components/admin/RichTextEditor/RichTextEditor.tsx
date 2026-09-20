@@ -415,9 +415,11 @@ export function RichTextEditor({
   const [insertMenuOpen, setInsertMenuOpen] = useState(false);
   const [toolbarOverflowed, setToolbarOverflowed] = useState(false);
   const [comparisonOpen, setComparisonOpen] = useState(false);
+  const [comparisonAnchor, setComparisonAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
   const [comparisonBefore, setComparisonBefore] = useState<{ file: File; preview: string } | null>(null);
   const [comparisonAfter, setComparisonAfter] = useState<{ file: File; preview: string } | null>(null);
   const [relatedInsightOpen, setRelatedInsightOpen] = useState(false);
+  const [relatedInsightAnchor, setRelatedInsightAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
   const [relatedInsightSlug, setRelatedInsightSlug] = useState("");
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryAnchor, setGalleryAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
@@ -599,8 +601,35 @@ export function RichTextEditor({
   const chooseComparisonImage = (kind: "before" | "after", file: File | undefined) => {
     if (!file) return;
     const image = { file, preview: URL.createObjectURL(file) };
-    if (kind === "before") setComparisonBefore(image);
-    else setComparisonAfter(image);
+    if (kind === "before") setComparisonBefore((current) => { if (current) URL.revokeObjectURL(current.preview); return image; });
+    else setComparisonAfter((current) => { if (current) URL.revokeObjectURL(current.preview); return image; });
+  };
+
+  const editorAnchorAt = (position: number) => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return null;
+    const wrapperBounds = wrapper.getBoundingClientRect();
+    const editorBounds = editor.view.dom.getBoundingClientRect();
+    const caret = editor.view.coordsAtPos(position);
+    return { top: caret.bottom - wrapperBounds.top + 8, left: editorBounds.left - wrapperBounds.left, width: editorBounds.width };
+  };
+
+  const openComparisonAtSelection = () => {
+    const position = editor.state.selection.from;
+    comparisonInsertPosRef.current = position;
+    setComparisonAnchor(editorAnchorAt(position));
+    setComparisonOpen(true);
+    setInsertMenuOpen(false);
+  };
+
+  const closeComparison = () => {
+    if (comparisonBefore) URL.revokeObjectURL(comparisonBefore.preview);
+    if (comparisonAfter) URL.revokeObjectURL(comparisonAfter.preview);
+    setComparisonBefore(null);
+    setComparisonAfter(null);
+    setComparisonOpen(false);
+    setComparisonAnchor(null);
+    comparisonInsertPosRef.current = null;
   };
 
   const handleComparisonInsert = async () => {
@@ -630,10 +659,23 @@ render(<BeforeAfterComparison />);`;
       attrs: { language: "tsx", interactive: true, chrome: "minimal" },
       content: [{ type: "text", text: comparisonCode }],
     }).focus().run();
-    setComparisonOpen(false);
-    setComparisonBefore(null);
-    setComparisonAfter(null);
-    comparisonInsertPosRef.current = null;
+    closeComparison();
+  };
+
+  const openRelatedReadingAtSelection = () => {
+    const position = editor.state.selection.from;
+    relatedInsightInsertPosRef.current = position;
+    setRelatedInsightAnchor(editorAnchorAt(position));
+    setRelatedInsightSlug(relatedReadings[0] ? `${relatedReadings[0].contentType}:${relatedReadings[0].slug}` : "");
+    setRelatedInsightOpen(true);
+    setInsertMenuOpen(false);
+  };
+
+  const closeRelatedReading = () => {
+    setRelatedInsightOpen(false);
+    setRelatedInsightAnchor(null);
+    setRelatedInsightSlug("");
+    relatedInsightInsertPosRef.current = null;
   };
 
   const handleRelatedInsightInsert = () => {
@@ -641,9 +683,7 @@ render(<BeforeAfterComparison />);`;
     if (!reading) return;
     const position = relatedInsightInsertPosRef.current ?? editor.state.selection.from;
     editor.chain().insertContentAt(position, { type: "relatedInsight", attrs: { slug: reading.slug, title: reading.title, contentType: reading.contentType } }).focus().run();
-    setRelatedInsightOpen(false);
-    setRelatedInsightSlug("");
-    relatedInsightInsertPosRef.current = null;
+    closeRelatedReading();
   };
 
   const addGalleryImage = (file: File | undefined) => {
@@ -654,17 +694,7 @@ render(<BeforeAfterComparison />);`;
   const openGalleryAtSelection = () => {
     const position = editor.state.selection.from;
     galleryInsertPosRef.current = position;
-    const wrapper = wrapperRef.current;
-    if (wrapper) {
-      const wrapperBounds = wrapper.getBoundingClientRect();
-      const editorBounds = editor.view.dom.getBoundingClientRect();
-      const caret = editor.view.coordsAtPos(position);
-      setGalleryAnchor({
-        top: caret.bottom - wrapperBounds.top + 8,
-        left: editorBounds.left - wrapperBounds.left,
-        width: editorBounds.width,
-      });
-    }
+    setGalleryAnchor(editorAnchorAt(position));
     setGalleryOpen(true);
     setInsertMenuOpen(false);
   };
@@ -858,14 +888,14 @@ render(<BeforeAfterComparison />);`;
         <button
           type="button"
           className={`${styles.toolbarButton} ${styles.overflowable}`}
-          onClick={() => { comparisonInsertPosRef.current = editor.state.selection.from; setComparisonOpen(true); setInsertMenuOpen(false); }}
+          onClick={openComparisonAtSelection}
           aria-label="Insert before and after comparison"
           title="Insert comparison"
         >
           Compare
         </button>
         <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={openGalleryAtSelection} aria-label="Insert image gallery" title="Insert gallery">Gallery</button>
-        {relatedReadings.length > 0 && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={() => { relatedInsightInsertPosRef.current = editor.state.selection.from; setRelatedInsightSlug(relatedReadings[0] ? `${relatedReadings[0].contentType}:${relatedReadings[0].slug}` : ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }} aria-label="Insert related reading" title="Insert related reading">Related reading</button>}
+        {relatedReadings.length > 0 && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={openRelatedReadingAtSelection} aria-label="Insert related reading" title="Insert related reading">Related reading</button>}
         <button
           type="button"
           className={`${styles.toolbarButton} ${styles.overflowable}`}
@@ -888,20 +918,20 @@ render(<BeforeAfterComparison />);`;
           </button>
         )}
         {toolbarOverflowed && insertMenuOpen && <div className={styles.insertMenu} role="menu">
-          <button type="button" role="menuitem" onClick={() => { comparisonInsertPosRef.current = editor.state.selection.from; setInsertMenuOpen(false); setComparisonOpen(true); }}>Comparison</button>
+          <button type="button" role="menuitem" onClick={openComparisonAtSelection}>Comparison</button>
           <button type="button" role="menuitem" onClick={openGalleryAtSelection}>Gallery</button>
-          {relatedReadings.length > 0 && <button type="button" role="menuitem" onClick={() => { relatedInsightInsertPosRef.current = editor.state.selection.from; setRelatedInsightSlug(relatedReadings[0] ? `${relatedReadings[0].contentType}:${relatedReadings[0].slug}` : ""); setRelatedInsightOpen(true); setInsertMenuOpen(false); }}>Related reading</button>}
+          {relatedReadings.length > 0 && <button type="button" role="menuitem" onClick={openRelatedReadingAtSelection}>Related reading</button>}
           <button type="button" role="menuitem" onClick={() => { setInsertMenuOpen(false); editor.chain().focus().setHorizontalRule().run(); }}>Separator</button>
         </div>}
       </div>
       {comparisonOpen && (
-        <div className={styles.comparisonWidget} role="dialog" aria-label="Create before and after comparison">
+        <div className={`${styles.comparisonWidget} ${styles.inlineWidget}`} style={comparisonAnchor ?? undefined} role="dialog" aria-label="Create before and after comparison">
           <div className={styles.comparisonWidgetHeader}>
             <div>
               <p className={styles.comparisonWidgetEyebrow}>COMPARISON</p>
               <p className={styles.comparisonWidgetTitle}>Add a before and after frame</p>
             </div>
-            <button type="button" className={styles.comparisonClose} onClick={() => setComparisonOpen(false)} aria-label="Close comparison setup">×</button>
+            <button type="button" className={styles.comparisonClose} onClick={closeComparison} aria-label="Close comparison setup">×</button>
           </div>
           <p className={styles.comparisonWidgetHint}>Upload each image into its named position so the slider uses the correct order.</p>
           <div className={styles.comparisonSlots}>
@@ -931,14 +961,14 @@ render(<BeforeAfterComparison />);`;
             })}
           </div>
           <div className={styles.comparisonWidgetActions}>
-            <button type="button" className={styles.comparisonCancel} onClick={() => setComparisonOpen(false)}>Cancel</button>
+            <button type="button" className={styles.comparisonCancel} onClick={closeComparison}>Cancel</button>
             <button type="button" className={styles.comparisonInsert} disabled={!comparisonBefore || !comparisonAfter} onClick={() => void handleComparisonInsert()}>Insert comparison</button>
           </div>
         </div>
       )}
       {galleryOpen && (
         <div
-          className={`${styles.comparisonWidget} ${styles.galleryWidgetInline}`}
+          className={`${styles.comparisonWidget} ${styles.inlineWidget}`}
           style={galleryAnchor ?? undefined}
           role="dialog"
           aria-label="Create image gallery"
@@ -966,11 +996,11 @@ render(<BeforeAfterComparison />);`;
         </div>
       )}
       {relatedInsightOpen && (
-        <div className={styles.comparisonWidget} role="dialog" aria-label="Insert related reading">
-          <div className={styles.comparisonWidgetHeader}><div><p className={styles.comparisonWidgetEyebrow}>RELATED READING</p><p className={styles.comparisonWidgetTitle}>Link an article or case study to this section</p></div><button type="button" className={styles.comparisonClose} onClick={() => setRelatedInsightOpen(false)} aria-label="Close related reading picker">×</button></div>
+        <div className={`${styles.comparisonWidget} ${styles.inlineWidget}`} style={relatedInsightAnchor ?? undefined} role="dialog" aria-label="Insert related reading">
+          <div className={styles.comparisonWidgetHeader}><div><p className={styles.comparisonWidgetEyebrow}>RELATED READING</p><p className={styles.comparisonWidgetTitle}>Link an article or case study to this section</p></div><button type="button" className={styles.comparisonClose} onClick={closeRelatedReading} aria-label="Close related reading picker">×</button></div>
           <p className={styles.comparisonWidgetHint}>The card will stay synchronized with the selected content&apos;s title, thumbnail, and reading time.</p>
           <select className={styles.relatedInsightSelect} value={relatedInsightSlug} onChange={(event) => setRelatedInsightSlug(event.target.value)} aria-label="Related reading"><option value="">Select related reading</option><optgroup label="Articles">{relatedReadings.filter((item) => item.contentType === "article").map((item) => <option key={`article-${item.slug}`} value={`article:${item.slug}`}>{item.title}</option>)}</optgroup><optgroup label="Case studies">{relatedReadings.filter((item) => item.contentType === "case_study").map((item) => <option key={`case-study-${item.slug}`} value={`case_study:${item.slug}`}>{item.title}</option>)}</optgroup></select>
-          <div className={styles.comparisonWidgetActions}><button type="button" className={styles.comparisonCancel} onClick={() => setRelatedInsightOpen(false)}>Cancel</button><button type="button" className={styles.comparisonInsert} disabled={!relatedInsightSlug} onClick={handleRelatedInsightInsert}>Insert related reading</button></div>
+          <div className={styles.comparisonWidgetActions}><button type="button" className={styles.comparisonCancel} onClick={closeRelatedReading}>Cancel</button><button type="button" className={styles.comparisonInsert} disabled={!relatedInsightSlug} onClick={handleRelatedInsightInsert}>Insert related reading</button></div>
         </div>
       )}
       <div
