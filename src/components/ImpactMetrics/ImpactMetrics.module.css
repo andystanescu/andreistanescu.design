@@ -1,0 +1,67 @@
+.grid {
+  --impact-divider: var(--border-default);
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  align-content: start;
+  gap: var(--space-400);
+  color: var(--text-primary);
+}
+
+.metric {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-100);
+}
+
+.metric strong {
+  max-width: 100%;
+  color: var(--text-accent);
+  font: 600 clamp(32px, 3.4vw, 44px)/1 var(--font-family-heading);
+  overflow-wrap: anywhere;
+}
+
+.metric span {
+  max-width: 100%;
+  color: var(--text-secondary);
+  font: 14px/1.45 var(--font-family-body);
+  overflow-wrap: break-word;
+}
+
+.onDeep .metric span {
+  color: var(--text-on-deep-primary);
+}
+
+.onDeep {
+  --impact-divider: var(--border-on-deep);
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+  }
+
+  .metric {
+    min-height: 112px;
+    box-sizing: border-box;
+    justify-content: flex-start;
+    padding-block: var(--space-300);
+    padding-inline: 0 var(--space-300);
+  }
+
+  .metric:nth-child(even) {
+    padding-inline: var(--space-300) 0;
+    border-left: 1px solid var(--impact-divider);
+  }
+
+  .metric:nth-child(n + 3) {
+    border-top: 1px solid var(--impact-divider);
+  }
+
+  .metric strong {
+    font-size: clamp(28px, 9vw, 40px);
+  }
+}

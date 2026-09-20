@@ -1,0 +1,103 @@
+.steps {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 280px;
+  flex-wrap: wrap;
+  gap: var(--space-200);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  min-width: 0;
+  flex: 1 0 160px;
+  flex-direction: column;
+  gap: var(--space-150);
+}
+
+.icon {
+  width: auto;
+  height: 48px;
+  align-self: flex-start;
+  object-fit: contain;
+}
+
+.rail { display: contents; }
+.number { color: var(--text-accent); font: 500 12px/1.35 var(--font-family-mono); }
+.node { display: none; }
+.copy { display: flex; min-width: 0; flex-direction: column; gap: var(--space-150); }
+.copy p { color: var(--text-secondary); }
+
+@media (max-width: 640px) {
+  .steps {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    flex-basis: 100%;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0;
+  }
+
+  .step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    grid-template-areas: "rail copy";
+    column-gap: var(--space-200);
+    flex: none;
+    padding-bottom: var(--space-600);
+  }
+
+  .step:last-child { padding-bottom: 0; }
+  .icon { display: none; }
+
+  .rail {
+    position: relative;
+    grid-area: rail;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .rail::after {
+    position: absolute;
+    top: 48px;
+    bottom: calc(-1 * var(--space-600) + 8px);
+    left: 50%;
+    width: 1px;
+    transform: translateX(-50%);
+    background: var(--border-strong);
+    content: "";
+  }
+
+  .step:last-child .rail::after { display: none; }
+
+  .number {
+    min-height: 24px;
+    color: var(--text-accent);
+  }
+
+  .node {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 11px;
+    height: 11px;
+    margin-top: var(--space-100);
+    border: 2px solid var(--accent-foundation);
+    border-radius: 50%;
+    background: var(--bg-canvas);
+  }
+
+  .copy {
+    grid-area: copy;
+    gap: var(--space-150);
+    padding-top: 31px;
+  }
+
+  .copy h3,
+  .copy p { width: 100%; max-width: none; }
+}

@@ -26,6 +26,7 @@ import { EngagementActivities } from "./EngagementActivities";
 import { getRelatedReadingReferences } from "@/lib/interactiveBlocks";
 import { RelatedReadingList } from "@/components/RelatedReadingList/RelatedReadingList";
 import { resolveRelatedReadings } from "@/lib/relatedReadings";
+import { ImpactMetrics } from "@/components/ImpactMetrics/ImpactMetrics";
 
 export const dynamic = "force-dynamic";
 
@@ -124,7 +125,7 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {study.cover_image && <div className={headerStyles.heroImage}><img src={study.cover_image} alt="" /></div>}
       </section>
-      {metrics.length > 0 && <section className={`${styles.outcomes} section-dark`}><div className={`container ${styles.outcomesGrid}`}><div className={styles.outcomeIntro}><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>{study.outcome_eyebrow || "OUTCOMES"}</p><h2 className={styles.outcomeTitle}>{study.outcome_title}</h2></div><div className={styles.metrics}>{metrics.map((metric) => <div key={`${metric.value}-${metric.label}`} className={styles.metric}><strong>{metric.value}</strong><span>{metric.label}</span></div>)}</div></div></section>}
+      {metrics.length > 0 && <section className={`${styles.outcomes} section-dark`}><div className={`container ${styles.outcomesGrid}`}><div className={styles.outcomeIntro}><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>{study.outcome_eyebrow || "OUTCOMES"}</p><h2 className={styles.outcomeTitle}>{study.outcome_title}</h2></div><ImpactMetrics metrics={metrics} tone="on-deep" label={`${study.title} impact metrics`} /></div></section>}
       {showInProgress && <section className={`container ${styles.inProgress}`}><span className={styles.inProgressBadge}>Write-up in progress</span><h2>The results are in. The story behind them is still being written.</h2><p>This case study is being written up in full—the challenge, the shift in approach, and what was built. The outcomes above are real and already delivered; the full narrative is still being prepared.</p></section>}
       {!showInProgress && <div className={`container ${styles.layout}`}>
         {(pageToc.length > 0 || relatedReadings.length > 0) && <aside className={styles.toc}><TableOfContents items={pageToc} relatedReadings={relatedReadings} />{pageToc.length > 0 && <><p className="label-small">ON THIS PAGE</p><nav aria-label="On this page"><ul>{pageToc.map((item) => <li key={item.id}><a href={`#${item.id}`}>{item.text}</a></li>)}</ul></nav></>}<RelatedReadingList items={relatedReadings} desktopOnly /></aside>}

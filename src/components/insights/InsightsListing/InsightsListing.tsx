@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { ArrowIcon } from "@/components/Icon/ArrowIcon";
 import type { Insight } from "@/data/insights";
+import { calculateReadingTime } from "@/lib/readingTime";
+import { ArticlePreview } from "@/components/insights/ArticlePreview/ArticlePreview";
 import styles from "./InsightsListing.module.css";
 
 function getTags(value: string) {
@@ -35,33 +35,14 @@ export function InsightsListing({ insights }: { insights: Insight[] }) {
           ))}
         </div>
 
-        <Link href={`/insights/${featured.slug}`} className={styles.featured}>
-          <div className={styles.featuredVisual} style={featured.thumbnail_image ? { backgroundImage: `url(${featured.thumbnail_image})` } : undefined}>
-            {!featured.thumbnail_image && <img src="/assets/lattice-diagram.svg" alt="" className={styles.lattice} />}
-            <span className={styles.featuredMeta}><i aria-hidden="true" />{featured.category || "INSIGHTS"}{featured.published_at ? ` · ${new Date(featured.published_at).getFullYear()}` : ""}</span>
-          </div>
-          <div className={styles.featuredCopy}>
-            <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>{featured.category || "INSIGHTS"}</p>
-            <h2 className="heading-01">{featured.title}</h2>
-            <p className="body-default" style={{ color: "var(--text-secondary)" }}>{featured.excerpt}</p>
-            <span className={styles.readLink}>Read article <ArrowIcon size={16} /></span>
-          </div>
-        </Link>
+        <ArticlePreview slug={featured.slug} category={featured.category} title={featured.title} excerpt={featured.excerpt} minutes={calculateReadingTime(featured.body)} thumbnail={featured.thumbnail_image} featured headingLevel="h2" />
       </section>
 
       {additional.length > 0 && (
         <section className={styles.gridSection}>
           <div className={styles.grid}>
             {visibleArticles.map((article) => (
-              <Link key={`${selectedTag}-${article.slug}`} href={`/insights/${article.slug}`} className={styles.card}>
-                <div className={styles.thumb} style={article.thumbnail_image ? { backgroundImage: `url(${article.thumbnail_image})` } : undefined} />
-                <div className={styles.cardBody}>
-                  <p className={styles.cardTags}>{getTags(article.tags).join(" · ")}</p>
-                  <h3 className="heading-03">{article.title}</h3>
-                  <p className="body-small" style={{ color: "var(--text-secondary)" }}>{article.excerpt}</p>
-                  <span className={styles.readLink}>Read article <ArrowIcon size={14} /></span>
-                </div>
-              </Link>
+              <ArticlePreview key={`${selectedTag}-${article.slug}`} slug={article.slug} category={article.category || getTags(article.tags)[0]} title={article.title} excerpt={article.excerpt} minutes={calculateReadingTime(article.body)} />
             ))}
           </div>
           {insights.length >= 8 && visibleCount < additional.length && (

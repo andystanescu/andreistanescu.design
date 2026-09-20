@@ -46,3 +46,9 @@
 @media (max-width: 320px) { .grid { grid-template-columns: 1fr; } }
 
 @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 560px) {
+  .featuredSection,
+  .gridSection { padding-block: var(--space-600); }
+  .grid { display: block; }
+}

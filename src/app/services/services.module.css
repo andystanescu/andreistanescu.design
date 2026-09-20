@@ -128,3 +128,8 @@
   .list { grid-template-columns: 1fr; }
   .largeItem { grid-column: auto; }
 }
+
+/* The index becomes a compact sequence of service rows on mobile. */
+@media (max-width: 640px) {
+  .list { display: block; }
+}

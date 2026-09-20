@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Nav } from "@/components/Nav/Nav";
 import { Footer } from "@/components/Footer/Footer";
@@ -11,6 +10,7 @@ import { LatticeDiagram } from "@/components/home/Hero/LatticeDiagram";
 import { LatticeInteractive } from "@/components/home/Hero/LatticeInteractive";
 import { SelectedImpact } from "@/components/home/SelectedImpact/SelectedImpact";
 import { LatestInsights } from "@/components/home/LatestInsights/LatestInsights";
+import { ServiceIndexItem } from "@/components/services/ServiceIndexItem/ServiceIndexItem";
 import styles from "./services.module.css";
 
 export const dynamic = "force-dynamic";
@@ -53,20 +53,8 @@ export default function ServicesPage() {
             </p>
           ) : (
             <ul className={styles.list}>
-              {services.map((service) => (
-                <li key={service.slug} className={service.card_size === "large" ? styles.largeItem : ""}>
-                  <Link href={`/services/${service.slug}`} className={`${styles.card} ${service.card_size === "large" ? styles.cardLarge : ""}`}>
-                    {service.icon && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={service.icon} alt="" className={`${styles.icon} ${service.card_size === "large" ? styles.iconOnDark : styles.iconOnLight}`} />
-                    )}
-                    <h2 className="heading-02">{service.title}</h2>
-                    <p className="body-default" style={{ color: "var(--text-secondary)" }}>
-                      {service.description}
-                    </p>
-                    <span className={styles.cardLink}>Learn more <span aria-hidden="true">→</span></span>
-                  </Link>
-                </li>
+              {services.map((service, index) => (
+                <ServiceIndexItem key={service.slug} slug={service.slug} title={service.title} description={service.description} index={index + 1} icon={service.icon} featured={service.card_size === "large"} />
               ))}
             </ul>
           )}
