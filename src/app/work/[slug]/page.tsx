@@ -62,6 +62,7 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
   const preview = query.preview === "1" && verifySessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
   const study = getCaseStudyBySlug(slug, preview);
   if (!study) notFound();
+  const renderedBody = preview && study.body_draft !== null ? study.body_draft : study.body;
   const showInProgress = Boolean(study.in_progress) && !preview;
   const authorName = getSettings().author_name;
   const rawPublishedAt = "published_at" in study && typeof study.published_at === "string" ? study.published_at : "";
@@ -71,8 +72,8 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
   try { const parsed = JSON.parse(study.password_hashes || "[]"); passwordHashes = Array.isArray(parsed) ? parsed.map((value) => typeof value === "string" ? value : value && typeof value === "object" && typeof value.hash === "string" ? value.hash : null).filter((value): value is string => Boolean(value)) : []; } catch { passwordHashes = []; }
   const accessToken = cookieStore.get(caseStudyAccessCookieName(study.slug))?.value;
   const accessGranted = preview || !study.password_required || verifyCaseStudyAccessToken(accessToken, study.slug, passwordHashes);
-  const { html: bodyHtml, toc } = addHeadingIds(study.body);
-  const relatedReadings = resolveRelatedReadings(getRelatedReadingReferences(study.body));
+  const { html: bodyHtml, toc } = addHeadingIds(renderedBody);
+  const relatedReadings = resolveRelatedReadings(getRelatedReadingReferences(renderedBody));
   const studies = getCaseStudies();
   const index = studies.findIndex((item) => item.slug === study.slug);
   const previous = index > 0 ? studies[index - 1] : undefined;
@@ -102,7 +103,7 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
       url: absoluteUrl(`/work/${encodeURIComponent(study.slug)}`), image: study.cover_image ? absoluteUrl(study.cover_image) : undefined,
     }) }} />
     <Nav />
-    {preview && <aside className={styles.previewBanner}><strong>Preview mode</strong><span>This is the latest saved version and may not be published.</span><Link href={`/admin/case-studies/${study.id}`}>Return to editor</Link></aside>}
+    {preview && <aside className={styles.previewBanner}><strong>Preview mode</strong><span>{study.body_draft !== null ? "Showing the saved body draft." : "Showing the current published body."}</span><Link href={`/admin/case-studies/${study.id}`}>Return to editor</Link></aside>}
     <CaseStudyLockedContent slug={study.slug} locked={!accessGranted} error={query.accessError ? "That password was not recognised." : undefined}>
     <main className={styles.main}>
       <section className={headerStyles.hero}>

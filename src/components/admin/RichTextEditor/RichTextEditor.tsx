@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { useEditor, useEditorState, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Blockquote from "@tiptap/extension-blockquote";
@@ -329,8 +330,9 @@ type RichTextEditorProps = {
   name: string;
   defaultValue?: string;
   placeholder?: string;
-  onContentChange?: () => void;
+  onContentChange?: (html: string) => void;
   relatedReadings?: RelatedReadingOption[];
+  toolbarAddon?: ReactNode;
 };
 
 type BlockType = "paragraph" | "eyebrow" | "h1" | "h2" | "h3" | "quote" | "code";
@@ -398,6 +400,7 @@ export function RichTextEditor({
   placeholder = "Write the full story…",
   onContentChange,
   relatedReadings = [],
+  toolbarAddon,
 }: RichTextEditorProps) {
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -475,7 +478,7 @@ export function RichTextEditor({
       if (hiddenInputRef.current) {
         hiddenInputRef.current.value = editor.getHTML();
       }
-      onContentChange?.();
+      onContentChange?.(editor.getHTML());
     },
   });
 
@@ -923,6 +926,7 @@ render(<BeforeAfterComparison />);`;
           {relatedReadings.length > 0 && <button type="button" role="menuitem" onClick={openRelatedReadingAtSelection}>Related reading</button>}
           <button type="button" role="menuitem" onClick={() => { setInsertMenuOpen(false); editor.chain().focus().setHorizontalRule().run(); }}>Separator</button>
         </div>}
+        {toolbarAddon && <div className={styles.toolbarAddon}>{toolbarAddon}</div>}
       </div>
       {comparisonOpen && (
         <div className={`${styles.comparisonWidget} ${styles.inlineWidget}`} style={comparisonAnchor ?? undefined} role="dialog" aria-label="Create before and after comparison">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ImageField } from "@/components/admin/ImageField/ImageField";
 import { RichTextEditor } from "@/components/admin/RichTextEditor/RichTextEditor";
@@ -25,9 +25,13 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
   const studyAuthor = "author" in study && typeof study.author === "string" ? study.author : "";
   const publishedDate = "published_at" in study && typeof study.published_at === "string" ? study.published_at : "";
   const formRef = useRef<HTMLFormElement>(null);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saved" | "saving" | "error">("idle");
+  const initialWorkingBody = study.body_draft ?? study.body;
+  const [bodyValue, setBodyValue] = useState(initialWorkingBody);
+  const [bodyDraftEnabled, setBodyDraftEnabled] = useState(Boolean(study.body_draft_enabled));
+  const [bodyEditorKey, setBodyEditorKey] = useState(0);
+  const bodyDiffersFromLive = bodyValue !== study.body;
   const [scores, setScores] = useState<Record<string, string>>(() => Object.fromEntries(assessmentCriteriaList.map((criterion) => [criterion.key, String(assessment.scores[criterion.key] ?? "")] )));
   const overallOptions = ["Focused engagement", "Defined initiative", "Strategic initiative", "Transformation programme", "Enterprise programme"];
   const overallDescriptions: Record<string, string> = { "Focused engagement": "A contained piece of work with a clear problem, owner, and delivery path.", "Defined initiative": "A bounded initiative involving a small number of teams, decisions, or dependencies.", "Strategic initiative": "A meaningful piece of work that influences product direction, priorities, or ways of working.", "Transformation programme": "A sustained change across products, teams, systems, or organisational practices.", "Enterprise programme": "A broad, high-stakes programme requiring organisation-wide coordination and long-term governance." };
@@ -61,22 +65,34 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
       setSaveState("error");
     }
   };
-  const scheduleDraftSave = () => {
-    if (!editing) return;
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+  const markUnsaved = () => {
     if (saveStatusTimerRef.current) clearTimeout(saveStatusTimerRef.current);
-    setSaveState("saving");
-    saveTimerRef.current = setTimeout(() => void saveDraft(), 700);
+    setSaveState("idle");
   };
-  useEffect(() => () => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    if (saveStatusTimerRef.current) clearTimeout(saveStatusTimerRef.current);
-  }, []);
+  const discardBodyDraft = async () => {
+    const form = formRef.current;
+    if (!form) return;
+    const formData = new FormData();
+    formData.set("intent", "discard_body_draft");
+    setSaveState("saving");
+    try {
+      const response = await fetch(form.action, { method: "POST", body: formData });
+      if (!response.ok) throw new Error("Body draft discard failed");
+      setBodyValue(study.body);
+      setBodyDraftEnabled(false);
+      setBodyEditorKey((key) => key + 1);
+      setSaveState("saved");
+      if (saveStatusTimerRef.current) clearTimeout(saveStatusTimerRef.current);
+      saveStatusTimerRef.current = setTimeout(() => setSaveState("idle"), 5000);
+    } catch {
+      setSaveState("error");
+    }
+  };
   return (
-    <form ref={formRef} data-editor-page className={`${adminStyles.form} ${styles.editorForm}`} action={action ?? `/api/admin/case-studies/${study.id}`} method="POST" encType="multipart/form-data" onInput={scheduleDraftSave} onChange={scheduleDraftSave}>
+    <form ref={formRef} data-editor-page className={`${adminStyles.form} ${styles.editorForm}`} action={action ?? `/api/admin/case-studies/${study.id}`} method="POST" encType="multipart/form-data" onInput={markUnsaved} onChange={markUnsaved}>
       <header className={styles.editorHeader}>
           <div className={styles.editorHeading}><p className={styles.editorEyebrow}>ADMIN · CASE STUDY</p><h1>{editing ? study.title : "New case study"}</h1></div>
-          <div className={styles.editorActions}>{saveState !== "idle" && <span className={styles.saveStatus}>{saveState === "saving" ? "Saving…" : saveState === "error" ? "Save failed" : "Saved"}</span>}{editing && <Link href={`/work/${encodeURIComponent(study.slug)}?preview=1`} target="_blank" className={adminStyles.secondaryButton}>Preview</Link>}<Link href="/admin/case-studies" className={adminStyles.tertiaryButton}>Cancel</Link><button type="submit" name="intent" value={editing ? "publish" : "draft"} className={adminStyles.submit}>{editing ? "Publish" : "Create case study"}</button></div>
+          <div className={styles.editorActions}>{saveState !== "idle" && <span className={styles.saveStatus}>{saveState === "saving" ? "Saving…" : saveState === "error" ? "Save failed" : "Saved"}</span>}{editing && <><button type="button" className={adminStyles.secondaryButton} onClick={() => void saveDraft()}>Save</button><Link href={`/work/${encodeURIComponent(study.slug)}?preview=1`} target="_blank" className={adminStyles.secondaryButton}>Preview</Link></>}<Link href="/admin/case-studies" className={adminStyles.tertiaryButton}>Cancel</Link><button type="submit" name="intent" value={editing ? "publish" : "draft"} className={adminStyles.submit}>{editing ? "Publish" : "Create case study"}</button></div>
         <div className={styles.tabs} role="tablist" aria-label="Case study details">
         {(["details", "outcomes", "assessment", "content", "metadata", "visibility"] as const).map((value) => (
           <button key={value} id={`case-study-tab-${value}`} type="button" role="tab" aria-selected={tab === value} aria-controls={`case-study-panel-${value}`} tabIndex={tab === value ? 0 : -1} className={tab === value ? styles.tabActive : styles.tab} onClick={() => setTab(value)}>
@@ -96,7 +112,7 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
         <Field label="Title"><input name="title" defaultValue={study.title} required className={adminStyles.input} /></Field>
         <Field label="Description"><textarea name="description" defaultValue={study.description} required className={adminStyles.textarea} /></Field>
         <Field label="Published date"><input type="date" name="published_at" defaultValue={dateInputValue(publishedDate)} className={adminStyles.input} /></Field>
-        <TagEditor initialValue={study.tags} onCommit={scheduleDraftSave} />
+        <TagEditor initialValue={study.tags} onCommit={markUnsaved} />
       </section>
 
       <section id="case-study-panel-outcomes" role="tabpanel" aria-labelledby="case-study-tab-outcomes" hidden={tab !== "outcomes"} className={styles.panel} aria-label="Case study outcomes">
@@ -115,8 +131,8 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
       </section>
 
       <section id="case-study-panel-content" role="tabpanel" aria-labelledby="case-study-tab-content" hidden={tab !== "content"} className={styles.panel} aria-label="Case study content">
-        <p className="body-small">Your changes save automatically as a draft. Use Publish when the case study is ready to go live.</p>
-        <div className={`${adminStyles.field} ${adminStyles.fieldWide}`}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Body</span><RichTextEditor name="body" defaultValue={study.body} onContentChange={scheduleDraftSave} relatedReadings={relatedReadings} /></div>
+        <p className="body-small">Save keeps your working body in the admin. Publish updates the live body unless Keep as body draft is switched on.</p>
+        <div className={`${adminStyles.field} ${adminStyles.fieldWide}`}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Body</span><RichTextEditor key={bodyEditorKey} name="body" defaultValue={bodyValue} onContentChange={(html) => { setBodyValue(html); markUnsaved(); }} relatedReadings={relatedReadings} toolbarAddon={<><label className={styles.bodyDraftSwitch}><input type="checkbox" name="body_draft_enabled" checked={bodyDraftEnabled} onChange={(event) => setBodyDraftEnabled(event.target.checked)} /><span aria-hidden="true" /><strong>Keep as body draft</strong></label>{bodyDiffersFromLive && <button type="button" className={styles.discardBodyDraft} onClick={() => void discardBodyDraft()}>Discard body draft</button>}</>} /></div>
       </section>
 
       <section id="case-study-panel-metadata" role="tabpanel" aria-labelledby="case-study-tab-metadata" hidden={tab !== "metadata"} className={styles.panel} aria-label="Case study metadata and SEO">
@@ -128,7 +144,7 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
         <div className={styles.sectionIntro}><span className="label-eyebrow">Visibility</span><p className="body-default">Control what visitors can see while you develop and publish this case study.</p></div>
         <label className={styles.visibilitySwitch}><span><strong>In progress</strong><small>Keep the introduction and outcomes live, while replacing the assessment and full write-up with an In Progress message.</small></span><input type="checkbox" name="in_progress" defaultChecked={Boolean(study.in_progress)} /><span aria-hidden="true" /></label>
         <label className={styles.visibilitySwitch}><span><strong>Password required</strong><small>When enabled, visitors must enter one of the accepted passwords before viewing this case study.</small></span><input type="checkbox" name="password_required" defaultChecked={passwordRequired} /><span aria-hidden="true" /></label>
-        <div className={styles.passwordManager}><div className={styles.passwordManagerHeader}><div><h2 className="heading-03">Accepted passwords</h2><p className="body-small">{passwordEntries.length} active {passwordEntries.length === 1 ? "password" : "passwords"}. New passwords remain visible until this draft is saved.</p></div></div><PasswordManager passwordEntries={passwordEntries} onCommit={scheduleDraftSave} /></div>
+        <div className={styles.passwordManager}><div className={styles.passwordManagerHeader}><div><h2 className="heading-03">Accepted passwords</h2><p className="body-small">{passwordEntries.length} active {passwordEntries.length === 1 ? "password" : "passwords"}. New passwords remain visible until this draft is saved.</p></div></div><PasswordManager passwordEntries={passwordEntries} onCommit={markUnsaved} /></div>
       </section>
 
       </div>

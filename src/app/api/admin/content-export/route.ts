@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   const caseStudies = db
     .prepare(
       `SELECT slug, eyebrow, title, description, tags, position, published, in_progress,
-              body, cover_image, thumbnail_image, category, year,
+              body, body_draft, body_draft_enabled, cover_image, thumbnail_image, category, year,
               outcome_eyebrow, outcome_title, metrics, assessment,
               password_required, author, published_at,
               meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index

@@ -14,6 +14,11 @@ export async function POST(
 ) {
   const { id } = await params;
   const form = await request.formData();
+  const intent = String(form.get("intent") ?? "publish");
+  if (intent === "discard_body_draft") {
+    db.prepare("UPDATE case_studies SET body_draft = NULL, body_draft_enabled = 0 WHERE id = ?").run(id);
+    return NextResponse.json({ discarded: true });
+  }
   const slug = String(form.get("slug") ?? "").trim();
   const eyebrow = String(form.get("eyebrow") ?? "").trim();
   const category = String(form.get("category") ?? "").trim();
@@ -31,7 +36,7 @@ export async function POST(
   const ogImage = String(form.get("og_image") ?? "").trim();
   const noIndex = form.get("no_index") === "on" ? 1 : 0;
   const inProgress = form.get("in_progress") === "on" ? 1 : 0;
-  const intent = String(form.get("intent") ?? "publish");
+  const bodyDraftEnabled = form.get("body_draft_enabled") === "on" ? 1 : 0;
   const passwordRequired = form.get("password_required") === "on" ? 1 : 0;
   const rawPasswordAdditions = String(form.get("password_add") ?? "");
   const passwordRemovals = form.getAll("password_remove").map(Number).filter(Number.isInteger);
@@ -64,8 +69,9 @@ export async function POST(
   }
 
   const existing = db
-    .prepare("SELECT cover_image, thumbnail_image, published, password_hashes, published_at FROM case_studies WHERE id = ?")
+    .prepare("SELECT body, cover_image, thumbnail_image, published, password_hashes, published_at FROM case_studies WHERE id = ?")
     .get(id) as {
+      body: string;
       cover_image: string;
       thumbnail_image: string;
       published: number;
@@ -73,6 +79,10 @@ export async function POST(
       published_at: string;
     } | undefined;
   const published = intent === "publish" ? 1 : Number(existing?.published ?? 0);
+  const publishedBody = intent === "publish" && !bodyDraftEnabled ? body : existing?.body ?? "";
+  const bodyDraft = body === publishedBody ? null : body;
+  const storedBodyDraft = intent === "publish" && !bodyDraftEnabled ? null : bodyDraft;
+  const storedBodyDraftEnabled = bodyDraftEnabled;
 
   const coverImage = await resolveImageField(
     form,
@@ -102,7 +112,7 @@ export async function POST(
   try {
     db.prepare(
       `UPDATE case_studies
-       SET slug = ?, eyebrow = ?, category = ?, year = ?, title = ?, description = ?, tags = ?, body = ?, cover_image = ?, thumbnail_image = ?, outcome_eyebrow = ?, outcome_title = ?, metrics = ?, assessment = ?, password_required = ?, password_hashes = ?, published = ?, in_progress = ?, author = ?, published_at = ?, meta_title = ?, meta_description = ?, meta_keywords = ?, canonical_url = ?, og_image = ?, no_index = ?
+       SET slug = ?, eyebrow = ?, category = ?, year = ?, title = ?, description = ?, tags = ?, body = ?, body_draft = ?, body_draft_enabled = ?, cover_image = ?, thumbnail_image = ?, outcome_eyebrow = ?, outcome_title = ?, metrics = ?, assessment = ?, password_required = ?, password_hashes = ?, published = ?, in_progress = ?, author = ?, published_at = ?, meta_title = ?, meta_description = ?, meta_keywords = ?, canonical_url = ?, og_image = ?, no_index = ?
        WHERE id = ?`
     ).run(
       slug,
@@ -112,7 +122,9 @@ export async function POST(
       title,
       description,
       tags,
-      body,
+      publishedBody,
+      storedBodyDraft,
+      storedBodyDraftEnabled,
       coverImage,
       thumbnailImage,
       outcomeEyebrow,
