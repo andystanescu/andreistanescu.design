@@ -996,10 +996,27 @@ render(<BeforeAfterComparison />);`;
         </div>
       )}
       {relatedInsightOpen && (
-        <div className={`${styles.comparisonWidget} ${styles.inlineWidget}`} style={relatedInsightAnchor ?? undefined} role="dialog" aria-label="Insert related reading">
+        <div
+          className={`${styles.comparisonWidget} ${styles.inlineWidget}`}
+          style={relatedInsightAnchor ?? undefined}
+          role="dialog"
+          aria-label="Insert related reading"
+          onPointerDown={(event) => event.stopPropagation()}
+          onMouseDown={(event) => event.stopPropagation()}
+        >
           <div className={styles.comparisonWidgetHeader}><div><p className={styles.comparisonWidgetEyebrow}>RELATED READING</p><p className={styles.comparisonWidgetTitle}>Link an article or case study to this section</p></div><button type="button" className={styles.comparisonClose} onClick={closeRelatedReading} aria-label="Close related reading picker">×</button></div>
           <p className={styles.comparisonWidgetHint}>The card will stay synchronized with the selected content&apos;s title, thumbnail, and reading time.</p>
-          <select className={styles.relatedInsightSelect} value={relatedInsightSlug} onChange={(event) => setRelatedInsightSlug(event.target.value)} aria-label="Related reading"><option value="">Select related reading</option><optgroup label="Articles">{relatedReadings.filter((item) => item.contentType === "article").map((item) => <option key={`article-${item.slug}`} value={`article:${item.slug}`}>{item.title}</option>)}</optgroup><optgroup label="Case studies">{relatedReadings.filter((item) => item.contentType === "case_study").map((item) => <option key={`case-study-${item.slug}`} value={`case_study:${item.slug}`}>{item.title}</option>)}</optgroup></select>
+          <select
+            className={styles.relatedInsightSelect}
+            value={relatedInsightSlug}
+            onInput={(event) => setRelatedInsightSlug(event.currentTarget.value)}
+            onChange={(event) => setRelatedInsightSlug(event.currentTarget.value)}
+            aria-label="Related reading"
+          >
+            <option value="">Select related reading</option>
+            <optgroup label="Articles">{relatedReadings.filter((item) => item.contentType === "article").map((item) => <option key={`article-${item.slug}`} value={`article:${item.slug}`}>{item.title}</option>)}</optgroup>
+            <optgroup label="Case studies">{relatedReadings.filter((item) => item.contentType === "case_study").map((item) => <option key={`case-study-${item.slug}`} value={`case_study:${item.slug}`}>{item.title}</option>)}</optgroup>
+          </select>
           <div className={styles.comparisonWidgetActions}><button type="button" className={styles.comparisonCancel} onClick={closeRelatedReading}>Cancel</button><button type="button" className={styles.comparisonInsert} disabled={!relatedInsightSlug} onClick={handleRelatedInsightInsert}>Insert related reading</button></div>
         </div>
       )}
