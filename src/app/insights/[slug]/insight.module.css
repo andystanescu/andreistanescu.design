@@ -235,8 +235,8 @@
 
 @media (max-width: 640px) {
   .heroCopy {
-    padding-left: var(--space-400);
-    padding-right: var(--space-400);
+    padding-left: var(--layout-gutter-narrative);
+    padding-right: var(--layout-gutter-narrative);
   }
 }
 

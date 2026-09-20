@@ -5,6 +5,15 @@
   min-height: 100svh;
 }
 
+@media (max-width: 900px) {
+  /* The bottom navigation is fixed on smaller viewports. Give the homepage
+     hero a deliberate viewport boundary instead of inheriting the desktop
+     full-screen calculation. */
+  .heroWrap {
+    min-height: calc(100svh - var(--nav-height));
+  }
+}
+
 @media (min-width: 901px) {
   /* The desktop navigation occupies normal document flow, so the hero must
      reserve the remaining viewport rather than adding another full screen. */

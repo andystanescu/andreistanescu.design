@@ -82,3 +82,9 @@
 @media (max-width: 320px) { .grid { grid-template-columns: 1fr; } }
 
 @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+
+/* Mobile projects use the page as their visual container. Space, rather
+   than individual card panels, separates one project from the next. */
+@media (max-width: 600px) {
+  .grid { row-gap: var(--space-800); }
+}

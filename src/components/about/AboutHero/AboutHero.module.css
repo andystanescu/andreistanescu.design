@@ -76,7 +76,25 @@
 }
 
 @media (max-width: 640px) {
+  .hero {
+    gap: var(--space-600);
+    padding-block: var(--space-600) var(--hero-space-after);
+  }
+
   .copy {
     width: 100%;
+    gap: 0;
+  }
+
+  .copy > :global(.label-eyebrow) {
+    margin-bottom: var(--hero-space-eyebrow-title);
+  }
+
+  .headline {
+    margin-bottom: var(--hero-space-title-copy);
+  }
+
+  .copy > :global(.body-large) {
+    margin-bottom: var(--hero-space-copy-actions);
   }
 }

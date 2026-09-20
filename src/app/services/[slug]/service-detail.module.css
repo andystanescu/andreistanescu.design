@@ -135,6 +135,13 @@
 @media (max-width:600px) { .collaborationAlignmentGraphic { min-height:280px; } .collaborationGroupLabel { font-size:8px; } .collaborationCoreLabel, .collaborationDirectionLabel { font-size:7px; } .collaborationMeta { font-size:7px; } }
 
 @media (max-width: 600px) {
+  .hero { padding-block: var(--space-600) var(--hero-space-after); }
+  .heroCopy { gap: 0; }
+  .heroCopy > :global(.label-eyebrow) { margin-bottom: var(--hero-space-eyebrow-title); }
+  .heroCopy h1 { margin-bottom: var(--hero-space-title-copy); }
+  .heroLead { margin-bottom: var(--space-150); }
+  .heroDescription { margin-bottom: var(--hero-space-copy-actions); }
+  .heroActions { margin-top: 0; }
   .heroCopy, .heroCopy h1, .heroLead, .heroDescription, .deliveryCopy, .deliveryIntro, .approach h2, .audience h2, .audienceLead { width: 100%; max-width: none; }
   .benefitsGrid, .audienceGrid, .approachGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

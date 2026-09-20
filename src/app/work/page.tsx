@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer/Footer";
 import { RichContent } from "@/components/RichContent/RichContent";
 import { LatestInsights } from "@/components/home/LatestInsights/LatestInsights";
 import { MoreWorkGrid } from "@/components/work/MoreWorkGrid/MoreWorkGrid";
-import { FeaturedCaseStudyCard } from "@/components/work/FeaturedCaseStudyCard/FeaturedCaseStudyCard";
+import { ProjectCard } from "@/components/work/ProjectCard/ProjectCard";
 import { getCaseStudies } from "@/data/caseStudies";
 import { getPublishedPage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
@@ -40,16 +40,20 @@ export default function WorkPage() {
             Case studies are on their way — check back soon.
           </p>
         ) : (
-          <FeaturedCaseStudyCard slug={featured.slug} title={featured.title} description={featured.description} thumbnail={featured.thumbnail_image} category={featured.category} year={featured.year} />
+          <ProjectCard slug={featured.slug} title={featured.title} description={featured.description} thumbnail={featured.thumbnail_image} category={featured.category || featured.eyebrow} index={1} year={featured.year} inProgress={Boolean(featured.in_progress)} protectedStudy={Boolean(featured.password_required)} featured headingLevel="h2" />
         )}
         <MoreWorkGrid
           totalStudies={CASE_STUDIES.length}
           studies={moreStudies.map((study) => ({
             slug: study.slug,
             eyebrow: study.eyebrow,
+            category: study.category,
+            year: study.year,
             title: study.title,
             description: study.description,
             thumbnail_image: study.thumbnail_image,
+            in_progress: study.in_progress,
+            password_required: study.password_required,
           }))}
           personal={settings.logo_identity === "personal"}
         />

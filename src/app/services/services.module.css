@@ -111,7 +111,9 @@
 
 @media (max-width: 640px) {
   .hero { min-height: 0; }
-  .heroCopy { width: 100%; padding-block: var(--space-800); }
+  .heroCopy { width: 100%; gap: 0; padding-block: var(--space-600) var(--hero-space-after); }
+  .heroCopy > :global(.label-eyebrow) { margin-bottom: var(--hero-space-eyebrow-title); }
+  .heroCopy h1 { margin-bottom: var(--hero-space-title-copy); }
   .lattice { display: none; }
   .list { grid-template-columns: 1fr; }
   .largeItem { grid-column: auto; }

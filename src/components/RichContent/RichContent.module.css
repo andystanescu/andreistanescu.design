@@ -86,6 +86,49 @@
   border-radius: var(--radius-lg);
 }
 
+.visual { width: 100%; min-width: 0; }
+
+@media (max-width: 640px) {
+  .content {
+    font-size: var(--type-mobile-body);
+    line-height: 1.55;
+  }
+
+  .content :global(h1) {
+    font-size: var(--type-mobile-h1);
+    line-height: 1.06;
+    letter-spacing: -1px;
+  }
+
+  .content :global(h2) {
+    font-size: var(--type-mobile-h2);
+    line-height: 1.18;
+    letter-spacing: -0.55px;
+  }
+
+  .content :global(h3) {
+    font-size: var(--type-mobile-h3);
+    line-height: 1.25;
+    letter-spacing: -0.3px;
+  }
+
+  .visual,
+  .content :global(figure),
+  .content > :global(img),
+  .content > :global(p:has(> img:only-child)) {
+    width: calc(100% + var(--layout-gutter-narrative) + var(--layout-gutter-narrative) - var(--layout-gutter-visual) - var(--layout-gutter-visual));
+    max-width: none;
+    margin-inline: calc(var(--layout-gutter-visual) - var(--layout-gutter-narrative));
+  }
+
+  .content :global(figure img),
+  .content > :global(p:has(> img:only-child) img) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 .content :global(figure) { margin: 0; }
 
 .content :global(figcaption) {

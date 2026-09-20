@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ArrowIcon } from "@/components/Icon/ArrowIcon";
 import { getInsights } from "@/data/insights";
-import { AccentText } from "@/components/AccentText/AccentText";
 import { ArticleCard } from "@/components/ArticleCard/ArticleCard";
 import { getSection } from "@/lib/homepage";
+import { HomepageSectionHeader } from "@/components/home/SectionHeader/HomepageSectionHeader";
 import styles from "./LatestInsights.module.css";
 
 export function LatestInsights() {
@@ -18,18 +18,16 @@ export function LatestInsights() {
   return (
     <section id="latest_insights" className={`${styles.insights} section-dark`}>
       <div className={`container ${styles.insightsInner}`}>
-        <div className={styles.intro}>
-          <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>
-            {section.eyebrow}
-          </p>
-          <h2 className="display-small">
-            <AccentText text={section.headline} />
-          </h2>
-          <Link href="/insights" className={styles.seeAll}>
-            See all insights
-            <ArrowIcon size={16} />
-          </Link>
-        </div>
+        <HomepageSectionHeader
+          eyebrow={section.eyebrow}
+          title={section.headline}
+          action={
+            <Link href="/insights" className={styles.seeAll}>
+              See all insights
+              <ArrowIcon size={16} />
+            </Link>
+          }
+        />
 
         <div className={styles.cards}>
           <Link

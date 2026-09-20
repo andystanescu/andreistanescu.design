@@ -1,6 +1,6 @@
-import { AccentText } from "@/components/AccentText/AccentText";
 import { getSection } from "@/lib/homepage";
 import { getHomepageApproachSteps } from "@/lib/approachSteps";
+import { HomepageSectionHeader } from "@/components/home/SectionHeader/HomepageSectionHeader";
 import styles from "./Approach.module.css";
 
 export function Approach() {
@@ -14,17 +14,11 @@ export function Approach() {
   return (
     <section id="approach" className={styles.approach}>
       <div className={`container ${styles.approachInner}`}>
-        <div className={styles.intro}>
-          <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>
-            {section.eyebrow}
-          </p>
-          <h2 className="display-small">
-            <AccentText text={section.headline} />
-          </h2>
-          <p className="body-small" style={{ color: "var(--text-secondary)" }}>
-            {section.description}
-          </p>
-        </div>
+        <HomepageSectionHeader
+          eyebrow={section.eyebrow}
+          title={section.headline}
+          intro={section.description}
+        />
         <div className={styles.steps}>
           {steps.map((step, index) => {
             const isLast = index === steps.length - 1;

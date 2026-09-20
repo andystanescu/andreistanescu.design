@@ -1,8 +1,7 @@
-import Link from "next/link";
-import { ArrowIcon } from "@/components/Icon/ArrowIcon";
 import { getCaseStudies } from "@/data/caseStudies";
-import { AccentText } from "@/components/AccentText/AccentText";
 import { getSection } from "@/lib/homepage";
+import { HomepageSectionHeader } from "@/components/home/SectionHeader/HomepageSectionHeader";
+import { ProjectCard } from "@/components/work/ProjectCard/ProjectCard";
 import styles from "./SelectedImpact.module.css";
 
 export function SelectedImpact() {
@@ -18,73 +17,19 @@ export function SelectedImpact() {
   return (
     <section id="selected_impact" className={styles.impact}>
       <div className={`container ${styles.impactInner}`}>
-        <div className={styles.intro}>
-          <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>
-            {section.eyebrow}
-          </p>
-          <h2 className="display-small">
-            <AccentText text={section.headline} />
-          </h2>
-          <p className="body-small" style={{ color: "var(--text-secondary)" }}>
-            {section.description}
-          </p>
-        </div>
+        <HomepageSectionHeader
+          eyebrow={section.eyebrow}
+          title={section.headline}
+          intro={section.description}
+        />
 
         <div className={styles.grid}>
-          <Link
-            href={`/work/${featured.slug}`}
-            className={`${styles.featured} section-dark`}
-          >
-            <div>
-              <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>
-                {featured.eyebrow}
-              </p>
-              <h3 className={`heading-02 ${styles.featuredTitle}`}>
-                {featured.title}
-              </h3>
-              {featured.tags && (
-                <p
-                  className="body-small"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  {featured.tags}
-                </p>
-              )}
-              <p
-                className={`body-small ${styles.featuredDescription}`}
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {featured.description}
-              </p>
-            </div>
-            <span className={styles.link}>
-              View case study
-              <ArrowIcon size={16} />
-            </span>
-          </Link>
+          <ProjectCard slug={featured.slug} title={featured.title} description={featured.description} thumbnail={featured.thumbnail_image} category={featured.category || featured.eyebrow} index={1} year={featured.year} inProgress={Boolean(featured.in_progress)} protectedStudy={Boolean(featured.password_required)} featured />
 
           {secondary.length > 0 && (
             <div className={styles.secondaryList}>
-              {secondary.map((study) => (
-                <Link
-                  key={study.slug}
-                  href={`/work/${study.slug}`}
-                  className={styles.card}
-                >
-                  <div>
-                    <p
-                      className="label-eyebrow"
-                      style={{ color: "var(--text-accent)" }}
-                    >
-                      {study.eyebrow}
-                    </p>
-                    <h3 className="heading-03">{study.title}</h3>
-                  </div>
-                  <span className={styles.link}>
-                    View case study
-                    <ArrowIcon size={16} />
-                  </span>
-                </Link>
+              {secondary.map((study, index) => (
+                <ProjectCard key={study.slug} slug={study.slug} title={study.title} description={study.description} thumbnail={study.thumbnail_image} category={study.category || study.eyebrow} index={index + 2} year={study.year} inProgress={Boolean(study.in_progress)} protectedStudy={Boolean(study.password_required)} />
               ))}
             </div>
           )}

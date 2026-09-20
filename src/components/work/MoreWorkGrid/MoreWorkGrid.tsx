@@ -1,21 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { ArrowIcon } from "@/components/Icon/ArrowIcon";
+import { ProjectCard } from "@/components/work/ProjectCard/ProjectCard";
 import styles from "./MoreWorkGrid.module.css";
 
 type WorkItem = {
   slug: string;
   eyebrow: string;
+  category: string;
+  year: string;
   title: string;
   description: string;
   thumbnail_image: string;
+  in_progress: number;
+  password_required: number;
 };
-
-function WorkCard({ study }: { study: WorkItem }) {
-  return <Link className={styles.card} href={`/work/${encodeURIComponent(study.slug)}`}><div className={styles.thumbnail} style={study.thumbnail_image ? { backgroundImage: `url(${study.thumbnail_image})` } : undefined} aria-hidden="true" /><div className={styles.cardBody}><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>{study.eyebrow || "CASE STUDY"}</p><h3 className="heading-03">{study.title}</h3><p className="body-small" style={{ color: "var(--text-secondary)" }}>{study.description}</p><span className={styles.cardLink}>View case study <ArrowIcon size={14} /></span></div></Link>;
-}
 
 export function MoreWorkGrid({ studies, totalStudies, personal = true }: { studies: WorkItem[]; totalStudies: number; personal?: boolean }) {
   const [expanded, setExpanded] = useState(false);
@@ -34,8 +34,8 @@ export function MoreWorkGrid({ studies, totalStudies, personal = true }: { studi
         </h2>
       </div>
       <div className={styles.grid}>
-        {visibleStudies.map((study) => (
-          <WorkCard key={study.slug} study={study} />
+        {visibleStudies.map((study, index) => (
+          <ProjectCard key={study.slug} slug={study.slug} title={study.title} description={study.description} thumbnail={study.thumbnail_image} category={study.category || study.eyebrow} index={index + 2} year={study.year} inProgress={Boolean(study.in_progress)} protectedStudy={Boolean(study.password_required)} />
         ))}
       </div>
       {!expanded && totalStudies >= 8 && studies.length > 6 && (

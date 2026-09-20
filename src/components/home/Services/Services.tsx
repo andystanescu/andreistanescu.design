@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getHomepageServiceItems } from "@/lib/serviceItems";
-import { AccentText } from "@/components/AccentText/AccentText";
 import { getSection } from "@/lib/homepage";
+import { HomepageSectionHeader } from "@/components/home/SectionHeader/HomepageSectionHeader";
 import styles from "./Services.module.css";
 
 export function Services() {
@@ -15,11 +15,7 @@ export function Services() {
   return (
     <section id="services" className={`${styles.services} section-dark`}>
       <div className={`container ${styles.servicesInner}`}>
-        <div className={styles.intro}>
-          <h2 className="display-small">
-            <AccentText text={section.headline} />
-          </h2>
-        </div>
+        <HomepageSectionHeader title={section.headline} />
         <div className={styles.grid}>
           {services.map((service) => (
             <Link

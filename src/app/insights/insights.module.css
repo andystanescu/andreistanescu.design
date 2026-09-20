@@ -10,5 +10,8 @@
 .empty { padding-block:var(--space-1200); }
 
 @media (max-width: 640px) {
+  .hero { min-height: 0; gap: 0; padding-block: var(--space-600) var(--hero-space-after); }
+  .hero > :global(.label-eyebrow) { margin-bottom: var(--hero-space-eyebrow-title); }
+  .hero h1 { margin-bottom: var(--hero-space-title-copy); }
   .hero h1, .heroDescription { width: 100%; max-width: none; }
 }

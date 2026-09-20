@@ -12,15 +12,6 @@
   flex-wrap: wrap;
 }
 
-.intro {
-  flex: 0 1 300px;
-  min-width: 0;
-}
-
-.intro h2 {
-  max-width: 40vw;
-}
-
 .grid {
   display: flex;
   flex: 1 0 0;
@@ -57,14 +48,6 @@
    top one so the divider still reads as "between items" rather than a
    dangling vertical rule. */
 @media (max-width: 900px) {
-  .intro {
-    width: 100%;
-  }
-
-  .intro h2 {
-    max-width: 100%;
-  }
-
   .card {
     flex-basis: 100%;
     padding: var(--space-300) 0 0;
@@ -79,12 +62,13 @@
 }
 
 @media (max-width: 640px) {
-  .intro, .grid { width: 100%; min-width: 0; flex-basis: 100%; }
+  .servicesInner { gap: var(--space-600); }
+  .grid { width: 100%; min-width: 0; flex-basis: 100%; }
   .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-300); }
   .card { min-width: 0; }
 }
 @media (max-width: 320px) { .grid { grid-template-columns: 1fr; } }
 
 @media (max-width: 640px) {
-  .intro h2, .intro p, .card h3, .card p { width: 100%; max-width: none; }
+  .card h3, .card p { width: 100%; max-width: none; }
 }

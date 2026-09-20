@@ -11,18 +11,6 @@
   flex-wrap: wrap;
 }
 
-.intro {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-200);
-  flex: 0 1 300px;
-  min-width: 0;
-}
-
-.intro h2 {
-  max-width: 40vw;
-}
-
 .steps {
   display: flex;
   flex: 1 0 0;
@@ -39,22 +27,16 @@
 }
 
 @media (max-width: 900px) {
-  .intro {
-    width: 100%;
-  }
-
-  .intro h2 {
-    max-width: 100%;
-  }
 }
 
 @media (max-width: 640px) {
-  .intro, .steps { width: 100%; min-width: 0; flex-basis: 100%; }
+  .approachInner { gap: var(--space-600); }
+  .steps { width: 100%; min-width: 0; flex-basis: 100%; }
   .steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .step { min-width: 0; }
 }
 @media (max-width: 320px) { .steps { grid-template-columns: 1fr; } }
 
 @media (max-width: 640px) {
-  .intro h2, .intro p, .step h3, .step p { width: 100%; max-width: none; }
+  .step h3, .step p { width: 100%; max-width: none; }
 }

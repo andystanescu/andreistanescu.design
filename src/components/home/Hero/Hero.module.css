@@ -167,11 +167,28 @@
 /* Foundations/System legend: only worth the space on tablet and up — on
    phones the diagram alone (plus the headline/copy) already says enough. */
 @media (max-width: 640px) {
+  .heroInner {
+    gap: var(--space-600);
+    padding-block: var(--space-600) var(--hero-space-after);
+  }
+
   .copy,
   .headline,
   .copy > p {
     width: 100%;
     max-width: none;
+  }
+
+  .copy {
+    gap: 0;
+  }
+
+  .headline {
+    margin-bottom: var(--hero-space-title-copy);
+  }
+
+  .copy > p {
+    margin-bottom: var(--hero-space-copy-actions);
   }
 
   .legend {

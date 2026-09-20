@@ -33,6 +33,9 @@
 @media (max-width: 600px) { .heroLattice { justify-content: flex-start; } .steps, .leaveGrid, .audienceGrid { grid-template-columns: 1fr; } }
 
 @media (max-width: 600px) {
+  .heroCopy { gap: 0; padding-block: var(--space-600) var(--hero-space-after); }
+  .heroCopy > :global(.label-eyebrow) { margin-bottom: var(--hero-space-eyebrow-title); }
+  .heroCopy h1 { margin-bottom: var(--hero-space-title-copy); }
   .heroCopy, .heroCopy h1, .heroDescription,
   .principle h2, .principleInner > p,
   .process > h2, .shared > h2, .shared > p,

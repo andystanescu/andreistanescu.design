@@ -16,7 +16,10 @@
   .reassuranceInner { grid-template-columns: 1fr; min-height: 0; }
 }
 @media (max-width: 560px) {
-  .heroInner { padding-block: var(--space-800); }
+  .heroInner { padding-block: var(--space-600) var(--hero-space-after); }
+  .intro { gap: 0; }
+  .intro > :global(.label-eyebrow) { margin-bottom: var(--hero-space-eyebrow-title); }
+  .intro h1 { margin-bottom: var(--hero-space-title-copy); }
   .form { padding: var(--space-400); }
 }
 
