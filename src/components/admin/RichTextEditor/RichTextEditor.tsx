@@ -48,6 +48,21 @@ const InteractiveCodeBlock = CodeBlockLowlight.extend({
         },
         renderHTML: (attributes: { runtime?: string }) => ({ "data-runtime": attributes.runtime || "auto" }),
       },
+      mediaVariant: {
+        default: "wide",
+        parseHTML: (element: HTMLElement) => element.getAttribute("data-media-variant") || "wide",
+        renderHTML: (attributes: { mediaVariant?: string }) => ({ "data-media-variant": attributes.mediaVariant || "wide" }),
+      },
+      embedLabel: {
+        default: "",
+        parseHTML: (element: HTMLElement) => element.getAttribute("data-embed-label") || "",
+        renderHTML: (attributes: { embedLabel?: string }) => attributes.embedLabel ? { "data-embed-label": attributes.embedLabel } : {},
+      },
+      embedHelp: {
+        default: "",
+        parseHTML: (element: HTMLElement) => element.getAttribute("data-embed-help") || "",
+        renderHTML: (attributes: { embedHelp?: string }) => attributes.embedHelp ? { "data-embed-help": attributes.embedHelp } : {},
+      },
     };
   },
 });
@@ -135,6 +150,21 @@ const StyledParagraph = Paragraph.extend({
   },
 });
 
+const CalloutBlock = TiptapNode.create({
+  name: "callout",
+  group: "block",
+  content: "block+",
+  defining: true,
+  addAttributes() {
+    return {
+      variant: { default: "note", parseHTML: (element: HTMLElement) => element.getAttribute("data-callout") || "note", renderHTML: (attributes: { variant?: string }) => ({ "data-callout": attributes.variant || "note" }) },
+      title: { default: "Note", parseHTML: (element: HTMLElement) => element.getAttribute("data-callout-title") || "Note", renderHTML: (attributes: { title?: string }) => ({ "data-callout-title": attributes.title || "Note", "aria-label": attributes.title || "Note" }) },
+    };
+  },
+  parseHTML() { return [{ tag: "aside[data-callout]" }]; },
+  renderHTML({ HTMLAttributes }) { return ["aside", HTMLAttributes, 0]; },
+});
+
 const RelatedInsightBlock = TiptapNode.create({
   name: "relatedInsight",
   group: "block",
@@ -164,7 +194,10 @@ const GalleryBlock = TiptapNode.create({
   group: "block",
   atom: true,
   addAttributes() {
-    return { images: { default: "", parseHTML: (element: HTMLElement) => element.getAttribute("data-image-gallery") || "", renderHTML: (attributes: { images?: string }) => ({ "data-image-gallery": attributes.images || "" }) } };
+    return {
+      images: { default: "", parseHTML: (element: HTMLElement) => element.getAttribute("data-image-gallery") || "", renderHTML: (attributes: { images?: string }) => ({ "data-image-gallery": attributes.images || "" }) },
+      mediaVariant: { default: "wide", parseHTML: (element: HTMLElement) => element.getAttribute("data-media-variant") || "wide", renderHTML: (attributes: { mediaVariant?: string }) => ({ "data-media-variant": attributes.mediaVariant || "wide" }) },
+    };
   },
   parseHTML() { return [{ tag: "aside[data-image-gallery]" }]; },
   renderHTML({ HTMLAttributes }) { return ["aside", HTMLAttributes]; },
@@ -176,6 +209,29 @@ const GalleryBlock = TiptapNode.create({
       let count = 0;
       try { count = JSON.parse(decodeURIComponent(node.attrs.images || "")).length; } catch { /* Show malformed data as an empty gallery. */ }
       element.textContent = `Image gallery · ${count} image${count === 1 ? "" : "s"}`;
+      return { dom: element };
+    };
+  },
+});
+
+const BeforeAfterBlock = TiptapNode.create({
+  name: "beforeAfter",
+  group: "block",
+  atom: true,
+  addAttributes() {
+    return {
+      comparison: { default: "", parseHTML: (element: HTMLElement) => element.getAttribute("data-before-after") || "", renderHTML: (attributes: { comparison?: string }) => ({ "data-before-after": attributes.comparison || "" }) },
+      mediaVariant: { default: "wide", parseHTML: (element: HTMLElement) => element.getAttribute("data-media-variant") || "wide", renderHTML: (attributes: { mediaVariant?: string }) => ({ "data-media-variant": attributes.mediaVariant || "wide" }) },
+    };
+  },
+  parseHTML() { return [{ tag: "aside[data-before-after]" }]; },
+  renderHTML({ HTMLAttributes }) { return ["aside", HTMLAttributes]; },
+  addNodeView() {
+    return () => {
+      const element = document.createElement("aside");
+      element.className = styles.galleryBlock;
+      element.contentEditable = "false";
+      element.textContent = "Before / after comparison";
       return { dom: element };
     };
   },
@@ -199,6 +255,16 @@ const ResizableImage = Image.extend({
         renderHTML: (attributes: { caption?: string }) =>
           attributes.caption ? { "data-caption": attributes.caption } : {},
       },
+      source: {
+        default: "",
+        parseHTML: (element: HTMLElement) => element.getAttribute("data-source") || element.closest("figure")?.querySelector("[data-figure-context]")?.textContent || "",
+        renderHTML: (attributes: { source?: string }) => attributes.source ? { "data-source": attributes.source } : {},
+      },
+      mediaVariant: {
+        default: "contained",
+        parseHTML: (element: HTMLElement) => element.getAttribute("data-media-variant") || element.closest("figure")?.getAttribute("data-media-variant") || "contained",
+        renderHTML: (attributes: { mediaVariant?: string }) => ({ "data-media-variant": attributes.mediaVariant || "contained" }),
+      },
     };
   },
   parseHTML() {
@@ -208,20 +274,31 @@ const ResizableImage = Image.extend({
         getAttrs: (element: HTMLElement) => {
           const image = element.querySelector("img[src]");
           if (!image) return false;
+          const figcaption = element.querySelector("figcaption");
+          const context = figcaption?.querySelector("[data-figure-context]")?.textContent || "";
           return {
             src: image.getAttribute("src"), alt: image.getAttribute("alt") || "",
             title: image.getAttribute("title") || "", width: image.getAttribute("width") || null,
-            caption: element.querySelector("figcaption")?.textContent || "",
+            caption: figcaption?.querySelector("[data-figure-caption]")?.textContent || (context ? Array.from(figcaption?.childNodes || []).filter((child) => child.nodeType === Node.TEXT_NODE).map((child) => child.textContent).join("").trim() : figcaption?.textContent || ""),
+            source: context,
+            mediaVariant: element.getAttribute("data-media-variant") || image.getAttribute("data-media-variant") || "contained",
           };
         },
       },
       ...(this.parent?.() || []),
     ];
   },
-  renderHTML({ HTMLAttributes, node }: { HTMLAttributes: Record<string, unknown>; node: { attrs: { caption?: string } } }) {
+  renderHTML({ HTMLAttributes, node }: { HTMLAttributes: Record<string, unknown>; node: { attrs: { caption?: string; source?: string; mediaVariant?: string } } }) {
     const caption = typeof node.attrs.caption === "string" ? node.attrs.caption.trim() : "";
-    if (!caption) return ["img", HTMLAttributes];
-    return ["figure", {}, ["img", HTMLAttributes], ["figcaption", {}, caption]];
+    const source = typeof node.attrs.source === "string" ? node.attrs.source.trim() : "";
+    if (!caption && !source) return ["img", HTMLAttributes];
+    const imageAttributes = { ...HTMLAttributes };
+    delete imageAttributes["data-media-variant"];
+    delete imageAttributes["data-source"];
+    const captionContent: Array<string | Record<string, string> | unknown[]> = ["figcaption", {}];
+    if (caption) captionContent.push(["span", { "data-figure-caption": "" }, caption]);
+    if (source) captionContent.push(["small", { "data-figure-context": "" }, source]);
+    return ["figure", { "data-media-variant": node.attrs.mediaVariant || "contained" }, ["img", imageAttributes], captionContent];
   },
   addNodeView() {
     return ({ node, editor, getPos }) => {
@@ -229,10 +306,12 @@ const ResizableImage = Image.extend({
       const image = document.createElement("img");
       const handle = document.createElement("button");
       const captionInput = document.createElement("input");
-      const attrs = node.attrs as { src: string; alt?: string; title?: string; width?: string | null; caption?: string };
+      const sourceInput = document.createElement("input");
+      const attrs = node.attrs as { src: string; alt?: string; title?: string; width?: string | null; caption?: string; source?: string; mediaVariant?: string };
 
       wrapper.className = styles.resizableImage;
       wrapper.setAttribute("data-resizable-image", "true");
+      wrapper.setAttribute("data-media-variant", attrs.mediaVariant || "contained");
       wrapper.setAttribute("contenteditable", "false");
       image.src = attrs.src;
       image.alt = attrs.alt || "";
@@ -244,11 +323,16 @@ const ResizableImage = Image.extend({
       captionInput.placeholder = "Add image caption…";
       captionInput.setAttribute("aria-label", "Image caption");
       captionInput.value = attrs.caption || "";
+      sourceInput.type = "text";
+      sourceInput.className = `${styles.imageCaptionInput} ${styles.figureContextInput}`;
+      sourceInput.placeholder = "Optional source or context…";
+      sourceInput.setAttribute("aria-label", "Image source or context");
+      sourceInput.value = attrs.source || "";
       handle.type = "button";
       handle.className = styles.imageResizeHandle;
       handle.setAttribute("aria-label", "Resize image");
       handle.title = "Drag to resize image";
-      wrapper.append(image, captionInput, handle);
+      wrapper.append(image, captionInput, sourceInput, handle);
 
       const updateWidth = (width: number) => {
         const pos = typeof getPos === "function" ? getPos() : null;
@@ -274,6 +358,14 @@ const ResizableImage = Image.extend({
         const currentNode = editor.state.doc.nodeAt(pos);
         if (!currentNode) return;
         editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, undefined, { ...currentNode.attrs, caption: captionInput.value }));
+      };
+
+      const updateSource = () => {
+        const pos = typeof getPos === "function" ? getPos() : null;
+        if (pos == null) return;
+        const currentNode = editor.state.doc.nodeAt(pos);
+        if (!currentNode) return;
+        editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, undefined, { ...currentNode.attrs, source: sourceInput.value }));
       };
 
       const startResize = (event: PointerEvent) => {
@@ -304,9 +396,10 @@ const ResizableImage = Image.extend({
       handle.addEventListener("pointerdown", startResize);
       image.addEventListener("click", selectImage);
       captionInput.addEventListener("input", updateCaption);
+      sourceInput.addEventListener("input", updateSource);
       return {
         dom: wrapper,
-        stopEvent: (event: Event) => event.target === handle || handle.contains(event.target as Node) || event.target === captionInput,
+        stopEvent: (event: Event) => event.target === handle || handle.contains(event.target as Node) || event.target === captionInput || event.target === sourceInput,
         update: (updatedNode: typeof node) => {
           if (updatedNode.type !== node.type) return false;
           image.src = updatedNode.attrs.src;
@@ -314,12 +407,15 @@ const ResizableImage = Image.extend({
           if (updatedNode.attrs.width) image.width = Number(updatedNode.attrs.width);
           else image.removeAttribute("width");
           captionInput.value = updatedNode.attrs.caption || "";
+          sourceInput.value = updatedNode.attrs.source || "";
+          wrapper.setAttribute("data-media-variant", updatedNode.attrs.mediaVariant || "contained");
           return true;
         },
         destroy: () => {
           handle.removeEventListener("pointerdown", startResize);
           image.removeEventListener("click", selectImage);
           captionInput.removeEventListener("input", updateCaption);
+          sourceInput.removeEventListener("input", updateSource);
         },
       };
     };
@@ -375,6 +471,12 @@ function readToolbarState(editor: Editor | null) {
     chrome: (editor?.getAttributes("codeBlock").chrome as "framed" | "minimal" | undefined) ?? "framed",
     runtime: (editor?.getAttributes("codeBlock").runtime as "auto" | "react" | "html" | "static" | undefined) ?? "auto",
     language: (editor?.getAttributes("codeBlock").language as string | undefined) ?? "",
+    embedLabel: (editor?.getAttributes("codeBlock").embedLabel as string | undefined) ?? "",
+    embedHelp: (editor?.getAttributes("codeBlock").embedHelp as string | undefined) ?? "",
+    callout: editor?.isActive("callout") ?? false,
+    calloutVariant: (editor?.getAttributes("callout").variant as "note" | "decision" | "outcome" | "constraint" | undefined) ?? "note",
+    mediaType: editor?.isActive("image") ? "image" : editor?.isActive("imageGallery") ? "imageGallery" : editor?.isActive("beforeAfter") ? "beforeAfter" : editor?.isActive("codeBlock") ? "codeBlock" : "",
+    mediaVariant: ((editor?.isActive("image") ? editor.getAttributes("image").mediaVariant : editor?.isActive("imageGallery") ? editor.getAttributes("imageGallery").mediaVariant : editor?.isActive("beforeAfter") ? editor.getAttributes("beforeAfter").mediaVariant : editor?.isActive("codeBlock") ? editor.getAttributes("codeBlock").mediaVariant : "contained") as "contained" | "wide" | "bleed") || "contained",
     blockType: (editor?.isActive("codeBlock") || editor?.isActive("code")
       ? "code"
       : editor?.isActive("paragraph", { className: "label-eyebrow" })
@@ -438,8 +540,10 @@ export function RichTextEditor({
         paragraph: false,
       }),
       StyledParagraph,
+      CalloutBlock,
       RelatedInsightBlock,
       GalleryBlock,
+      BeforeAfterBlock,
       Link.configure({ openOnClick: false }),
       AttributedBlockquote,
       InteractiveCodeBlock.configure({ lowlight }),
@@ -641,26 +745,10 @@ export function RichTextEditor({
     const afterUrl = await uploadImage(comparisonAfter.file);
     if (!beforeUrl || !afterUrl) return;
 
-    const comparisonCode = `function BeforeAfterComparison() {
-  const [position, setPosition] = useState(50);
-  return (
-    <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", overflow: "hidden", background: "var(--bg-deep)" }}>
-      <img src={${JSON.stringify(afterUrl)}} alt="After" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-      <img src={${JSON.stringify(beforeUrl)}} alt="Before" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block", clipPath: "inset(0 " + (100 - position) + "% 0 0)" }} />
-      <span style={{ position: "absolute", top: "12px", left: "12px", padding: "6px 8px", background: "var(--bg-deep)", color: "var(--text-on-deep-primary)", fontSize: "11px", fontWeight: 700 }}>BEFORE</span>
-      <span style={{ position: "absolute", top: "12px", right: "12px", padding: "6px 8px", background: "var(--action-on-deep-hover)", color: "var(--action-on-deep-hover-text)", fontSize: "11px", fontWeight: 700 }}>AFTER</span>
-      <input aria-label="Compare before and after images" type="range" min="0" max="100" value={position} onChange={(event) => setPosition(Number(event.target.value))} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "ew-resize" }} />
-      <span aria-hidden="true" style={{ position: "absolute", top: "50%", left: "calc(" + position + "% - 18px)", width: "36px", height: "36px", borderRadius: "50%", background: "var(--action-on-deep-hover)", color: "var(--action-on-deep-hover-text)", display: "grid", placeItems: "center", fontWeight: 700, pointerEvents: "none" }}>↔</span>
-    </div>
-  );
-}
-render(<BeforeAfterComparison />);`;
-
     const position = comparisonInsertPosRef.current ?? editor.state.selection.from;
     editor.chain().insertContentAt(position, {
-      type: "codeBlock",
-      attrs: { language: "tsx", interactive: true, chrome: "minimal" },
-      content: [{ type: "text", text: comparisonCode }],
+      type: "beforeAfter",
+      attrs: { comparison: encodeURIComponent(JSON.stringify({ before: { src: beforeUrl, alt: "Before" }, after: { src: afterUrl, alt: "After" } })), mediaVariant: "wide" },
     }).focus().run();
     closeComparison();
   };
@@ -726,6 +814,11 @@ render(<BeforeAfterComparison />);`;
   const handleLink = () => {
     const href = window.prompt("Enter a URL", editor.getAttributes("link").href || "https://");
     if (href) editor.chain().focus().setLink({ href }).run();
+  };
+
+  const insertCallout = () => {
+    editor.chain().focus().insertContent({ type: "callout", attrs: { variant: "note", title: "Note" }, content: [{ type: "paragraph" }] }).run();
+    setInsertMenuOpen(false);
   };
 
   return (
@@ -868,6 +961,43 @@ render(<BeforeAfterComparison />);`;
             <option value="static">Static code</option>
           </select>
         </label>}
+        {state.codeBlock && <label className={styles.runtimeControl}>
+          <span>Label</span>
+          <input value={state.embedLabel} aria-label="Embed label" placeholder="Optional" onChange={(event) => editor.chain().focus().updateAttributes("codeBlock", { embedLabel: event.target.value }).run()} />
+        </label>}
+        {state.codeBlock && <label className={styles.runtimeControl}>
+          <span>Help</span>
+          <input value={state.embedHelp} aria-label="Embed caption or help" placeholder="Optional" onChange={(event) => editor.chain().focus().updateAttributes("codeBlock", { embedHelp: event.target.value }).run()} />
+        </label>}
+        {state.mediaType && <label className={styles.runtimeControl}>
+          <span>Media width</span>
+          <select
+            value={state.mediaVariant}
+            aria-label="Media width"
+            onChange={(event) => editor.chain().focus().updateAttributes(state.mediaType, { mediaVariant: event.target.value }).run()}
+          >
+            <option value="contained">Contained</option>
+            <option value="wide">Wide</option>
+            <option value="bleed">Full bleed</option>
+          </select>
+        </label>}
+        {state.callout && <label className={styles.runtimeControl}>
+          <span>Callout type</span>
+          <select
+            value={state.calloutVariant}
+            aria-label="Callout type"
+            onChange={(event) => {
+              const variant = event.target.value as "note" | "decision" | "outcome" | "constraint";
+              const title = variant.charAt(0).toUpperCase() + variant.slice(1);
+              editor.chain().focus().updateAttributes("callout", { variant, title }).run();
+            }}
+          >
+            <option value="note">Note</option>
+            <option value="decision">Decision</option>
+            <option value="outcome">Outcome</option>
+            <option value="constraint">Constraint</option>
+          </select>
+        </label>}
         <span className={styles.toolbarDivider} />
         <button
           type="button"
@@ -898,6 +1028,7 @@ render(<BeforeAfterComparison />);`;
           Compare
         </button>
         <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={openGalleryAtSelection} aria-label="Insert image gallery" title="Insert gallery">Gallery</button>
+        <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={insertCallout} aria-label="Insert callout" title="Insert callout">Callout</button>
         {relatedReadings.length > 0 && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={openRelatedReadingAtSelection} aria-label="Insert related reading" title="Insert related reading">Related reading</button>}
         <button
           type="button"
@@ -923,6 +1054,7 @@ render(<BeforeAfterComparison />);`;
         {toolbarOverflowed && insertMenuOpen && <div className={styles.insertMenu} role="menu">
           <button type="button" role="menuitem" onClick={openComparisonAtSelection}>Comparison</button>
           <button type="button" role="menuitem" onClick={openGalleryAtSelection}>Gallery</button>
+          <button type="button" role="menuitem" onClick={insertCallout}>Callout</button>
           {relatedReadings.length > 0 && <button type="button" role="menuitem" onClick={openRelatedReadingAtSelection}>Related reading</button>}
           <button type="button" role="menuitem" onClick={() => { setInsertMenuOpen(false); editor.chain().focus().setHorizontalRule().run(); }}>Separator</button>
         </div>}

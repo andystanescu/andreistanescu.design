@@ -3,6 +3,10 @@ import { splitInteractiveBlocks } from "@/lib/interactiveBlocks";
 import { LiveComponentBlock } from "@/components/LiveComponentBlock/LiveComponentBlock";
 import { RelatedInsightCard } from "@/components/RelatedInsightCard/RelatedInsightCard";
 import { ImageGallery } from "@/components/ImageGallery/ImageGallery";
+import { MediaContainer } from "@/components/MediaContainer/MediaContainer";
+import { BeforeAfterComparison } from "@/components/BeforeAfterComparison/BeforeAfterComparison";
+import { CodeBlockContent } from "@/components/CodeBlock/CodeBlockContent";
+import { EmbedWrapper } from "@/components/EmbedWrapper/EmbedWrapper";
 import styles from "./RichContent.module.css";
 
 type RichContentProps = {
@@ -22,10 +26,7 @@ export function RichContent({ html }: RichContentProps) {
   // single dangerouslySetInnerHTML, no extra wrapper markup.
   if (!hasLiveBlocks) {
     return (
-      <div
-        className={styles.content}
-        dangerouslySetInnerHTML={{ __html: highlightCodeBlocks(html) }}
-      />
+      <CodeBlockContent className={styles.content} html={highlightCodeBlocks(html)} />
     );
   }
 
@@ -33,17 +34,15 @@ export function RichContent({ html }: RichContentProps) {
     <div className={styles.content}>
       {segments.map((segment, index) =>
         segment.type === "live" ? (
-          <div key={index} className={styles.visual}><LiveComponentBlock code={segment.code} chrome={segment.chrome} runtime={segment.runtime} language={segment.language} /></div>
+          <MediaContainer key={index} variant={segment.mediaVariant}><EmbedWrapper label={segment.label} help={segment.help}><LiveComponentBlock code={segment.code} chrome={segment.chrome} runtime={segment.runtime} language={segment.language} /></EmbedWrapper></MediaContainer>
         ) : segment.type === "relatedInsight" ? (
           <RelatedInsightCard key={index} slug={segment.slug} contentType={segment.contentType} />
         ) : segment.type === "gallery" ? (
-          <div key={index} className={styles.visual}><ImageGallery images={segment.images} /></div>
+          <MediaContainer key={index} variant={segment.mediaVariant}><ImageGallery images={segment.images} /></MediaContainer>
+        ) : segment.type === "beforeAfter" ? (
+          <MediaContainer key={index} variant={segment.mediaVariant}><BeforeAfterComparison before={segment.before} after={segment.after} /></MediaContainer>
         ) : segment.content.trim() ? (
-          <div
-            key={index}
-            className={styles.content}
-            dangerouslySetInnerHTML={{ __html: highlightCodeBlocks(segment.content) }}
-          />
+          <CodeBlockContent key={index} className={styles.content} html={highlightCodeBlocks(segment.content)} />
         ) : null
       )}
     </div>

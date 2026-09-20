@@ -14,6 +14,7 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
   const tileRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const dragRef = useRef({ pointerId: -1, startX: 0, startScrollLeft: 0, moved: false });
   const suppressClickRef = useRef(false);
+  const scrollEndRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const count = images.length;
 
   useEffect(() => {
@@ -35,6 +36,10 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [count, lightboxOpen]);
+
+  useEffect(() => () => {
+    if (scrollEndRef.current) clearTimeout(scrollEndRef.current);
+  }, []);
 
   if (!count) return null;
   const move = (direction: -1 | 1) => setActive((value) => (value + direction + count) % count);
@@ -98,7 +103,13 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
         }}
         onPointerUp={finishDrag}
         onPointerCancel={finishDrag}
+        onScroll={() => {
+          if (dragging) return;
+          if (scrollEndRef.current) clearTimeout(scrollEndRef.current);
+          scrollEndRef.current = setTimeout(selectNearestImage, 100);
+        }}
         aria-label="Image gallery. Drag horizontally to browse images."
+        aria-roledescription="carousel"
       >
         {images.map((image, index) => (
           <button
@@ -112,6 +123,7 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
               setLightboxOpen(true);
             }}
             aria-label={`Open image ${index + 1} of ${count}`}
+            aria-current={index === active ? "true" : undefined}
           >
             {/* User-managed uploads are served by the application's upload route. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -120,6 +132,7 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
           </button>
         ))}
       </div>
+      {current.caption && <p className={styles.galleryCaption} aria-live="polite">{current.caption}</p>}
       {count > 1 && <div className={styles.controls}>
         <button type="button" onClick={() => move(-1)} aria-label="Previous image">‹</button>
         <span>{String(active + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}</span>

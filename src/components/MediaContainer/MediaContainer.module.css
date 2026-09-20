@@ -1,0 +1,9 @@
+.media{min-width:0;max-width:none}
+.contained{width:100%}
+.wide{width:calc(100% + (var(--space-600) * 2));margin-inline:calc(-1 * var(--space-600))}
+.bleed{position:relative;left:50%;width:100vw;margin-left:-50vw}
+
+@media(max-width:640px){
+  .wide{width:calc(100% + var(--layout-gutter-narrative) + var(--layout-gutter-narrative) - var(--layout-gutter-visual) - var(--layout-gutter-visual));margin-inline:calc(var(--layout-gutter-visual) - var(--layout-gutter-narrative))}
+  .bleed{left:50%;width:100vw;margin-left:-50vw}
+}

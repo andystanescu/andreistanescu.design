@@ -9,9 +9,10 @@ function decodeEntities(text: string): string {
 
 export type ContentSegment =
   | { type: "html"; content: string }
-  | { type: "live"; code: string; chrome: "framed" | "minimal"; runtime: "auto" | "react" | "html" | "static"; language?: string }
+  | { type: "live"; code: string; chrome: "framed" | "minimal"; runtime: "auto" | "react" | "html" | "static"; language?: string; mediaVariant: "contained" | "wide" | "bleed"; label?: string; help?: string }
   | { type: "relatedInsight"; slug: string; contentType: "article" | "case_study" }
-  | { type: "gallery"; images: Array<{ src: string; alt?: string; caption?: string }> };
+  | { type: "gallery"; images: Array<{ src: string; alt?: string; caption?: string }>; mediaVariant: "contained" | "wide" | "bleed" }
+  | { type: "beforeAfter"; before: { src: string; alt?: string }; after: { src: string; alt?: string }; mediaVariant: "contained" | "wide" | "bleed" };
 
 export type RelatedReadingReference = { slug: string; contentType: "article" | "case_study" };
 
@@ -21,7 +22,7 @@ export type RelatedReadingReference = { slug: string; contentType: "article" | "
 // real running React component instead of highlighted text — the rest of
 // the content stays a plain HTML string, unaffected.
 export function splitInteractiveBlocks(html: string): ContentSegment[] {
-  const re = /<pre data-interactive="true"([^>]*)><code(?:\s+class="language-([^"]+)")?>([\s\S]*?)<\/code><\/pre>|<aside data-related-insight="([^"]+)"([^>]*)><\/aside>|<aside data-image-gallery="([^"]+)"><\/aside>/g;
+  const re = /<pre data-interactive="true"([^>]*)><code(?:\s+class="language-([^"]+)")?>([\s\S]*?)<\/code><\/pre>|<aside data-related-insight="([^"]+)"([^>]*)><\/aside>|<aside data-image-gallery="([^"]+)"([^>]*)><\/aside>|<aside data-before-after="([^"]+)"([^>]*)><\/aside>/g;
   const segments: ContentSegment[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -30,18 +31,28 @@ export function splitInteractiveBlocks(html: string): ContentSegment[] {
     if (match.index > lastIndex) {
       segments.push({ type: "html", content: html.slice(lastIndex, match.index) });
     }
-    if (match[4]) {
+    if (match[8]) {
+      try {
+        const comparison = JSON.parse(decodeURIComponent(decodeEntities(match[8])));
+        const variantMatch = (match[9] || "").match(/data-media-variant="(contained|wide|bleed)"/);
+        if (comparison?.before?.src && comparison?.after?.src) segments.push({ type: "beforeAfter", before: comparison.before, after: comparison.after, mediaVariant: (variantMatch?.[1] as "contained" | "wide" | "bleed" | undefined) ?? "wide" });
+      } catch { /* Ignore malformed comparison data without breaking the article. */ }
+    } else if (match[4]) {
       const contentType = /data-content-type="case_study"/.test(match[5] || "") ? "case_study" : "article";
       segments.push({ type: "relatedInsight", slug: decodeEntities(match[4]), contentType });
     } else if (match[6]) {
       try {
         const images = JSON.parse(decodeURIComponent(decodeEntities(match[6])));
-        if (Array.isArray(images)) segments.push({ type: "gallery", images });
+        const variantMatch = (match[7] || "").match(/data-media-variant="(contained|wide|bleed)"/);
+        if (Array.isArray(images)) segments.push({ type: "gallery", images, mediaVariant: (variantMatch?.[1] as "contained" | "wide" | "bleed" | undefined) ?? "wide" });
       } catch { /* Ignore malformed legacy content without breaking the article. */ }
     } else {
       const runtimeMatch = (match[1] || "").match(/data-runtime="(auto|react|html|static)"/);
       const chromeMatch = (match[1] || "").match(/data-chrome="(minimal|framed)"/);
-      segments.push({ type: "live", chrome: chromeMatch?.[1] === "minimal" ? "minimal" : "framed", runtime: (runtimeMatch?.[1] as "auto" | "react" | "html" | "static" | undefined) ?? "auto", language: match[2], code: decodeEntities(match[3]) });
+      const variantMatch = (match[1] || "").match(/data-media-variant="(contained|wide|bleed)"/);
+      const labelMatch = (match[1] || "").match(/data-embed-label="([^"]*)"/);
+      const helpMatch = (match[1] || "").match(/data-embed-help="([^"]*)"/);
+      segments.push({ type: "live", chrome: chromeMatch?.[1] === "minimal" ? "minimal" : "framed", runtime: (runtimeMatch?.[1] as "auto" | "react" | "html" | "static" | undefined) ?? "auto", language: match[2], code: decodeEntities(match[3]), mediaVariant: (variantMatch?.[1] as "contained" | "wide" | "bleed" | undefined) ?? "wide", label: labelMatch ? decodeEntities(labelMatch[1]) : undefined, help: helpMatch ? decodeEntities(helpMatch[1]) : undefined });
     }
     lastIndex = match.index + match[0].length;
   }

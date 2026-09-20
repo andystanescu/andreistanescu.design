@@ -122,6 +122,7 @@ function StaticCodeSurface({ code, chrome, language }: { code: string; chrome: "
 function HtmlComponentSurface({ code, chrome, language }: { code: string; chrome: "framed" | "minimal"; language: string }) {
   const [view, setView] = React.useState<"preview" | "code">("preview");
   const [copied, setCopied] = React.useState(false);
+  const [loaded, setLoaded] = React.useState(false);
   const html = prepareHtmlPreview(code);
 
   const handleCopy = async () => {
@@ -149,7 +150,7 @@ function HtmlComponentSurface({ code, chrome, language }: { code: string; chrome
         </div>
       </div>}
       {view === "preview" ? (
-        <iframe className={styles.htmlPreview} title="Live HTML preview" sandbox="allow-scripts" srcDoc={html} />
+        <div className={styles.previewHost}>{!loaded && <div className={styles.loading} role="status">Loading interactive preview…</div>}<iframe className={styles.htmlPreview} title="Live HTML preview" sandbox="allow-scripts" srcDoc={html} onLoad={() => setLoaded(true)} /></div>
       ) : (
         <pre className={styles.code}><code>{code}</code></pre>
       )}
@@ -192,6 +193,8 @@ function LiveComponentSurface({ code, chrome }: { code: string; chrome: "framed"
       </div>}
       {activeView === "preview" && canRender ? (
         <div className={chrome === "minimal" ? styles.previewMinimal : styles.preview}><LivePreview /></div>
+      ) : activeView === "preview" && !error ? (
+        <div className={styles.loading} role="status">Loading interactive preview…</div>
       ) : (
         <pre className={styles.code}><code>{code}</code></pre>
       )}

@@ -22,6 +22,9 @@
   border: 0;
   background: var(--bg-deep);
 }
+.previewHost{position:relative;min-height:260px;overflow:hidden}
+.loading{display:grid;min-height:160px;place-items:center;padding:var(--space-300);background:var(--bg-subtle);color:var(--text-tertiary);font:500 13px/1.5 var(--font-family-body);text-align:center}
+.previewHost>.loading{position:absolute;inset:0;z-index:1}
 
 .frame {
   width: 100%;
