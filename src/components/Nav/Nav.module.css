@@ -5,7 +5,7 @@
   width: 100%;
   background: var(--bg-canvas);
   border-bottom: 1px solid var(--border-default);
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .navOuter.scrolled {
@@ -183,6 +183,10 @@
     border-bottom: none;
     border-top: 1px solid var(--border-default);
   }
+
+  .navOuter.readingNavHidden {
+    transform: translateY(100%);
+  }
 }
 
 /* Belt-and-suspenders: force the overlay closed above the breakpoint even if
@@ -192,4 +196,8 @@
   .overlay {
     display: none !important;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navOuter { transition: none; }
 }

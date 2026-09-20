@@ -11,22 +11,18 @@ import { getCaseStudies, getCaseStudyBySlug, getCaseStudyMetrics, getCaseStudyAs
 import { assessmentCriteriaList, generateActivityRecommendations, getPrimaryComplexityDrivers } from "@/data/caseStudyAssessment";
 import { addHeadingIds } from "@/lib/tableOfContents";
 import { TableOfContents } from "@/components/TableOfContents/TableOfContents";
-import { BackButton } from "@/components/BackButton/BackButton";
 import styles from "./case-study.module.css";
 import { CaseStudyLockedContent } from "@/components/CaseStudyPasswordGate/CaseStudyLockedContent";
 import { caseStudyAccessCookieName, verifyCaseStudyAccessToken } from "@/lib/caseStudyAccess";
 import { contentMetadata, absoluteUrl } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 import { displayDate } from "@/lib/dateUtils";
-import { AuthorAvatar } from "@/components/AuthorAvatar/AuthorAvatar";
-import { ShareArticle } from "@/components/ShareArticle/ShareArticle";
-import headerStyles from "@/app/insights/[slug]/insight.module.css";
 import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth";
 import { EngagementActivities } from "./EngagementActivities";
 import { getRelatedReadingReferences } from "@/lib/interactiveBlocks";
 import { RelatedReadingList } from "@/components/RelatedReadingList/RelatedReadingList";
 import { resolveRelatedReadings } from "@/lib/relatedReadings";
-import { ImpactMetrics } from "@/components/ImpactMetrics/ImpactMetrics";
+import { CaseStudyHero } from "@/components/work/CaseStudyHero/CaseStudyHero";
 
 export const dynamic = "force-dynamic";
 
@@ -107,28 +103,10 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
     {preview && <aside className={styles.previewBanner}><strong>Preview mode</strong><span>{study.body_draft !== null ? "Showing the saved body draft." : "Showing the current published body."}</span><Link href={`/admin/case-studies/${study.id}`}>Return to editor</Link></aside>}
     <CaseStudyLockedContent slug={study.slug} locked={!accessGranted} error={query.accessError ? "That password was not recognised." : undefined}>
     <main className={styles.main}>
-      <section className={headerStyles.hero}>
-        <div className={headerStyles.heroCopy}>
-          <BackButton label="Back to work" fallbackHref="/work" />
-          <p className={`body-small ${headerStyles.breadcrumb}`}><Link href="/work">Work</Link>{study.category && <> &nbsp;/&nbsp; {study.category}</>}</p>
-          <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>{study.category || study.eyebrow || "CASE STUDY"}</p>
-          <h1 className="display-small">{study.title}</h1>
-          <p className="body-large" style={{ color: "var(--text-secondary)" }}>{study.description}</p>
-          <div className={headerStyles.byline}>
-            <p className="body-small" style={{ color: "var(--text-secondary)" }}><AuthorAvatar author={authorName} /></p>
-            {publicationDetails && <p className="body-small" style={{ color: "var(--text-tertiary)" }}>{publicationDetails}</p>}
-            {study.tags && <p className={headerStyles.tags}>{study.tags}</p>}
-          </div>
-          <ShareArticle title={study.title} contentType="case_study" contentId={study.slug} />
-        </div>
-        {/* CMS content may reference uploaded or externally hosted images that are not known at build time. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        {study.cover_image && <div className={headerStyles.heroImage}><img src={study.cover_image} alt="" /></div>}
-      </section>
-      {metrics.length > 0 && <section className={`${styles.outcomes} section-dark`}><div className={`container ${styles.outcomesGrid}`}><div className={styles.outcomeIntro}><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>{study.outcome_eyebrow || "OUTCOMES"}</p><h2 className={styles.outcomeTitle}>{study.outcome_title}</h2></div><ImpactMetrics metrics={metrics} tone="on-deep" label={`${study.title} impact metrics`} /></div></section>}
+      <CaseStudyHero slug={study.slug} category={study.category} company={study.eyebrow} title={study.title} summary={study.description} author={authorName} publicationDetails={publicationDetails} tags={study.tags} role={study.project_role} timeline={study.timeline} scope={study.scope} team={study.team} coverImage={study.cover_image} impactEyebrow={study.outcome_eyebrow || "Impact"} impactTitle={study.outcome_title} metrics={metrics} />
       {showInProgress && <section className={`container ${styles.inProgress}`}><span className={styles.inProgressBadge}>Write-up in progress</span><h2>The results are in. The story behind them is still being written.</h2><p>This case study is being written up in full—the challenge, the shift in approach, and what was built. The outcomes above are real and already delivered; the full narrative is still being prepared.</p></section>}
       {!showInProgress && <div className={`container ${styles.layout}`}>
-        {(pageToc.length > 0 || relatedReadings.length > 0) && <aside className={styles.toc}><TableOfContents items={pageToc} relatedReadings={relatedReadings} />{pageToc.length > 0 && <><p className="label-small">ON THIS PAGE</p><nav aria-label="On this page"><ul>{pageToc.map((item) => <li key={item.id}><a href={`#${item.id}`}>{item.text}</a></li>)}</ul></nav></>}<RelatedReadingList items={relatedReadings} desktopOnly /></aside>}
+        {(pageToc.length > 0 || relatedReadings.length > 0) && <aside className={styles.toc}><TableOfContents items={pageToc} relatedReadings={relatedReadings} /><RelatedReadingList items={relatedReadings} desktopOnly /></aside>}
         <article className={styles.articleBody}>{hasAssessment && <section id="engagement-assessment" className={styles.assessment}><div className={styles.assessmentHeader}><div><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>CONSCEPT ENGAGEMENT ASSESSMENT</p><h2 id="assessment-overview" className="heading-02">A clearer view of the work ahead.</h2><p className="body-default">A practical record of the complexity observed, the activities likely to help, and the work that was actually conducted.</p></div></div><div className={styles.assessmentGrid}><div className={styles.assessmentScores}><h3 id="complexity-profile" className="heading-03">Complexity profile</h3>{assessmentCriteriaList.map((criterion) => { const score=assessment.scores[criterion.key] || 0; return <div className={styles.assessmentScore} key={criterion.key}><ComplexityMetricIcon criterion={criterion.key} /><div className={styles.assessmentScoreMeta}><span>{criterion.label}</span><div className={styles.assessmentScoreValue}><strong>{score ? `${score} / 5` : "—"}</strong>{primaryDrivers.includes(criterion.key) && <em className={styles.primaryDriver}>Primary driver</em>}</div></div><div className={styles.scoreTrack}><i style={{ width: `${Math.min(100, score / 5 * 100)}%` }} /></div></div>; })}</div><div className={styles.assessmentAside}>{assessment.overall && <div className={styles.assessmentSummary}><span>OVERALL COMPLEXITY</span><strong>{assessment.overall}</strong><p>{assessment.overallDescription}</p></div>}<div className={styles.assessmentLists}><div><h3 id="likely-engagement" className="heading-03">Likely engagement</h3><EngagementActivities visibleActivities={likelyDisplayed} additionalActivities={likelyAdditional} conductedActivities={assessment.conducted} /></div></div></div></div></section>}
         <RichContent html={bodyHtml} />
       </article>

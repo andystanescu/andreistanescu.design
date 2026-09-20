@@ -113,10 +113,6 @@ export default async function InsightDetailPage({
           {(toc.length > 0 || relatedReadings.length > 0) && (
             <aside className={styles.toc}>
               <TableOfContents items={toc} relatedReadings={relatedReadings} />
-              {toc.length > 0 && <>
-                <p className="label-small" style={{ color: "var(--text-primary)" }}>ON THIS PAGE</p>
-                <nav aria-label="On this page"><ul>{toc.map((item) => <li key={item.id}><a href={`#${item.id}`}>{item.text}</a></li>)}</ul></nav>
-              </>}
               <RelatedReadingList items={relatedReadings} desktopOnly />
             </aside>
           )}

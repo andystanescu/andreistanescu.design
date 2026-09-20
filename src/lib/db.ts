@@ -40,6 +40,10 @@ function initializeDatabase() {
     eyebrow TEXT NOT NULL,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
+    project_role TEXT NOT NULL DEFAULT '',
+    timeline TEXT NOT NULL DEFAULT '',
+    scope TEXT NOT NULL DEFAULT '',
+    team TEXT NOT NULL DEFAULT '',
     tags TEXT NOT NULL DEFAULT '',
     body TEXT NOT NULL DEFAULT '',
     cover_image TEXT NOT NULL DEFAULT '',
@@ -234,6 +238,10 @@ db.exec(`
 `);
 addColumnIfMissing("case_studies", "category", "category TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "year", "year TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("case_studies", "project_role", "project_role TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("case_studies", "timeline", "timeline TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("case_studies", "scope", "scope TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("case_studies", "team", "team TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "outcome_eyebrow", "outcome_eyebrow TEXT NOT NULL DEFAULT 'OUTCOMES'");
 addColumnIfMissing("case_studies", "outcome_title", "outcome_title TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "metrics", "metrics TEXT NOT NULL DEFAULT '[]'");

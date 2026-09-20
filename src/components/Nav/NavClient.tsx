@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -19,7 +19,9 @@ type NavClientProps = {
 export function NavClient({ links, logoIdentity }: NavClientProps) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [readingNavHidden, setReadingNavHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const lastScrollY = useRef(0);
   // The portal target (document.body) only exists on the client — this is
   // React's recommended way to render something only after hydration
   // without the "setState in an effect" anti-pattern (and without a
@@ -31,11 +33,41 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
   );
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const isReadingPage = /^\/(work|insights)\/[^/]+\/?$/.test(pathname);
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollY.current;
+      setScrolled(currentY > 8);
+
+      if (!isReadingPage || window.innerWidth > 900 || currentY < 160) {
+        setReadingNavHidden(false);
+      } else if (delta > 10) {
+        setReadingNavHidden(true);
+      } else if (delta < -10) {
+        setReadingNavHidden(false);
+      }
+
+      lastScrollY.current = currentY;
+    };
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    const onResize = () => {
+      if (window.innerWidth > 900) setReadingNavHidden(false);
+      onScroll();
+    };
+    lastScrollY.current = window.scrollY;
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [pathname]);
 
   // Full-page overlay: lock background scroll, close on Escape, and close
   // automatically if the viewport grows past the breakpoint it belongs to.
@@ -98,7 +130,7 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
   return (
     <>
       <header
-        className={`${styles.navOuter} ${scrolled ? styles.scrolled : ""}`}
+        className={`${styles.navOuter} ${scrolled ? styles.scrolled : ""} ${readingNavHidden && !menuOpen ? styles.readingNavHidden : ""}`}
       >
         <div className={`container ${styles.nav} ${logoIdentity === "personal" ? styles.personal : ""}`}>
           <Link href="/" aria-label="ConScept home" onClick={closeMenu}>

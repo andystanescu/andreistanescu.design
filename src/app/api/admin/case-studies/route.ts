@@ -1,5 +1,5 @@
 import { relativeRedirect } from "@/lib/relativeRedirect";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { resolveImageField } from "@/lib/uploads";
 import { applyHeadingAccents } from "@/lib/headingAccents";
@@ -10,6 +10,12 @@ export async function POST(request: NextRequest) {
   const form = await request.formData();
   const slug = String(form.get("slug") ?? "").trim();
   const eyebrow = String(form.get("eyebrow") ?? "").trim();
+  const category = String(form.get("category") ?? "").trim();
+  const year = String(form.get("year") ?? "").trim();
+  const projectRole = String(form.get("project_role") ?? "").trim();
+  const timeline = String(form.get("timeline") ?? "").trim();
+  const scope = String(form.get("scope") ?? "").trim();
+  const team = String(form.get("team") ?? "").trim();
   const title = String(form.get("title") ?? "").trim();
   const description = String(form.get("description") ?? "").trim();
   const tags = String(form.get("tags") ?? "").trim();
@@ -40,11 +46,17 @@ export async function POST(request: NextRequest) {
 
   try {
     db.prepare(
-      `INSERT INTO case_studies (slug, eyebrow, title, description, tags, body, cover_image, thumbnail_image, position, published, in_progress, author, published_at, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO case_studies (slug, eyebrow, category, year, project_role, timeline, scope, team, title, description, tags, body, cover_image, thumbnail_image, position, published, in_progress, author, published_at, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index)
+       VALUES (${Array(25).fill("?").join(",")})`
     ).run(
       slug,
       eyebrow,
+      category,
+      year,
+      projectRole,
+      timeline,
+      scope,
+      team,
       title,
       description,
       tags,

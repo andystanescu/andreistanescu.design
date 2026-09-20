@@ -111,6 +111,10 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
         <Field label="Eyebrow"><input name="eyebrow" defaultValue={study.eyebrow} className={adminStyles.input} /></Field>
         <Field label="Title"><input name="title" defaultValue={study.title} required className={adminStyles.input} /></Field>
         <Field label="Description"><textarea name="description" defaultValue={study.description} required className={adminStyles.textarea} /></Field>
+        <Field label="Role"><input name="project_role" defaultValue={study.project_role} placeholder="Lead Product Designer" className={adminStyles.input} /></Field>
+        <Field label="Timeline"><input name="timeline" defaultValue={study.timeline} placeholder="January–June 2026" className={adminStyles.input} /></Field>
+        <Field label="Scope"><input name="scope" defaultValue={study.scope} placeholder="Research, product strategy, interaction design" className={adminStyles.input} /></Field>
+        <Field label="Team"><input name="team" defaultValue={study.team} placeholder="Product, design and engineering" className={adminStyles.input} /></Field>
         <Field label="Published date"><input type="date" name="published_at" defaultValue={dateInputValue(publishedDate)} className={adminStyles.input} /></Field>
         <TagEditor initialValue={study.tags} onCommit={markUnsaved} />
       </section>

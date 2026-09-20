@@ -9,6 +9,10 @@ export type CaseStudy = {
   eyebrow: string;
   category: string;
   year: string;
+  project_role: string;
+  timeline: string;
+  scope: string;
+  team: string;
   title: string;
   description: string;
   tags: string;

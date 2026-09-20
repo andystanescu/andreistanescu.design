@@ -67,6 +67,17 @@
   gap: var(--space-300);
 }
 
+.impactSummary {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-direction: column;
+  gap: var(--space-300);
+  padding-top: var(--space-600);
+  border-top: 1px solid var(--border-default);
+}
+
+.impactSummary > p { color: var(--text-accent); }
+
 .card {
   display: flex;
   flex-direction: column;

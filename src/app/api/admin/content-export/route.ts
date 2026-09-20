@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     .prepare(
       `SELECT slug, eyebrow, title, description, tags, position, published, in_progress,
               body, body_draft, body_draft_enabled, cover_image, thumbnail_image, category, year,
+              project_role, timeline, scope, team,
               outcome_eyebrow, outcome_title, metrics, assessment,
               password_required, author, published_at,
               meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index

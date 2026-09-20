@@ -23,6 +23,10 @@ export async function POST(
   const eyebrow = String(form.get("eyebrow") ?? "").trim();
   const category = String(form.get("category") ?? "").trim();
   const year = String(form.get("year") ?? "").trim();
+  const projectRole = String(form.get("project_role") ?? "").trim();
+  const timeline = String(form.get("timeline") ?? "").trim();
+  const scope = String(form.get("scope") ?? "").trim();
+  const team = String(form.get("team") ?? "").trim();
   const title = String(form.get("title") ?? "").trim();
   const description = String(form.get("description") ?? "").trim();
   const publishedAt = dateInputValue(String(form.get("published_at") ?? "").trim());
@@ -112,13 +116,17 @@ export async function POST(
   try {
     db.prepare(
       `UPDATE case_studies
-       SET slug = ?, eyebrow = ?, category = ?, year = ?, title = ?, description = ?, tags = ?, body = ?, body_draft = ?, body_draft_enabled = ?, cover_image = ?, thumbnail_image = ?, outcome_eyebrow = ?, outcome_title = ?, metrics = ?, assessment = ?, password_required = ?, password_hashes = ?, published = ?, in_progress = ?, author = ?, published_at = ?, meta_title = ?, meta_description = ?, meta_keywords = ?, canonical_url = ?, og_image = ?, no_index = ?
+       SET slug = ?, eyebrow = ?, category = ?, year = ?, project_role = ?, timeline = ?, scope = ?, team = ?, title = ?, description = ?, tags = ?, body = ?, body_draft = ?, body_draft_enabled = ?, cover_image = ?, thumbnail_image = ?, outcome_eyebrow = ?, outcome_title = ?, metrics = ?, assessment = ?, password_required = ?, password_hashes = ?, published = ?, in_progress = ?, author = ?, published_at = ?, meta_title = ?, meta_description = ?, meta_keywords = ?, canonical_url = ?, og_image = ?, no_index = ?
        WHERE id = ?`
     ).run(
       slug,
       eyebrow,
       category,
       year,
+      projectRole,
+      timeline,
+      scope,
+      team,
       title,
       description,
       tags,
