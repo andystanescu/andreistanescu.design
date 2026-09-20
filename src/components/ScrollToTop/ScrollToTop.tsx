@@ -1,10 +1,29 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 
 export function ScrollToTop() {
   const pathname = usePathname();
+
+  useLayoutEffect(() => {
+    if (window.location.hash) return;
+
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        document.querySelectorAll<HTMLElement>("[data-scroll-region]").forEach((container) => {
+          container.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        });
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      if (secondFrame) window.cancelAnimationFrame(secondFrame);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     const key = `scroll-position:${window.location.pathname}${window.location.search}`;
@@ -12,8 +31,8 @@ export function ScrollToTop() {
     const isPublicPage = !window.location.pathname.startsWith("/admin");
     const regions = Array.from(document.querySelectorAll<HTMLElement>("[data-scroll-region]"));
 
-    // Every new route starts at the top. Hash links remain responsible for
-    // positioning the user within the current page.
+    // Reset immediately as well as after the new page has painted. The later
+    // reset wins if Next.js restores the previous viewport during navigation.
     if (!window.location.hash) {
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
       regions.forEach((container) => container.scrollTo({ top: 0, left: 0, behavior: "auto" }));

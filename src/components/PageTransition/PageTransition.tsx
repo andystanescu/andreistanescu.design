@@ -12,7 +12,11 @@ export function PageTransition({ children }: { children: ReactNode }) {
   const [tabExit, setTabExit] = useState(false);
 
   useEffect(() => {
-    setExiting(false);
+    const frame = window.requestAnimationFrame(() => {
+      setExiting(false);
+      setTabExit(false);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [pathname]);
 
   function handleClick(event: MouseEvent<HTMLDivElement>) {
@@ -34,7 +38,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
     event.stopPropagation();
     setTabExit(Boolean(link.closest('[role="tab"]')) && !link.closest('[data-admin-sidebar]'));
     setExiting(true);
-    window.setTimeout(() => router.push(`${destination.pathname}${destination.search}${destination.hash}`), 500);
+    window.setTimeout(() => router.push(`${destination.pathname}${destination.search}${destination.hash}`, { scroll: true }), 500);
   }
 
   return <div className={`${styles.page} ${exiting ? styles.pageExit : ""} ${tabExit ? styles.pageTabExit : ""}`} onClickCapture={handleClick}>{children}</div>;
