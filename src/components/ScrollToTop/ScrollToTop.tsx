@@ -1,74 +1,69 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 export function ScrollToTop() {
   const pathname = usePathname();
+  const initialPageRef = useRef(true);
+  const historyTraversalPathRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const previousRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = "auto";
+    const markHistoryTraversal = () => { historyTraversalPathRef.current = window.location.pathname; };
+    window.addEventListener("popstate", markHistoryTraversal);
+    return () => {
+      window.removeEventListener("popstate", markHistoryTraversal);
+      window.history.scrollRestoration = previousRestoration;
+    };
+  }, []);
 
   useLayoutEffect(() => {
+    // On the first render, leave scrolling to the browser. That preserves a
+    // refresh position, restores a history entry, opens a direct hash at its
+    // target, and leaves an ordinary direct URL at the top.
+    if (initialPageRef.current) {
+      initialPageRef.current = false;
+      return;
+    }
+
+    // Back and Forward own their saved positions. A popstate precedes the
+    // pathname update, so skip the route-change reset for that render.
+    if (historyTraversalPathRef.current === pathname) {
+      historyTraversalPathRef.current = null;
+      return;
+    }
+
+    historyTraversalPathRef.current = null;
+
+    // A deliberate link to a fragment is an explicit user request to move
+    // to that section, including when the fragment belongs to another page.
     if (window.location.hash) return;
 
-    let secondFrame = 0;
-    const firstFrame = window.requestAnimationFrame(() => {
-      secondFrame = window.requestAnimationFrame(() => {
-        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-        document.querySelectorAll<HTMLElement>("[data-scroll-region]").forEach((container) => {
-          container.scrollTo({ top: 0, left: 0, behavior: "auto" });
-        });
-      });
+    // A new in-app destination starts at the beginning. Nested page regions
+    // are reset alongside the document for admin and editor layouts.
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    document.querySelectorAll<HTMLElement>("[data-scroll-region]").forEach((container) => {
+      container.scrollTo({ top: 0, left: 0, behavior: "auto" });
     });
-
-    return () => {
-      window.cancelAnimationFrame(firstFrame);
-      if (secondFrame) window.cancelAnimationFrame(secondFrame);
-    };
   }, [pathname]);
 
   useEffect(() => {
-    const key = `scroll-position:${window.location.pathname}${window.location.search}`;
-    const storageKey = "conScept-scroll-positions";
-    const isPublicPage = !window.location.pathname.startsWith("/admin");
-    const regions = Array.from(document.querySelectorAll<HTMLElement>("[data-scroll-region]"));
-
-    // Reset immediately as well as after the new page has painted. The later
-    // reset wins if Next.js restores the previous viewport during navigation.
-    if (!window.location.hash) {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-      regions.forEach((container) => container.scrollTo({ top: 0, left: 0, behavior: "auto" }));
-    }
-
-    const save = () => {
+    if (window.location.pathname.startsWith("/admin")) return;
+    const savePublicLocation = () => {
       try {
-        const saved = JSON.parse(sessionStorage.getItem(storageKey) || "{}");
-        const position = {
-          window: window.scrollY,
-          regions: regions.map((container) => container.scrollTop),
-        };
-        saved[key] = position;
-        sessionStorage.setItem(storageKey, JSON.stringify(saved));
-        if (isPublicPage) {
-          localStorage.setItem(storageKey, JSON.stringify({
-            ...JSON.parse(localStorage.getItem(storageKey) || "{}"),
-            [key]: position,
-          }));
-          localStorage.setItem(
-            "conScept-last-public-location",
-            `${window.location.pathname}${window.location.search}${window.location.hash}`
-          );
-        }
+        localStorage.setItem(
+          "conScept-last-public-location",
+          `${window.location.pathname}${window.location.search}`
+        );
       } catch {
-        // Storage can be unavailable in private browsing; scrolling still works.
+        // Storage can be unavailable in private browsing.
       }
     };
-
-    window.addEventListener("scroll", save, { passive: true });
-    regions.forEach((container) => container.addEventListener("scroll", save, { passive: true }));
-    if (isPublicPage) save();
-    return () => {
-      window.removeEventListener("scroll", save);
-      regions.forEach((container) => container.removeEventListener("scroll", save));
-    };
+    savePublicLocation();
+    window.addEventListener("scroll", savePublicLocation, { passive: true });
+    return () => window.removeEventListener("scroll", savePublicLocation);
   }, [pathname]);
 
   return null;

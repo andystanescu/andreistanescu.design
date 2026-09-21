@@ -21,11 +21,16 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
   const count = images.length;
 
   useEffect(() => {
+    const stage = stageRef.current;
+    const tile = tileRefs.current[active];
+    if (!stage || !tile) return;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    tileRefs.current[active]?.scrollIntoView({
+    const stageBounds = stage.getBoundingClientRect();
+    const tileBounds = tile.getBoundingClientRect();
+    const left = stage.scrollLeft + tileBounds.left - stageBounds.left - (stage.clientWidth - tileBounds.width) / 2;
+    stage.scrollTo({
+      left,
       behavior: reduceMotion ? "auto" : "smooth",
-      block: "nearest",
-      inline: "center",
     });
   }, [active]);
 

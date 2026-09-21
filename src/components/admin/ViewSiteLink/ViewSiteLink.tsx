@@ -17,7 +17,7 @@ export function ViewSiteLink() {
       !saved.startsWith("/admin") &&
       !saved.startsWith("/api")
     ) {
-      setHref(saved);
+      setHref(saved.split("#", 1)[0] || "/");
     }
   }, []);
 

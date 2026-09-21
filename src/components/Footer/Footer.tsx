@@ -8,13 +8,39 @@ import { getSettings } from "@/lib/settings";
 import { getNavLinks, getPublishedPage } from "@/lib/pages";
 import styles from "./Footer.module.css";
 
-export function Footer() {
+export function Footer({ variant = "full" }: { variant?: "full" | "compact" }) {
   const navigationLinks = getNavLinks();
   const settings = getSettings();
   const services = getServiceItems();
   const copyrightName = settings.logo_identity === "personal" ? "Andrei Stanescu" : "ConScept";
   const privacyPage = getPublishedPage("privacy");
   const termsPage = getPublishedPage("terms");
+  const compactContent = (
+    <div className={`container ${styles.compactInner}`}>
+      <div className={styles.compactPrompt}>
+        <p className="body-large">Have a project in mind or want to explore how I can help?</p>
+        <FooterLink href="/contact" className={styles.compactCta}>Let&apos;s talk <span aria-hidden="true">→</span></FooterLink>
+      </div>
+      <nav className={styles.compactLinks} aria-label="Footer navigation">
+        <FooterLink href="/work">Work</FooterLink>
+        <FooterLink href="/insights">Articles</FooterLink>
+        <FooterLink href="/about">About</FooterLink>
+        <FooterLink href="/services">Services</FooterLink>
+      </nav>
+      <p className={styles.compactCopyright}>© Andrei Stanescu</p>
+    </div>
+  );
+
+  if (variant === "compact") {
+    return (
+      <>
+        <footer className={`${styles.footer} ${styles.compactFooter} section-dark`}>
+          {compactContent}
+        </footer>
+        <AdminBar />
+      </>
+    );
+  }
 
   return (
     <>
@@ -82,6 +108,7 @@ export function Footer() {
           </div>
         </div>
         </div>
+        <div className={styles.mobileCompact}>{compactContent}</div>
       </footer>
       <AdminBar />
     </>

@@ -87,9 +87,81 @@
   color: var(--text-primary) !important;
 }
 
+.compactFooter {
+  padding-block: var(--space-800) max(var(--space-500), var(--safe-area-bottom));
+}
+
+.mobileCompact {
+  display: none;
+}
+
+.compactInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-600) var(--space-800);
+}
+
+.compactPrompt {
+  display: flex;
+  max-width: 680px;
+  flex-direction: column;
+  gap: var(--space-300);
+}
+
+.compactPrompt p {
+  color: var(--text-primary);
+}
+
+.compactCta {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 44px;
+  align-items: center;
+  gap: var(--space-100);
+  color: var(--text-accent);
+  font: 600 16px/1.3 var(--font-family-body);
+}
+
+.compactLinks {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: var(--space-150) var(--space-400);
+}
+
+.compactLinks a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-secondary);
+  font: 500 14px/1.4 var(--font-family-body);
+}
+
+.compactCta:hover,
+.compactCta:focus-visible,
+.compactLinks a:hover,
+.compactLinks a:focus-visible {
+  color: var(--text-primary);
+}
+
+.compactCopyright {
+  grid-column: 1 / -1;
+  padding-top: var(--space-300);
+  border-top: 1px solid var(--border-default);
+  color: var(--text-tertiary);
+  font: 13px/1.4 var(--font-family-body);
+}
+
 @media (max-width: 640px) {
   .brand, .connect, .linksGroup { width: 100%; min-width: 0; }
   .linksGroup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-400); }
   .column { width: 100%; min-width: 0; }
+  .footer:not(.compactFooter) { padding-block: var(--space-600) max(var(--space-400), var(--safe-area-bottom)); }
+  .footer:not(.compactFooter) > .footerInner { display: none; }
+  .mobileCompact { display: block; }
+  .compactFooter { padding-block: var(--space-600) max(var(--space-400), var(--safe-area-bottom)); }
+  .compactInner { grid-template-columns: 1fr; align-items: start; gap: var(--space-400); }
+  .compactLinks { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; gap: 0 var(--space-300); }
+  .compactCopyright { grid-column: auto; }
 }
 @media (max-width: 320px) { .linksGroup { grid-template-columns: 1fr; } }

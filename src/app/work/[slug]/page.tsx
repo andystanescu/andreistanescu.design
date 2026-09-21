@@ -116,6 +116,6 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
       {related.length > 0 && <section className={`container ${styles.related}`}><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>RELATED WORK</p><h2 className="heading-01">More case studies</h2><div className={styles.relatedGrid}>{related.map((item) => <ArticleCard key={item.slug} slug={item.slug} title={item.title} excerpt={item.description} thumbnail={item.thumbnail_image} variant="caseStudy" />)}</div><Link className={styles.allWork} href="/work">All case studies <span>→</span></Link></section>}
     </main>
     </CaseStudyLockedContent>
-    <Footer />
+    <Footer variant="compact" />
   </>;
 }
