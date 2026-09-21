@@ -17,7 +17,7 @@ type ArticleHeroProps = {
 };
 
 export function ArticleHero({ slug, category, title, excerpt, author, publishedAt, dateLabel, readingMinutes, coverImage, mediaVariant = "wide" }: ArticleHeroProps) {
-  return <section className={styles.hero}>
+  return <section className={`${styles.hero} ${!coverImage ? styles.heroNoMedia : ""}`}>
     <div className={`${styles.composition} ${!coverImage ? styles.compositionNoMedia : ""}`}>
       <div className={styles.copy}>
         <p className={`label-eyebrow ${styles.category}`}>{category || "Article"}</p>
