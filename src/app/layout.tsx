@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Mono, Inter } from "next/font/google";
 import { ScrollToTop } from "@/components/ScrollToTop/ScrollToTop";
 import { PageTransition } from "@/components/PageTransition/PageTransition";
@@ -28,6 +28,12 @@ export const metadata: Metadata = {
   title: "ConScept — Design systems, product architecture, AI-enabled design operations",
   description:
     "ConScept helps growing technology companies build the systems behind their products: design system architecture, product architecture, and AI-enabled design operations.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -10,30 +10,49 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
   const [active, setActive] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [lightboxDragging, setLightboxDragging] = useState(false);
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const lightboxRef = useRef<HTMLDivElement | null>(null);
   const tileRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const dragRef = useRef({ pointerId: -1, startX: 0, startScrollLeft: 0, moved: false });
+  const dragRef = useRef({ pointerId: -1, startX: 0, startY: 0, startScrollLeft: 0, moved: false });
+  const lightboxDragRef = useRef({ pointerId: -1, startX: 0, startY: 0, moved: false });
   const suppressClickRef = useRef(false);
   const scrollEndRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const count = images.length;
 
   useEffect(() => {
-    tileRefs.current[active]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    tileRefs.current[active]?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "nearest",
+      inline: "center",
+    });
   }, [active]);
 
   useEffect(() => {
     if (!lightboxOpen) return;
     const previousOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden";
+    window.requestAnimationFrame(() => lightboxRef.current?.querySelector<HTMLElement>('button[aria-label="Close gallery"]')?.focus());
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setLightboxOpen(false);
       if (event.key === "ArrowLeft") setActive((value) => (value - 1 + count) % count);
       if (event.key === "ArrowRight") setActive((value) => (value + 1) % count);
+      if (event.key === "Tab" && lightboxRef.current) {
+        const controls = Array.from(lightboxRef.current.querySelectorAll<HTMLButtonElement>("button:not([disabled])"));
+        if (!controls.length) return;
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
     };
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKeyDown);
+      previousFocus?.focus();
     };
   }, [count, lightboxOpen]);
 
@@ -74,6 +93,17 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
     window.setTimeout(() => { suppressClickRef.current = false; }, 0);
   };
 
+  const finishLightboxDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const target = event.currentTarget;
+    const gesture = lightboxDragRef.current;
+    if (gesture.pointerId !== event.pointerId) return;
+    if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
+    const distance = event.clientX - gesture.startX;
+    if (gesture.moved && Math.abs(distance) >= 48) move(distance > 0 ? -1 : 1);
+    lightboxDragRef.current.pointerId = -1;
+    setLightboxDragging(false);
+  };
+
   return (
     <div className={styles.gallery}>
       <div
@@ -86,6 +116,7 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
           dragRef.current = {
             pointerId: event.pointerId,
             startX: event.clientX,
+            startY: event.clientY,
             startScrollLeft: stage.scrollLeft,
             moved: false,
           };
@@ -94,7 +125,9 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
           const stage = stageRef.current;
           if (!stage || dragRef.current.pointerId !== event.pointerId) return;
           const distance = event.clientX - dragRef.current.startX;
-          if (Math.abs(distance) > 6 && !dragRef.current.moved) {
+          const verticalDistance = event.clientY - dragRef.current.startY;
+          const isHorizontalIntent = Math.abs(distance) > 8 && Math.abs(distance) > Math.abs(verticalDistance) * 1.25;
+          if (isHorizontalIntent && !dragRef.current.moved) {
             dragRef.current.moved = true;
             stage.setPointerCapture(event.pointerId);
             setDragging(true);
@@ -139,14 +172,43 @@ export function ImageGallery({ images }: { images: GalleryImage[] }) {
         <button type="button" onClick={() => move(1)} aria-label="Next image">›</button>
       </div>}
       {lightboxOpen && createPortal(
-        <div className={styles.lightbox} role="dialog" aria-modal="true" aria-label="Image gallery" onMouseDown={(event) => { if (event.target === event.currentTarget) setLightboxOpen(false); }}>
+        <div ref={lightboxRef} className={styles.lightbox} role="dialog" aria-modal="true" aria-label="Image gallery" onMouseDown={(event) => { if (event.target === event.currentTarget) setLightboxOpen(false); }}>
           <div className={styles.lightboxHeader}>
             <span>IMAGE GALLERY</span>
             <div><span>{String(active + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}</span><button type="button" onClick={() => setLightboxOpen(false)} aria-label="Close gallery">×</button></div>
           </div>
           <div className={styles.lightboxStage} onMouseDown={(event) => { if (event.target === event.currentTarget) setLightboxOpen(false); }}>
             {count > 1 && <button type="button" onClick={() => move(-1)} aria-label="Previous image">‹</button>}
-            <div className={styles.containBox} onMouseDown={(event) => { if (event.target === event.currentTarget) setLightboxOpen(false); }}>
+            <div
+              className={`${styles.containBox} ${lightboxDragging ? styles.containBoxDragging : ""}`}
+              onPointerDown={(event) => {
+                if (!event.isPrimary || event.button !== 0) return;
+                lightboxDragRef.current = {
+                  pointerId: event.pointerId,
+                  startX: event.clientX,
+                  startY: event.clientY,
+                  moved: false,
+                };
+              }}
+              onPointerMove={(event) => {
+                const gesture = lightboxDragRef.current;
+                if (gesture.pointerId !== event.pointerId) return;
+                const horizontalDistance = event.clientX - gesture.startX;
+                const verticalDistance = event.clientY - gesture.startY;
+                const isHorizontalIntent = Math.abs(horizontalDistance) > 8 && Math.abs(horizontalDistance) > Math.abs(verticalDistance) * 1.25;
+                if (isHorizontalIntent && !gesture.moved) {
+                  gesture.moved = true;
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                  setLightboxDragging(true);
+                }
+              }}
+              onPointerUp={finishLightboxDrag}
+              onPointerCancel={(event) => {
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+                lightboxDragRef.current.pointerId = -1;
+                setLightboxDragging(false);
+              }}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={current.src} alt={current.alt || ""} />
             </div>

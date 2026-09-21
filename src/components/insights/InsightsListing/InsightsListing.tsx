@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, type PointerEvent } from "react";
 import type { Insight } from "@/data/insights";
 import { calculateReadingTime } from "@/lib/readingTime";
 import { ArticlePreview } from "@/components/insights/ArticlePreview/ArticlePreview";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import styles from "./InsightsListing.module.css";
 
 function getTags(value: string) {
@@ -82,6 +83,9 @@ export function InsightsListing({ insights }: { insights: Insight[] }) {
           )}
         </section>
       )}
+      {selectedTag !== "All" && additional.length === 0 && <section className={styles.gridSection}>
+        <EmptyState eyebrow="No matches" title={`No articles in ${selectedTag}`} description="Try another category or show every published article." action={<button type="button" onClick={() => selectTag("All")}>Show all articles</button>} />
+      </section>}
     </>
   );
 }

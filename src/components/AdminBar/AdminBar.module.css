@@ -1,7 +1,7 @@
 .bar {
   position: fixed;
-  right: var(--space-300);
-  bottom: var(--space-300);
+  right: max(var(--space-300), var(--safe-area-right));
+  bottom: max(var(--space-300), var(--safe-area-bottom));
   z-index: 1000;
   padding: var(--space-150) var(--space-300);
   border-radius: var(--radius-lg);
@@ -23,14 +23,14 @@
   .bar {
     right: auto;
     left: 50%;
-    bottom: calc(var(--nav-height) + var(--space-300));
+    bottom: calc(var(--nav-height) + var(--safe-area-bottom) + var(--space-300));
     transform: translateX(-50%);
   }
 }
 
 @media (max-width: 640px) {
   .bar {
-    right: var(--space-300);
+    right: max(var(--space-300), var(--safe-area-right));
     left: auto;
     transform: none;
   }

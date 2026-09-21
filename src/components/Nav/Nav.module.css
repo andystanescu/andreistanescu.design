@@ -6,6 +6,7 @@
   background: var(--bg-canvas);
   border-bottom: 1px solid var(--border-default);
   transition: background-color 0.2s ease, transform 0.2s ease;
+  padding-top: var(--safe-area-top);
 }
 
 .navOuter.scrolled {
@@ -95,6 +96,8 @@
   flex-shrink: 0;
 }
 
+.menuToggle:focus-visible { outline:2px solid var(--focus-ring); outline-offset:4px; }
+
 .bar {
   display: block;
   width: 100%;
@@ -127,13 +130,13 @@
   top: 0;
   left: 0;
   right: 0;
-  bottom: var(--nav-height);
+  bottom: calc(var(--nav-height) + var(--safe-area-bottom));
   z-index: 100;
   display: none;
   flex-direction: column;
   justify-content: center;
   gap: var(--space-800);
-  padding: var(--space-800);
+  padding: max(var(--space-800), var(--safe-area-top)) max(var(--space-800), var(--safe-area-right)) max(var(--space-800), var(--safe-area-bottom)) max(var(--space-800), var(--safe-area-left));
   background: var(--bg-canvas);
   overflow-y: auto;
 }
@@ -169,7 +172,12 @@
 
   .menuToggle {
     display: flex;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
   }
+
+  .overlayLinks a:focus-visible { outline:2px solid var(--focus-ring); outline-offset:4px; }
 
   /* Nav becomes a fixed bottom bar on mobile so the hero can own the full
      viewport height above it; body gets matching bottom padding globally
@@ -182,6 +190,8 @@
     top: auto;
     border-bottom: none;
     border-top: 1px solid var(--border-default);
+    padding-top: 0;
+    padding-bottom: var(--safe-area-bottom);
   }
 
   .navOuter.readingNavHidden {

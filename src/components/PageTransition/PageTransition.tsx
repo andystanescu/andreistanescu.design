@@ -34,6 +34,11 @@ export function PageTransition({ children }: { children: ReactNode }) {
     if (destination.origin !== window.location.origin) return;
     if (destination.pathname === window.location.pathname && destination.search === window.location.search) return;
 
+    // Let Next's link handling navigate immediately when the user has asked
+    // for reduced motion. The animated path below deliberately delays the
+    // route change until its exit transition has finished.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     event.preventDefault();
     event.stopPropagation();
     setTabExit(Boolean(link.closest('[role="tab"]')) && !link.closest('[data-admin-sidebar]'));

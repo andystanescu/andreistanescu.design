@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LiveContext, LiveProvider, LivePreview, LiveError } from "react-live";
+import { LiveContext, LiveProvider, LivePreview } from "react-live";
 import styles from "./LiveComponentBlock.module.css";
 
 type LiveComponentBlockProps = {
@@ -66,14 +66,15 @@ function detectPreviewMode(source: string): PreviewMode {
   return "none";
 }
 
-function prepareHtmlPreview(source: string): string {
+function prepareHtmlPreview(source: string, errorChannel: string): string {
   const code = source.trim();
   const security = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob: https:; media-src data: blob: https:; connect-src 'none'; font-src data:; form-action 'none'; base-uri 'none'">`;
+  const reporter = `<script>(()=>{const report=(message)=>parent.postMessage({source:"conscept-live-preview",channel:${JSON.stringify(errorChannel)},message:String(message||"Unknown runtime error")},"*");window.addEventListener("error",event=>report(event.message));window.addEventListener("unhandledrejection",event=>report(event.reason?.message||event.reason));})();</script>`;
   if (/<!doctype\s+html|<html(?:\s|>)/i.test(code)) {
-    if (/<head(?:\s|>)/i.test(code)) return code.replace(/<head([^>]*)>/i, `<head$1>${security}`);
-    return code.replace(/<html([^>]*)>/i, `<html$1><head>${security}</head>`);
+    if (/<head(?:\s|>)/i.test(code)) return code.replace(/<head([^>]*)>/i, `<head$1>${security}${reporter}`);
+    return code.replace(/<html([^>]*)>/i, `<html$1><head>${security}${reporter}</head>`);
   }
-  return `<!doctype html><html><head>${security}<meta name="viewport" content="width=device-width, initial-scale=1"><style>
+  return `<!doctype html><html><head>${security}${reporter}<meta name="viewport" content="width=device-width, initial-scale=1"><style>
     :root { --bg-deep: #0a1020; --text-on-deep-primary: #ffffff; }
     * { box-sizing: border-box; }
     body { margin: 0; padding: 24px; color: var(--text-on-deep-primary); background: var(--bg-deep); font: 16px/1.5 system-ui, sans-serif; }
@@ -87,6 +88,7 @@ function prepareHtmlPreview(source: string): string {
 // (noInline), which keeps definitions above it in normal function/const
 // syntax rather than requiring a single trailing JSX expression.
 export function LiveComponentBlock({ code, chrome = "framed", runtime = "auto", language }: LiveComponentBlockProps) {
+  const [revision, setRevision] = React.useState(0);
   const mode: PreviewMode = runtime === "auto" ? detectPreviewMode(code) : runtime === "static" ? "none" : runtime;
   const displayChrome = /\bBeforeAfterComparison\b/.test(code) ? "minimal" : chrome;
   if (mode === "html") {
@@ -99,13 +101,14 @@ export function LiveComponentBlock({ code, chrome = "framed", runtime = "auto", 
   const preparedCode = prepareLiveCode(code);
   return (
     <LiveProvider
+      key={revision}
       code={preparedCode}
       scope={scope}
       noInline
       language="tsx"
       enableTypeScript
     >
-      <LiveComponentSurface code={preparedCode} chrome={displayChrome} />
+      <LiveComponentSurface code={preparedCode} chrome={displayChrome} onRetry={() => setRevision((value) => value + 1)} />
     </LiveProvider>
   );
 }
@@ -123,7 +126,25 @@ function HtmlComponentSurface({ code, chrome, language }: { code: string; chrome
   const [view, setView] = React.useState<"preview" | "code">("preview");
   const [copied, setCopied] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
-  const html = prepareHtmlPreview(code);
+  const [runtimeError, setRuntimeError] = React.useState("");
+  const [revision, setRevision] = React.useState(0);
+  const errorChannel = React.useId();
+  const html = prepareHtmlPreview(code, errorChannel);
+
+  React.useEffect(() => {
+    const receiveError = (event: MessageEvent) => {
+      const data = event.data as { source?: string; channel?: string; message?: string } | undefined;
+      if (data?.source === "conscept-live-preview" && data.channel === errorChannel) setRuntimeError(data.message || "The interactive preview failed to run.");
+    };
+    window.addEventListener("message", receiveError);
+    return () => window.removeEventListener("message", receiveError);
+  }, [errorChannel]);
+
+  const retry = () => {
+    setRuntimeError("");
+    setLoaded(false);
+    setRevision((value) => value + 1);
+  };
 
   const handleCopy = async () => {
     try {
@@ -149,8 +170,10 @@ function HtmlComponentSurface({ code, chrome, language }: { code: string; chrome
           </button>
         </div>
       </div>}
-      {view === "preview" ? (
-        <div className={styles.previewHost}>{!loaded && <div className={styles.loading} role="status">Loading interactive preview…</div>}<iframe className={styles.htmlPreview} title="Live HTML preview" sandbox="allow-scripts" srcDoc={html} onLoad={() => setLoaded(true)} /></div>
+      {view === "preview" ? runtimeError ? (
+        <InteractiveErrorState message={runtimeError} onRetry={retry} />
+      ) : (
+        <div className={styles.previewHost}>{!loaded && <div className={styles.loading} role="status">Loading interactive preview…</div>}<iframe key={revision} className={styles.htmlPreview} title="Live HTML preview" sandbox="allow-scripts" srcDoc={html} onLoad={() => setLoaded(true)} /></div>
       ) : (
         <pre className={styles.code}><code>{code}</code></pre>
       )}
@@ -158,12 +181,12 @@ function HtmlComponentSurface({ code, chrome, language }: { code: string; chrome
   );
 }
 
-function LiveComponentSurface({ code, chrome }: { code: string; chrome: "framed" | "minimal" }) {
+function LiveComponentSurface({ code, chrome, onRetry }: { code: string; chrome: "framed" | "minimal"; onRetry: () => void }) {
   const { error, element } = React.useContext(LiveContext);
   const [view, setView] = React.useState<"preview" | "code">("preview");
   const [copied, setCopied] = React.useState(false);
   const canRender = Boolean(element) && !error;
-  const activeView = error ? "code" : view;
+  const activeView = view;
 
   const handleCopy = async () => {
     try {
@@ -191,14 +214,24 @@ function LiveComponentSurface({ code, chrome }: { code: string; chrome: "framed"
           </button>
         </div>
       </div>}
-      {activeView === "preview" && canRender ? (
+      {error ? (
+        <InteractiveErrorState message={String(error)} onRetry={onRetry} />
+      ) : activeView === "preview" && canRender ? (
         <div className={chrome === "minimal" ? styles.previewMinimal : styles.preview}><LivePreview /></div>
       ) : activeView === "preview" && !error ? (
         <div className={styles.loading} role="status">Loading interactive preview…</div>
       ) : (
         <pre className={styles.code}><code>{code}</code></pre>
       )}
-      {error && <LiveError className={styles.error} />}
     </div>
   );
+}
+
+function InteractiveErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return <div className={styles.errorState} role="alert">
+    <span className={styles.errorIcon} aria-hidden="true">!</span>
+    <div><strong>Interactive demo unavailable</strong><p>This example could not load, but the rest of the case study is still available.</p></div>
+    <button type="button" onClick={onRetry}>Try again</button>
+    <details><summary>Technical details</summary><pre>{message}</pre></details>
+  </div>;
 }

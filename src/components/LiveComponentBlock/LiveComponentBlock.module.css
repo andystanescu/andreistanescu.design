@@ -25,6 +25,8 @@
 .previewHost{position:relative;min-height:260px;overflow:hidden}
 .loading{display:grid;min-height:160px;place-items:center;padding:var(--space-300);background:var(--bg-subtle);color:var(--text-tertiary);font:500 13px/1.5 var(--font-family-body);text-align:center}
 .previewHost>.loading{position:absolute;inset:0;z-index:1}
+.errorState{display:grid;min-height:260px;box-sizing:border-box;grid-template-columns:40px minmax(0,1fr) auto;align-content:center;align-items:start;gap:var(--space-200);padding:var(--space-500);border:1px solid color-mix(in srgb,var(--border-error) 45%,var(--border-default));background:color-mix(in srgb,var(--text-error) 6%,var(--bg-surface));color:var(--text-primary)}
+.errorIcon{display:grid;width:32px;height:32px;place-items:center;border:1px solid var(--border-error);border-radius:50%;color:var(--border-error);font:600 16px/1 var(--font-family-body)}.errorState strong{display:block;font:600 18px/1.3 var(--font-family-heading)}.errorState p{margin-top:var(--space-100);color:var(--text-secondary);font:14px/1.5 var(--font-family-body)}.errorState button{min-height:44px;padding-inline:var(--space-200);border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface);color:var(--text-primary);font:600 13px/1.2 var(--font-family-body);cursor:pointer}.errorState button:hover,.errorState button:focus-visible{border-color:var(--accent-foundation);color:var(--text-accent)}.errorState details{grid-column:2/-1;color:var(--text-tertiary);font:12px/1.5 var(--font-family-body)}.errorState summary{width:max-content;cursor:pointer}.errorState pre{max-height:140px;margin-top:var(--space-100);padding:var(--space-150);overflow:auto;background:var(--bg-subtle);font:12px/1.5 var(--font-family-mono);white-space:pre-wrap}
 
 .frame {
   width: 100%;
@@ -61,8 +63,8 @@
 
 .copyButton {
   display: inline-grid;
-  width: 24px;
-  height: 24px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   place-items: center;
   border: 0;
@@ -96,6 +98,8 @@
 .copyButton:focus-visible {
   background: var(--bg-subtle);
   color: var(--text-primary);
+  outline:2px solid var(--focus-ring);
+  outline-offset:-2px;
 }
 
 .error {
@@ -137,6 +141,9 @@
   margin: 0;
   padding: var(--space-300);
   overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: auto;
+  touch-action: pan-x pan-y pinch-zoom;
   border: 0;
   border-radius: 0;
   background: var(--bg-subtle);
@@ -144,3 +151,4 @@
   font: 13px/1.65 var(--font-family-mono);
   white-space: pre-wrap;
 }
+@media(max-width:640px){.errorState{min-height:220px;grid-template-columns:32px minmax(0,1fr);padding:20px}.errorState button{grid-column:2;justify-self:start}.errorState details{grid-column:1/-1}.errorIcon{width:28px;height:28px}}

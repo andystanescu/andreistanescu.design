@@ -7,6 +7,7 @@ import { getPublishedPage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 import { InsightsListing } from "@/components/insights/InsightsListing/InsightsListing";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import styles from "./insights.module.css";
 
 export const dynamic = "force-dynamic";
@@ -54,9 +55,7 @@ export default function InsightsPage() {
         </section>
 
         {insights.length === 0 ? (
-          <p className={`container body-default ${styles.empty}`} style={{ color: "var(--text-tertiary)" }}>
-            No articles published yet — check back soon for the first one.
-          </p>
+          <div className={`container ${styles.empty}`}><EmptyState eyebrow="Articles" title="No articles published yet" description="New writing will appear here as soon as it is published." /></div>
         ) : (
           <div className="container"><InsightsListing insights={plainInsights} /></div>
         )}

@@ -19,7 +19,7 @@
   height: 100dvh;
   max-height: 100dvh;
   box-sizing: border-box;
-  padding: var(--space-400);
+  padding: max(var(--space-400), var(--safe-area-top)) var(--space-400) max(var(--space-400), var(--safe-area-bottom)) max(var(--space-400), var(--safe-area-left));
   background: var(--bg-surface);
   border-right: 1px solid var(--border-default);
   overflow: visible;
@@ -32,7 +32,8 @@
 
 .sidebarCollapsed {
   width: 72px;
-  padding-inline: 12px;
+  padding-right: 12px;
+  padding-left: max(12px, var(--safe-area-left));
 }
 
 .sidebar::-webkit-scrollbar,
@@ -197,7 +198,7 @@
   box-sizing: border-box;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: var(--space-600);
+  padding: max(var(--space-600), var(--safe-area-top)) max(var(--space-600), var(--safe-area-right)) max(var(--space-600), var(--safe-area-bottom)) var(--space-600);
   overflow-x: hidden;
   scrollbar-width: none;
 }

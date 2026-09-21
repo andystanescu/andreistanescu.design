@@ -22,10 +22,11 @@ export function SelectedImpact() {
           eyebrow={section.eyebrow}
           title={section.headline}
           intro={section.description}
+          className={styles.sectionHeader}
         />
 
         <div className={styles.grid}>
-          <ProjectCollection studies={caseStudies} limit={3} />
+          <ProjectCollection studies={caseStudies} limit={4} responsivePreview />
           {featuredMetrics.length > 0 && (
             <div className={styles.impactSummary}>
               <p className="label-eyebrow">Featured impact</p>

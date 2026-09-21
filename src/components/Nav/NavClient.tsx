@@ -22,6 +22,8 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
   const [readingNavHidden, setReadingNavHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const lastScrollY = useRef(0);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const menuToggleRef = useRef<HTMLButtonElement>(null);
   // The portal target (document.body) only exists on the client — this is
   // React's recommended way to render something only after hydration
   // without the "setState in an effect" anti-pattern (and without a
@@ -75,8 +77,19 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
     document.body.classList.toggle("no-scroll", menuOpen);
     if (!menuOpen) return;
 
+    const previousFocus = document.activeElement as HTMLElement | null;
+    window.requestAnimationFrame(() => overlayRef.current?.querySelector<HTMLElement>("a, button")?.focus());
+
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") setMenuOpen(false);
+      if (e.key === "Tab" && overlayRef.current) {
+        const controls = Array.from(overlayRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        if (!controls.length) return;
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
     }
     function handleResize() {
       if (window.innerWidth > 900) setMenuOpen(false);
@@ -86,6 +99,7 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("resize", handleResize);
+      (previousFocus?.isConnected ? previousFocus : menuToggleRef.current)?.focus();
     };
   }, [menuOpen]);
 
@@ -102,6 +116,7 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
 
   const overlay = (
     <div
+      ref={overlayRef}
       id="mobile-menu"
       className={`${styles.overlay} ${menuOpen ? styles.overlayOpen : ""}`}
       role="dialog"
@@ -157,6 +172,7 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
               </div>
               <ThemeSwitch />
               <button
+                ref={menuToggleRef}
                 type="button"
                 className={styles.menuToggle}
                 aria-expanded={menuOpen}

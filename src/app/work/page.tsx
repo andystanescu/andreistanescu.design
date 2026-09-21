@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer/Footer";
 import { RichContent } from "@/components/RichContent/RichContent";
 import { LatestInsights } from "@/components/home/LatestInsights/LatestInsights";
 import { ProjectCollection } from "@/components/work/ProjectCollection/ProjectCollection";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { getCaseStudies } from "@/data/caseStudies";
 import { getPublishedPage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
@@ -35,9 +36,7 @@ export default function WorkPage() {
         <div className={styles.heroDescription}><RichContent html={page.body} /></div>
 
         {!featured ? (
-          <p className="body-default" style={{ color: "var(--text-tertiary)" }}>
-            Case studies are on their way — check back soon.
-          </p>
+          <EmptyState eyebrow="Selected work" title="Case studies are on their way" description="Published projects will appear here when they are ready to share." />
         ) : (
           <ProjectCollection studies={CASE_STUDIES} />
         )}
