@@ -8,7 +8,7 @@ import { getSettings } from "@/lib/settings";
 import { getNavLinks, getPublishedPage } from "@/lib/pages";
 import styles from "./Footer.module.css";
 
-export function Footer({ variant = "full" }: { variant?: "full" | "compact" }) {
+export function Footer({ variant = "full", hideContactCta = false }: { variant?: "full" | "compact"; hideContactCta?: boolean }) {
   const navigationLinks = getNavLinks();
   const settings = getSettings();
   const services = getServiceItems();
@@ -17,10 +17,12 @@ export function Footer({ variant = "full" }: { variant?: "full" | "compact" }) {
   const termsPage = getPublishedPage("terms");
   const compactContent = (
     <div className={`container ${styles.compactInner}`}>
-      <div className={styles.compactPrompt}>
-        <p className="body-large">Have a project in mind or want to explore how I can help?</p>
-        <FooterLink href="/contact" className={styles.compactCta}>Let&apos;s talk <span aria-hidden="true">→</span></FooterLink>
-      </div>
+      {!hideContactCta && (
+        <div className={styles.compactPrompt}>
+          <p className="body-large">Have a project in mind or want to explore how I can help?</p>
+          <FooterLink href="/contact" className={styles.compactCta}>Let&apos;s talk <span aria-hidden="true">→</span></FooterLink>
+        </div>
+      )}
       <nav className={styles.compactLinks} aria-label="Footer navigation">
         <FooterLink href="/work">Work</FooterLink>
         <FooterLink href="/insights">Articles</FooterLink>
@@ -84,15 +86,17 @@ export function Footer({ variant = "full" }: { variant?: "full" | "compact" }) {
               ))}
             </div>
 
-            <div className={styles.connect}>
-              <p className="label-small">Let&apos;s connect</p>
-              <p className="body-small" style={{ color: "var(--text-secondary)" }}>
-                Have a project in mind or want to explore how {settings.logo_identity === "personal" ? "I" : "we"} can help?
-              </p>
-              <Button href="/contact" icon={<ArrowIcon size={16} />}>
-                Let&apos;s talk
-              </Button>
-            </div>
+            {!hideContactCta && (
+              <div className={styles.connect}>
+                <p className="label-small">Let&apos;s connect</p>
+                <p className="body-small" style={{ color: "var(--text-secondary)" }}>
+                  Have a project in mind or want to explore how {settings.logo_identity === "personal" ? "I" : "we"} can help?
+                </p>
+                <Button href="/contact" icon={<ArrowIcon size={16} />}>
+                  Let&apos;s talk
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 

@@ -34,16 +34,34 @@ export function PageTransition({ children }: { children: ReactNode }) {
     if (destination.origin !== window.location.origin) return;
     if (destination.pathname === window.location.pathname && destination.search === window.location.search) return;
 
-    // Let Next's link handling navigate immediately when the user has asked
-    // for reduced motion. The animated path below deliberately delays the
-    // route change until its exit transition has finished.
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const destinationUrl = `${destination.pathname}${destination.search}${destination.hash}`;
+
+    // Next 16 preserves the current scroll position when the incoming page is
+    // already visible in the viewport. Fresh page navigation on this site is
+    // explicit instead: the shared ScrollToTop controller owns the reset,
+    // while fragment links continue to target their requested section.
+    if (!destination.hash) {
+      try {
+        sessionStorage.setItem("conScept-force-top", "1");
+      } catch {
+        // Storage can be unavailable in private browsing.
+      }
+    }
+
+    // Reduced motion skips the transition delay while retaining the same
+    // deterministic scroll behavior as the animated path.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      event.preventDefault();
+      event.stopPropagation();
+      router.push(destinationUrl, { scroll: Boolean(destination.hash) });
+      return;
+    }
 
     event.preventDefault();
     event.stopPropagation();
     setTabExit(Boolean(link.closest('[role="tab"]')) && !link.closest('[data-admin-sidebar]'));
     setExiting(true);
-    window.setTimeout(() => router.push(`${destination.pathname}${destination.search}${destination.hash}`, { scroll: true }), 500);
+    window.setTimeout(() => router.push(destinationUrl, { scroll: Boolean(destination.hash) }), 500);
   }
 
   return <div className={`${styles.page} ${exiting ? styles.pageExit : ""} ${tabExit ? styles.pageTabExit : ""}`} onClickCapture={handleClick}>{children}</div>;

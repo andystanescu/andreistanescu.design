@@ -59,7 +59,7 @@ export function ContactForm({ personal = true }: { personal?: boolean }) {
 
   if (state.status === "sent") {
     return (
-      <div className={styles.form}>
+      <div className={`${styles.form} ${styles.success}`} role="status" aria-live="polite">
         <h2 className="heading-02">{state.title}</h2>
         <p className="body-default" style={{ color: "var(--text-secondary)" }}>
           {state.body}
@@ -69,15 +69,16 @@ export function ContactForm({ personal = true }: { personal?: boolean }) {
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
+    <form className={styles.form} onSubmit={handleSubmit} aria-busy={state.status === "sending"}>
       <h2 className="heading-02">Start a conversation</h2>
       <p className="body-small" style={{ color: "var(--text-secondary)" }}>A few details are enough to begin.</p>
 
       {state.status === "error" && (
-        <p className={styles.error}>{state.message}</p>
+        <p className={styles.error} role="alert">{state.message}</p>
       )}
 
-      <label className={styles.field}>
+      <div className={styles.shortFields}>
+        <label className={styles.field}>
         <span className="label-small" style={{ color: "var(--text-secondary)" }}>
           Name
         </span>
@@ -88,9 +89,9 @@ export function ContactForm({ personal = true }: { personal?: boolean }) {
           placeholder="Your name"
           className={styles.input}
         />
-      </label>
+        </label>
 
-      <label className={styles.field}>
+        <label className={styles.field}>
         <span className="label-small" style={{ color: "var(--text-secondary)" }}>
           Work email
         </span>
@@ -104,7 +105,8 @@ export function ContactForm({ personal = true }: { personal?: boolean }) {
         <span className="body-small" style={{ color: "var(--text-tertiary)" }}>
           {replyLine}
         </span>
-      </label>
+        </label>
+      </div>
 
       <label className={styles.field}>
         <span className="label-small" style={{ color: "var(--text-secondary)" }}>
@@ -118,9 +120,11 @@ export function ContactForm({ personal = true }: { personal?: boolean }) {
         />
       </label>
 
-      <Button type="submit" icon={<ArrowIcon size={16} />}>
-        {state.status === "sending" ? "Sending…" : "Send enquiry"}
-      </Button>
+      <div className={styles.submitAction}>
+        <Button type="submit" icon={<ArrowIcon size={16} />}>
+          {state.status === "sending" ? "Sending…" : "Send enquiry"}
+        </Button>
+      </div>
     </form>
   );
 }

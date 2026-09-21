@@ -1,29 +1,132 @@
-.main { display: flex; flex-direction: column; flex: 1 0 auto; }
-.hero { background: var(--bg-canvas); }
-.heroInner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(420px, 560px); gap: var(--space-1200); align-items: start; min-height: 770px; padding-block: var(--space-1200); }
-.intro { display: flex; flex-direction: column; gap: var(--space-300); padding-top: var(--space-600); }
-.intro h1 { max-width: 650px; }
-.introDescription { max-width: 520px; }
-.introDescription :global(.content) { max-width: none; }
-.form { max-width: none; padding: var(--space-600); border: 0; border-radius: var(--radius-lg); background: var(--bg-surface); box-shadow: 0 12px 28px color-mix(in srgb, var(--text-primary) 10%, transparent); }
-.reassurance { background: var(--bg-deep); padding-block: var(--space-800); }
-.reassuranceInner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-800); align-items: center; min-height: 260px; }
-.reassurance h2 { margin-top: var(--space-300); color: var(--text-on-deep-primary); }
-.reassuranceInner > p { max-width: 520px; }
-@media (max-width: 900px) {
-  .heroInner { grid-template-columns: 1fr; min-height: 0; gap: var(--space-800); }
-  .intro { padding-top: 0; }
-  .reassuranceInner { grid-template-columns: 1fr; min-height: 0; }
-}
-@media (max-width: 560px) {
-  .heroInner { padding-block: var(--space-600) var(--hero-space-after); }
-  .intro { gap: 0; }
-  .intro > :global(.label-eyebrow) { margin-bottom: var(--hero-space-eyebrow-title); }
-  .intro h1 { margin-bottom: var(--hero-space-title-copy); }
-  .form { padding: var(--space-400); }
+.main {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
 }
 
-@media (max-width: 560px) {
-  .intro, .intro h1, .introDescription,
-  .reassurance h2, .reassuranceInner > p { width: 100%; max-width: none; }
+.hero,
+.contactArea {
+  background: var(--bg-canvas);
+}
+
+.heroInner {
+  padding-block: clamp(var(--space-600), 5vw, var(--space-800)) var(--space-600);
+}
+
+.intro {
+  display: flex;
+  max-width: 860px;
+  flex-direction: column;
+  gap: var(--space-300);
+}
+
+.intro h1 {
+  width: 100%;
+}
+
+.introDescription {
+  width: 100%;
+  max-width: 680px;
+}
+
+.introDescription :global(.content) {
+  max-width: none;
+}
+
+.contactArea {
+  padding-block: var(--space-600) var(--space-1200);
+}
+
+.contactComposition {
+  display: grid;
+  grid-template-columns: minmax(0, 13fr) minmax(280px, 7fr);
+  align-items: start;
+  gap: clamp(var(--space-600), 6vw, var(--space-1200));
+}
+
+.formColumn {
+  width: 100%;
+  max-width: 720px;
+}
+
+.reassurance {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-400);
+  padding-top: var(--space-100);
+}
+
+.reassurance > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-300);
+}
+
+.reassurance h2,
+.reassurance > p {
+  width: 100%;
+  max-width: 520px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1024px) {
+  .heroInner {
+    padding-block: var(--space-600) var(--space-400);
+  }
+
+  .contactArea {
+    padding-block: var(--space-400) var(--space-800);
+  }
+
+  .contactComposition {
+    grid-template-columns: 1fr;
+    gap: var(--space-800);
+  }
+
+  .formColumn,
+  .reassurance {
+    max-width: 750px;
+  }
+
+  .reassurance {
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroInner {
+    padding-block: var(--space-600) var(--space-300);
+  }
+
+  .intro {
+    gap: 0;
+  }
+
+  .intro > :global(.label-eyebrow) {
+    margin-bottom: var(--hero-space-eyebrow-title);
+  }
+
+  .intro h1 {
+    margin-bottom: var(--hero-space-title-copy);
+  }
+
+  .contactArea {
+    padding-block: var(--space-300) var(--space-600);
+  }
+
+  .contactComposition {
+    gap: var(--space-600);
+  }
+
+  .intro,
+  .intro h1,
+  .introDescription,
+  .formColumn,
+  .reassurance,
+  .reassurance h2,
+  .reassurance > p {
+    width: 100%;
+    max-width: none;
+  }
 }

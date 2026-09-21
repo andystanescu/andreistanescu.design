@@ -51,7 +51,10 @@ export function TableOfContents({ items, relatedReadings = [] }: { items: TocIte
     if (!open) return;
     const isMobile = window.matchMedia("(max-width: 640px)").matches;
     const previousOverflow = document.body.style.overflow;
-    if (isMobile) document.body.style.overflow = "hidden";
+    if (isMobile) {
+      document.body.style.overflow = "hidden";
+      document.body.classList.add("chapter-navigator-open");
+    }
     window.requestAnimationFrame(() => closeRef.current?.focus());
     const onPointerDown = (event: PointerEvent) => {
       if (!isMobile && responsiveRef.current && !responsiveRef.current.contains(event.target as Node)) {
@@ -82,6 +85,7 @@ export function TableOfContents({ items, relatedReadings = [] }: { items: TocIte
     window.addEventListener("popstate", onPopState);
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.body.classList.remove("chapter-navigator-open");
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("popstate", onPopState);

@@ -27,7 +27,7 @@
   .panelHeader{display:flex;min-height:52px;align-items:center;justify-content:space-between;padding:0 var(--space-300);border-bottom:1px solid var(--border-default);color:var(--text-primary);font:600 11px/1.3 var(--font-family-mono)}
   .panelHeader button{display:grid;width:44px;height:44px;place-items:center;border-radius:var(--radius-sm);color:var(--text-primary);font:26px/1 var(--font-family-body)}
   .panelHeader button:hover,.panelHeader button:focus-visible{background:var(--bg-subtle);color:var(--text-accent)}
-  .panelScroll{max-height:calc(100dvh - var(--safe-area-top) - 124px);overflow-y:auto;overscroll-behavior:contain;padding:var(--space-150) var(--space-300) max(var(--space-300),var(--safe-area-bottom));scrollbar-width:none}
+  .panelScroll{min-height:0;max-height:calc(100dvh - var(--safe-area-top) - 124px);overflow-y:auto;overscroll-behavior:contain;padding:var(--space-150) var(--space-300) max(var(--space-300),var(--safe-area-bottom));scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-y}
   .panelScroll::-webkit-scrollbar{display:none}
   .navigator nav a{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:start;gap:var(--space-150);min-height:44px;padding-block:var(--space-150);color:var(--text-secondary)}
   .navigator nav a span{padding-top:2px;color:var(--text-tertiary);font:500 11px/1.4 var(--font-family-mono)}

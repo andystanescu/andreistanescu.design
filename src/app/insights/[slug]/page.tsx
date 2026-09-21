@@ -62,7 +62,7 @@ export default async function InsightDetailPage({
       <Nav />
       {preview && <aside className={styles.previewBanner}><strong>Preview mode</strong><span>This is the latest saved version and may not be published.</span><Link href={`/admin/insights/${insight.id}`}>Return to editor</Link></aside>}
       <main className={styles.main}>
-        <ArticleHero category={insight.category} title={insight.title} excerpt={insight.excerpt} author={insight.author} publishedAt={insight.published_at} dateLabel={displayCompactDate(insight.published_at)} readingMinutes={readingMinutes} coverImage={insight.cover_image} mediaVariant="wide" />
+        <ArticleHero slug={insight.slug} category={insight.category} title={insight.title} excerpt={insight.excerpt} author={insight.author} publishedAt={insight.published_at} dateLabel={displayCompactDate(insight.published_at)} readingMinutes={readingMinutes} coverImage={insight.cover_image} mediaVariant="wide" />
 
         <div className={styles.divider} />
 

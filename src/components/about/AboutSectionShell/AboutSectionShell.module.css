@@ -70,3 +70,15 @@
     max-width: none;
   }
 }
+
+@media (max-width: 640px) {
+  .section,
+  .surface {
+    border-top: 0;
+    background: var(--bg-canvas);
+  }
+
+  .separated {
+    border-top: 0;
+  }
+}

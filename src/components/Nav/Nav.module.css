@@ -197,6 +197,11 @@
   .navOuter.readingNavHidden {
     transform: translateY(100%);
   }
+
+  :global(body.chapter-navigator-open) .navOuter {
+    transform: translateY(calc(100% + var(--safe-area-bottom)));
+    pointer-events: none;
+  }
 }
 
 /* Belt-and-suspenders: force the overlay closed above the breakpoint even if

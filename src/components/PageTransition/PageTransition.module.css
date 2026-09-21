@@ -5,12 +5,12 @@
 
 .page:not(.pageTabExit) > :not(header):not(footer):not(.wipe):not([data-admin-shell]),
 .page:not(.pageTabExit) > [data-admin-shell] > [data-page-transition-content] {
-  will-change: transform;
-  animation: depth-in 100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: depth-in 100ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .pageExit:not(.pageTabExit) > :not(header):not(footer):not(.wipe):not([data-admin-shell]),
 .pageExit:not(.pageTabExit) > [data-admin-shell] > [data-page-transition-content] {
+  will-change: transform;
   animation: depth-out 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
   pointer-events: none;
 }
@@ -33,7 +33,7 @@
 }
 
 .page:not(.pageExit).pageTabExit > [data-admin-shell] > [data-page-transition-content] > :not([data-admin-about-header]):not(.editorHeader) {
-  animation: depth-in 100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: depth-in 100ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .page:not(.pageExit).pageTabExit > [data-admin-shell] > [data-page-transition-content] > [data-admin-about-header] {
@@ -47,14 +47,14 @@
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: none;
   }
 }
 
 @keyframes depth-out {
   from {
     opacity: 1;
-    transform: scale(1);
+    transform: none;
   }
   to {
     opacity: 0;

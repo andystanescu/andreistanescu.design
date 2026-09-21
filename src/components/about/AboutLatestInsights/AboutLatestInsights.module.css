@@ -1,6 +1,21 @@
 @media (max-width: 640px) {
   .cards {
     grid-template-columns: 1fr;
+    width: calc(
+      100% + var(--layout-gutter-narrative) + var(--layout-gutter-narrative) -
+        var(--layout-gutter-visual) - var(--layout-gutter-visual)
+    );
+    margin-inline: calc(
+      var(--layout-gutter-visual) - var(--layout-gutter-narrative)
+    );
+  }
+
+  /* Let system-generated thumbnails use the visual gutter while keeping the
+     article copy aligned to the page's narrower narrative gutter. */
+  .cards > a > :last-child {
+    padding-inline: calc(
+      var(--layout-gutter-narrative) - var(--layout-gutter-visual)
+    );
   }
 }
 

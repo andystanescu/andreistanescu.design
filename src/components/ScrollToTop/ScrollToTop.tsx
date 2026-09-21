@@ -20,12 +20,21 @@ export function ScrollToTop() {
   }, []);
 
   useLayoutEffect(() => {
+    let forceTop = false;
+    try {
+      forceTop = sessionStorage.getItem("conScept-force-top") === "1";
+    } catch {
+      // Storage can be unavailable in private browsing.
+    }
+
     // On the first render, leave scrolling to the browser. That preserves a
     // refresh position, restores a history entry, opens a direct hash at its
-    // target, and leaves an ordinary direct URL at the top.
+    // target, and leaves an ordinary direct URL at the top. A client-side
+    // route can remount this controller, so an explicit fresh-navigation
+    // marker must still reset even though this is the component's first pass.
     if (initialPageRef.current) {
       initialPageRef.current = false;
-      return;
+      if (!forceTop) return;
     }
 
     // Back and Forward own their saved positions. A popstate precedes the
@@ -41,12 +50,55 @@ export function ScrollToTop() {
     // to that section, including when the fragment belongs to another page.
     if (window.location.hash) return;
 
-    // A new in-app destination starts at the beginning. Nested page regions
-    // are reset alongside the document for admin and editor layouts.
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    document.querySelectorAll<HTMLElement>("[data-scroll-region]").forEach((container) => {
-      container.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    try {
+      sessionStorage.removeItem("conScept-force-top");
+    } catch {
+      // Storage can be unavailable in private browsing.
+    }
+
+    const root = document.documentElement;
+    const previousScrollBehavior = root.style.getPropertyValue("scroll-behavior");
+    const previousScrollPriority = root.style.getPropertyPriority("scroll-behavior");
+    const restoreScrollBehavior = () => {
+      if (previousScrollBehavior) {
+        root.style.setProperty("scroll-behavior", previousScrollBehavior, previousScrollPriority);
+      } else {
+        root.style.removeProperty("scroll-behavior");
+      }
+    };
+
+    // Next 16 no longer suppresses the document's CSS smooth scrolling
+    // during navigation. Keep the override active through the first complete
+    // paint so it also cancels any smooth reset Next started before this
+    // layout effect ran.
+    root.style.setProperty("scroll-behavior", "auto", "important");
+
+    const resetScroll = () => {
+      window.scrollTo({ top: 0, left: 0 });
+      document.querySelectorAll<HTMLElement>("[data-scroll-region]").forEach((container) => {
+        container.scrollTop = 0;
+        container.scrollLeft = 0;
+      });
+    };
+
+    // Reset synchronously and through the first completed paint. Dynamic
+    // server routes can finish their own scroll handling after this layout
+    // effect and after the first animation frame; the second frame is the
+    // first reliable point at which the incoming page owns the viewport.
+    resetScroll();
+    let paintedFrame = 0;
+    const layoutFrame = window.requestAnimationFrame(() => {
+      resetScroll();
+      paintedFrame = window.requestAnimationFrame(() => {
+        resetScroll();
+        restoreScrollBehavior();
+      });
     });
+    return () => {
+      window.cancelAnimationFrame(layoutFrame);
+      if (paintedFrame) window.cancelAnimationFrame(paintedFrame);
+      restoreScrollBehavior();
+    };
   }, [pathname]);
 
   useEffect(() => {

@@ -32,22 +32,26 @@ export default function ContactPage() {
               <h1 className="display-small">{page.title}</h1>
               <div className={styles.introDescription}><RichContent html={page.body} /></div>
             </div>
-            <ContactForm personal={personal} />
           </div>
         </section>
-        <section className={`${styles.reassurance} section-dark`}>
-          <div className={`container ${styles.reassuranceInner}`}>
-            <div>
-              <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>WHAT HAPPENS NEXT</p>
-              <h2 className="heading-01">A thoughtful first conversation,<br />with no hard sell.</h2>
+        <section className={styles.contactArea}>
+          <div className={`container ${styles.contactComposition}`}>
+            <div className={styles.formColumn}>
+              <ContactForm personal={personal} />
             </div>
-            <p className="body-default" style={{ color: "var(--text-secondary)" }}>
-              {personal ? "I listen, ask the right questions and suggest a sensible next step." : "We listen, ask the right questions and suggest a sensible next step."}
-            </p>
+            <aside className={styles.reassurance}>
+              <div>
+                <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>WHAT HAPPENS NEXT</p>
+                <h2 className="heading-01">A thoughtful first conversation,<br />with no hard sell.</h2>
+              </div>
+              <p className="body-default" style={{ color: "var(--text-secondary)" }}>
+                {personal ? "I listen, ask the right questions and suggest a sensible next step." : "We listen, ask the right questions and suggest a sensible next step."}
+              </p>
+            </aside>
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer hideContactCta />
     </>
   );
 }

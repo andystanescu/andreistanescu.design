@@ -18,6 +18,7 @@ type NavClientProps = {
 
 export function NavClient({ links, logoIdentity }: NavClientProps) {
   const pathname = usePathname();
+  const isContactPage = pathname === "/contact";
   const [scrolled, setScrolled] = useState(false);
   const [readingNavHidden, setReadingNavHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -136,9 +137,11 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
           </Link>
         ))}
       </nav>
-      <Button href="/contact" onClick={closeMenu} icon={<ArrowIcon size={16} />}>
-        Let&apos;s talk
-      </Button>
+      {!isContactPage && (
+        <Button href="/contact" onClick={closeMenu} icon={<ArrowIcon size={16} />}>
+          Let&apos;s talk
+        </Button>
+      )}
     </div>
   );
 
@@ -165,11 +168,13 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
               ))}
             </nav>
             <div className={styles.controls}>
-              <div className={styles.desktopCta}>
-                <Button href="/contact" icon={<ArrowIcon size={16} />}>
-                  Let&apos;s talk
-                </Button>
-              </div>
+              {!isContactPage && (
+                <div className={styles.desktopCta}>
+                  <Button href="/contact" icon={<ArrowIcon size={16} />}>
+                    Let&apos;s talk
+                  </Button>
+                </div>
+              )}
               <ThemeSwitch />
               <button
                 ref={menuToggleRef}
