@@ -15,15 +15,6 @@ export function AboutHero() {
 
   return (
     <section className={`container ${styles.hero} ${personal ? styles.personal : styles.business}`}>
-      {personal && (
-        <div className={styles.personalMark}>
-          {heroImage ? (
-            <img className={styles.personalPhoto} src={heroImage} alt={settings.author_name} />
-          ) : (
-            <PersonalLogoMark className={styles.personalLogoPlaceholder} size={120} />
-          )}
-        </div>
-      )}
       <div className={styles.copy}>
         <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>
           {section.eyebrow}
@@ -42,11 +33,21 @@ export function AboutHero() {
           </div>
         )}
       </div>
-      <div className={styles.lattice}>
-        <LatticeInteractive>
-          <LatticeDiagram />
-        </LatticeInteractive>
-      </div>
+      {personal ? (
+        <div className={styles.personalMark}>
+          {heroImage ? (
+            <img className={styles.personalPhoto} src={heroImage} alt={settings.author_name} />
+          ) : (
+            <PersonalLogoMark className={styles.personalLogoPlaceholder} size={120} />
+          )}
+        </div>
+      ) : (
+        <div className={styles.lattice}>
+          <LatticeInteractive>
+            <LatticeDiagram />
+          </LatticeInteractive>
+        </div>
+      )}
     </section>
   );
 }

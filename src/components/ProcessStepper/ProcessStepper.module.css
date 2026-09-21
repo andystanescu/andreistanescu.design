@@ -1,103 +1,99 @@
 .steps {
-  display: flex;
-  flex: 1 0 0;
-  min-width: 280px;
-  flex-wrap: wrap;
-  gap: var(--space-200);
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: 100%;
   padding: 0;
   margin: 0;
   list-style: none;
 }
 
+.steps::before {
+  position: absolute;
+  top: 7px;
+  right: calc(20% - var(--space-200));
+  left: var(--space-200);
+  height: 2px;
+  background: var(--border-default);
+  content: "";
+}
+
 .step {
+  position: relative;
+  min-width: 0;
+  padding-inline: var(--space-200);
+}
+
+.markerRow {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--space-150);
+  margin-bottom: var(--space-300);
+}
+
+.marker {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 3px solid var(--bg-canvas);
+  border-radius: 50%;
+  background: var(--accent-foundation);
+  box-shadow: 0 0 0 1px var(--accent-foundation);
+}
+
+.number {
+  color: var(--text-accent);
+}
+
+.content {
   display: flex;
   min-width: 0;
-  flex: 1 0 160px;
   flex-direction: column;
   gap: var(--space-150);
 }
 
-.icon {
-  width: auto;
-  height: 48px;
-  align-self: flex-start;
-  object-fit: contain;
+.description {
+  width: 100%;
+  color: var(--text-secondary);
 }
 
-.rail { display: contents; }
-.number { color: var(--text-accent); font: 500 12px/1.35 var(--font-family-mono); }
-.node { display: none; }
-.copy { display: flex; min-width: 0; flex-direction: column; gap: var(--space-150); }
-.copy p { color: var(--text-secondary); }
-
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   .steps {
-    display: flex;
-    width: 100%;
-    min-width: 0;
-    flex-basis: 100%;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    gap: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .steps::before {
+    top: 8px;
+    right: auto;
+    bottom: 8px;
+    left: 7px;
+    width: 2px;
+    height: auto;
   }
 
   .step {
-    position: relative;
     display: grid;
-    grid-template-columns: 36px minmax(0, 1fr);
-    grid-template-areas: "rail copy";
+    grid-template-columns: 40px minmax(0, 1fr);
     column-gap: var(--space-200);
-    flex: none;
-    padding-bottom: var(--space-600);
+    padding: 0 0 var(--space-600);
   }
 
-  .step:last-child { padding-bottom: 0; }
-  .icon { display: none; }
+  .step:last-child {
+    padding-bottom: 0;
+  }
 
-  .rail {
-    position: relative;
-    grid-area: rail;
-    display: flex;
+  .markerRow {
+    grid-column: 1 / -1;
     align-items: center;
-    flex-direction: column;
-  }
-
-  .rail::after {
-    position: absolute;
-    top: 48px;
-    bottom: calc(-1 * var(--space-600) + 8px);
-    left: 50%;
-    width: 1px;
-    transform: translateX(-50%);
-    background: var(--border-strong);
-    content: "";
-  }
-
-  .step:last-child .rail::after { display: none; }
-
-  .number {
-    min-height: 24px;
-    color: var(--text-accent);
-  }
-
-  .node {
-    position: relative;
-    z-index: 1;
-    display: block;
-    width: 11px;
-    height: 11px;
-    margin-top: var(--space-100);
-    border: 2px solid var(--accent-foundation);
-    border-radius: 50%;
-    background: var(--bg-canvas);
-  }
-
-  .copy {
-    grid-area: copy;
+    flex-direction: row;
     gap: var(--space-150);
-    padding-top: 31px;
+    margin-bottom: var(--space-200);
   }
 
-  .copy h3,
-  .copy p { width: 100%; max-width: none; }
+  .content {
+    grid-column: 2;
+  }
 }

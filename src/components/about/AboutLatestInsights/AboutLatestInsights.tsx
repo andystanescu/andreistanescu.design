@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ArrowIcon } from "@/components/Icon/ArrowIcon";
-import { AccentText } from "@/components/AccentText/AccentText";
 import { getInsights } from "@/data/insights";
 import { ArticleCard } from "@/components/ArticleCard/ArticleCard";
 import { getSection } from "@/lib/about";
+import { AboutSectionShell } from "@/components/about/AboutSectionShell/AboutSectionShell";
 import styles from "@/components/home/LatestInsights/LatestInsights.module.css";
 import aboutStyles from "./AboutLatestInsights.module.css";
 
@@ -17,22 +17,20 @@ export function AboutLatestInsights() {
   const [featured] = insights;
 
   return (
-    <section id="latest_insights" className={`${styles.insights} section-dark`}>
-      <div className={`container ${styles.insightsInner}`}>
-        <div className={styles.intro}>
-          <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>
-            {section.eyebrow}
-          </p>
-          <h2 className="display-small">
-            <AccentText text={section.headline} />
-          </h2>
+    <AboutSectionShell
+      id="latest_insights"
+      variant="separated"
+      eyebrow={section.eyebrow}
+      heading={section.headline}
+      intro={section.description}
+      action={
           <Link href="/insights" className={styles.seeAll}>
             See all insights
             <ArrowIcon size={16} />
           </Link>
-        </div>
-
-        <div className={`${styles.cards} ${aboutStyles.cards}`}>
+      }
+    >
+      <div className={`${styles.cards} ${aboutStyles.cards}`}>
           <Link
             href={`/insights/${featured.slug}`}
             className={`${styles.card} section-light`}
@@ -74,8 +72,7 @@ export function AboutLatestInsights() {
               className="section-light"
             />
           )}
-        </div>
       </div>
-    </section>
+    </AboutSectionShell>
   );
 }

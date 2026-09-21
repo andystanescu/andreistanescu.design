@@ -13,6 +13,7 @@ import { getSectionOrder } from "@/lib/about";
 import { getPublishedPage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
+import styles from "./about.module.css";
 
 // Content (sections, philosophy/highlight items, latest article) comes
 // from the database — this can't be statically generated at build time.
@@ -38,14 +39,16 @@ export default function AboutPage() {
   return (
     <>
       <Nav />
-      <AboutHero />
-      <main>
-        {order.map((key) => {
-          const Section = SECTION_COMPONENTS[key];
-          return Section ? <Section key={key} /> : null;
-        })}
-        <AboutHowIWork />
-      </main>
+      <div className={styles.page}>
+        <AboutHero />
+        <main>
+          {order.map((key) => {
+            const Section = SECTION_COMPONENTS[key];
+            return Section ? <Section key={key} /> : null;
+          })}
+          <AboutHowIWork />
+        </main>
+      </div>
       <Footer />
     </>
   );

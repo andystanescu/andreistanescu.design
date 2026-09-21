@@ -1,19 +1,134 @@
-.section { padding-block: var(--space-1200); }
-.section h2 { max-width: 760px; margin-top: var(--space-200); }
-.intro { width: 100%; max-width: none; margin-top: var(--space-300); color: var(--text-secondary); }
-.timeline { margin-top: var(--space-800); }
-.card { display: grid; grid-template-columns: minmax(140px, 180px) minmax(220px, 0.8fr) minmax(0, 1.4fr); align-items: start; gap: 40px; min-width: 0; padding: 24px 0; border-top: 1px solid var(--border-default); }
-.dates { color: var(--text-secondary); font-size: 13px; font-weight: 500; }
-.body { display: flex; min-width: 0; flex-direction: column; gap: 6px; }
-.body h3 { color: var(--text-primary); font-size: 18px; font-weight: 600; }
-.company { color: var(--text-secondary); font-size: 13px; font-weight: 500; }
-.description { width: 100%; max-width: none; min-width: 0; color: var(--text-secondary); font-size: 15px; line-height: 1.5; white-space: normal; overflow-wrap: break-word; }
+.timeline {
+  --timeline-rail-width: 22%;
+  --timeline-column-gap: clamp(var(--space-300), 4vw, var(--space-800));
+  position: relative;
+  width: 100%;
+}
+
+.timeline::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--timeline-rail-width);
+  width: 1px;
+  background: var(--border-default);
+  content: "";
+}
+
+.entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--timeline-rail-width) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--timeline-column-gap);
+  min-width: 0;
+  padding-block: var(--space-400);
+}
+
+.entry::before {
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--space-400) + 4px);
+  left: calc(var(--timeline-rail-width) - 5px);
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--bg-canvas);
+  border-radius: 50%;
+  background: var(--accent-foundation);
+  content: "";
+}
+
+.rail {
+  min-width: 0;
+  padding-right: var(--space-300);
+}
+
+.dates {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.entryContent {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-250, 20px);
+}
+
+.role {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.role h3 {
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.company {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.description {
+  width: 100%;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
 .description :global(.content) { gap: 0; color: inherit; font-size: inherit; line-height: inherit; }
 .description :global(.content p) { margin: 0; }
 .description :global(.content p + p) { margin-top: 10px; }
-.description :global(.content ul), .description :global(.content ol) { margin: 10px 0; padding-left: 1.4em; }
+.description :global(.content ul),
+.description :global(.content ol) { margin: 10px 0; padding-left: 1.4em; }
 .description :global(.content li + li) { margin-top: 6px; }
-.description :global(.content strong) { font-weight: 700; color: var(--text-primary); }
-.description :global(.content h1), .description :global(.content h2), .description :global(.content h3) { margin-top: 12px; font-size: 18px; }
-@media (max-width: 900px) { .card { grid-template-columns: minmax(120px, 160px) minmax(0, 1fr); gap: 24px; } .description { grid-column: 2; } }
-@media (max-width: 700px) { .section h2 { max-width: none; } .card { display: flex; flex-direction: column; gap: 12px; } .dates { flex-basis: auto; } .body,.description { width: 100%; } }
+.description :global(.content strong) { color: var(--text-primary); font-weight: 700; }
+.description :global(.content h1),
+.description :global(.content h2),
+.description :global(.content h3) { margin-top: 12px; font-size: 18px; }
+
+@media (max-width: 900px) {
+  .timeline { --timeline-rail-width: 25%; --timeline-column-gap: var(--space-400); }
+}
+
+@media (max-width: 640px) {
+  .timeline::before { left: 11px; }
+
+  .entry {
+    grid-template-columns: 24px minmax(0, 1fr);
+    column-gap: var(--space-200);
+    row-gap: var(--space-100);
+    padding-block: var(--space-300);
+  }
+
+  .entry::before {
+    top: calc(var(--space-300) + 3px);
+    left: 6px;
+  }
+
+  .rail {
+    grid-column: 2;
+    grid-row: 1;
+    padding-right: 0;
+  }
+
+  .dates {
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: left;
+  }
+
+  .entryContent {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}

@@ -1,6 +1,6 @@
-import { AccentText } from "@/components/AccentText/AccentText";
 import { getSection } from "@/lib/about";
-import styles from "./AboutDrivesMe.module.css";
+import { AboutSectionShell } from "@/components/about/AboutSectionShell/AboutSectionShell";
+import { FourItemPrinciplesLayout } from "@/components/FourItemPrinciplesLayout/FourItemPrinciplesLayout";
 
 // Fixed content, matching the Figma design exactly — unlike Philosophy and
 // Highlights, these 4 items are not admin-editable (only the section's own
@@ -37,34 +37,15 @@ export function AboutDrivesMe() {
   const section = getSection("drives_me")!;
 
   return (
-    <section id="drives_me" className={`${styles.section} section-dark`}>
-      <div className={`container ${styles.inner}`}>
-        <div className={styles.copy}>
-          {section.eyebrow && (
-            <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>
-              {section.eyebrow}
-            </p>
-          )}
-          <h2 className="display-small">
-            <AccentText text={section.headline} />
-          </h2>
-          <p className="body-default" style={{ color: "var(--text-secondary)" }}>
-            {section.description}
-          </p>
-        </div>
-        <div className={styles.items}>
-          {ITEMS.map((item) => (
-            <div key={item.title} className={styles.item}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={item.icon} alt="" width={46.2} height={46.2} />
-              <h3 className="heading-03">{item.title}</h3>
-              <p className="body-small" style={{ color: "var(--text-secondary)" }}>
-                {item.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+    <AboutSectionShell id="drives_me" variant="surface" eyebrow={section.eyebrow} heading={section.headline} intro={section.description} contentWidth="wide">
+      <FourItemPrinciplesLayout
+        items={ITEMS.map((item) => ({
+          id: item.title,
+          title: item.title,
+          description: item.description,
+          media: item.icon,
+        }))}
+      />
+    </AboutSectionShell>
   );
 }

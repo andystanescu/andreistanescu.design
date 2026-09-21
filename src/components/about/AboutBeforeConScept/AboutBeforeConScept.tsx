@@ -3,6 +3,7 @@ import { getSettings } from "@/lib/settings";
 import styles from "./AboutBeforeConScept.module.css";
 import { displayMonthYear } from "@/lib/dateUtils";
 import { RichContent } from "@/components/RichContent/RichContent";
+import { AboutSectionShell } from "@/components/about/AboutSectionShell/AboutSectionShell";
 
 export function AboutBeforeConScept({ preview = false }: { preview?: boolean } = {}) {
   if (getSettings().logo_identity !== "personal") return null;
@@ -11,24 +12,25 @@ export function AboutBeforeConScept({ preview = false }: { preview?: boolean } =
   const experiences = getExperiences();
 
   return (
-    <section id="before-conscept" className={`container ${styles.section}`}>
-      <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>{section.eyebrow}</p>
-      <h2 className="heading-01">{section.headline}</h2>
-      {section.description && <p className={`body-large ${styles.intro}`}>{section.description}</p>}
+    <AboutSectionShell id="before-conscept" eyebrow={section.eyebrow} heading={section.headline} intro={section.description} headingClassName="heading-01" introClassName="body-large" headerWidth="wide" contentWidth="full">
       <div className={styles.timeline}>
         {experiences.map((experience) => (
-          <article key={experience.id} className={styles.card}>
-            <p className={styles.dates}>
-              {displayMonthYear(experience.start_date)} — {experience.end_date ? displayMonthYear(experience.end_date) : "Present"}
-            </p>
-            <div className={styles.body}>
-              <h3>{experience.job_title}</h3>
-              <p className={styles.company}>{experience.company_name}{experience.business_profile ? ` · ${experience.business_profile}` : ""}</p>
+          <article key={experience.id} className={styles.entry}>
+            <div className={styles.rail}>
+              <p className={styles.dates}>
+                {displayMonthYear(experience.start_date)} — {experience.end_date ? displayMonthYear(experience.end_date) : "Present"}
+              </p>
             </div>
-            <div className={styles.description}><RichContent html={experience.description} /></div>
+            <div className={styles.entryContent}>
+              <header className={styles.role}>
+                <h3>{experience.job_title}</h3>
+                <p className={styles.company}>{experience.company_name}{experience.business_profile ? ` · ${experience.business_profile}` : ""}</p>
+              </header>
+              <div className={styles.description}><RichContent html={experience.description} /></div>
+            </div>
           </article>
         ))}
       </div>
-    </section>
+    </AboutSectionShell>
   );
 }
