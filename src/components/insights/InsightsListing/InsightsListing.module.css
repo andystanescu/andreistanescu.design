@@ -47,6 +47,29 @@
 
 @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
 
+@media (max-width: 900px) {
+  .filters {
+    flex-wrap: nowrap;
+    gap: var(--space-150);
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+    padding-bottom: var(--space-150);
+    scrollbar-width: none;
+    scroll-snap-type: inline proximity;
+    scroll-padding-inline: var(--space-200);
+    touch-action: pan-x;
+    cursor: grab;
+    user-select: none;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), transparent 100%);
+    mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), transparent 100%);
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .filters:active { cursor: grabbing; }
+  .filter, .filterActive { min-height: 44px; scroll-snap-align: start; }
+}
+
 @media (max-width: 560px) {
   .featuredSection,
   .gridSection { padding-block: var(--space-600); }

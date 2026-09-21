@@ -1,7 +1,7 @@
 import { getCaseStudies, getCaseStudyMetrics } from "@/data/caseStudies";
 import { getSection } from "@/lib/homepage";
 import { HomepageSectionHeader } from "@/components/home/SectionHeader/HomepageSectionHeader";
-import { ProjectCard } from "@/components/work/ProjectCard/ProjectCard";
+import { ProjectCollection } from "@/components/work/ProjectCollection/ProjectCollection";
 import { ImpactMetrics } from "@/components/ImpactMetrics/ImpactMetrics";
 import styles from "./SelectedImpact.module.css";
 
@@ -12,8 +12,7 @@ export function SelectedImpact() {
     return null;
   }
 
-  const [featured, ...rest] = caseStudies;
-  const secondary = rest.slice(0, 2);
+  const [featured] = caseStudies;
   const featuredMetrics = getCaseStudyMetrics(featured);
 
   return (
@@ -26,15 +25,7 @@ export function SelectedImpact() {
         />
 
         <div className={styles.grid}>
-          <ProjectCard slug={featured.slug} title={featured.title} description={featured.description} thumbnail={featured.thumbnail_image} category={featured.category || featured.eyebrow} index={1} year={featured.year} inProgress={Boolean(featured.in_progress)} protectedStudy={Boolean(featured.password_required)} featured />
-
-          {secondary.length > 0 && (
-            <div className={styles.secondaryList}>
-              {secondary.map((study, index) => (
-                <ProjectCard key={study.slug} slug={study.slug} title={study.title} description={study.description} thumbnail={study.thumbnail_image} category={study.category || study.eyebrow} index={index + 2} year={study.year} inProgress={Boolean(study.in_progress)} protectedStudy={Boolean(study.password_required)} />
-              ))}
-            </div>
-          )}
+          <ProjectCollection studies={caseStudies} limit={3} />
           {featuredMetrics.length > 0 && (
             <div className={styles.impactSummary}>
               <p className="label-eyebrow">Featured impact</p>

@@ -3,8 +3,7 @@ import { notFound } from "next/navigation";
 import { Footer } from "@/components/Footer/Footer";
 import { RichContent } from "@/components/RichContent/RichContent";
 import { LatestInsights } from "@/components/home/LatestInsights/LatestInsights";
-import { MoreWorkGrid } from "@/components/work/MoreWorkGrid/MoreWorkGrid";
-import { ProjectCard } from "@/components/work/ProjectCard/ProjectCard";
+import { ProjectCollection } from "@/components/work/ProjectCollection/ProjectCollection";
 import { getCaseStudies } from "@/data/caseStudies";
 import { getPublishedPage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
@@ -24,7 +23,7 @@ export default function WorkPage() {
   if (!page) notFound();
   const CASE_STUDIES = getCaseStudies();
   const settings = getSettings();
-  const [featured, ...moreStudies] = CASE_STUDIES;
+  const featured = CASE_STUDIES[0];
   return (
     <>
       <Nav />
@@ -40,23 +39,8 @@ export default function WorkPage() {
             Case studies are on their way — check back soon.
           </p>
         ) : (
-          <ProjectCard slug={featured.slug} title={featured.title} description={featured.description} thumbnail={featured.thumbnail_image} category={featured.category || featured.eyebrow} index={1} year={featured.year} inProgress={Boolean(featured.in_progress)} protectedStudy={Boolean(featured.password_required)} featured headingLevel="h2" />
+          <ProjectCollection studies={CASE_STUDIES} />
         )}
-        <MoreWorkGrid
-          totalStudies={CASE_STUDIES.length}
-          studies={moreStudies.map((study) => ({
-            slug: study.slug,
-            eyebrow: study.eyebrow,
-            category: study.category,
-            year: study.year,
-            title: study.title,
-            description: study.description,
-            thumbnail_image: study.thumbnail_image,
-            in_progress: study.in_progress,
-            password_required: study.password_required,
-          }))}
-          personal={settings.logo_identity === "personal"}
-        />
 
         <section className={`${styles.outcome} section-dark`} aria-labelledby="work-outcome-title">
           <div className="container">
