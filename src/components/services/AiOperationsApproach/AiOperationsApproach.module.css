@@ -1,0 +1,275 @@
+.section {
+  padding-block: var(--space-800) var(--space-1200);
+}
+
+.header {
+  max-width: 900px;
+}
+
+.header h2 {
+  max-width: none;
+  text-wrap: pretty;
+}
+
+.discovery,
+.learning,
+.responsibilities {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.discovery {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: var(--space-600);
+  border-block: 1px solid var(--border-default);
+}
+
+.discovery li {
+  min-width: 0;
+  padding: var(--space-300) var(--space-300) var(--space-400) 0;
+}
+
+.discovery li + li {
+  padding-left: var(--space-300);
+  border-left: 1px solid var(--border-default);
+}
+
+.stepMeta,
+.responsibilities li > span {
+  color: var(--text-accent);
+  font: 600 10px/1.4 var(--font-family-body);
+  letter-spacing: .065em;
+}
+
+.stepMeta span {
+  padding-inline: var(--space-50);
+  color: var(--text-tertiary);
+}
+
+.discovery h3,
+.decisionIntro h3 {
+  margin: var(--space-200) 0 0;
+  color: var(--text-primary);
+  font: 500 clamp(18px, 1.6vw, 23px)/1.2 var(--font-family-heading);
+}
+
+.discovery p,
+.decisionIntro p,
+.responsibilities p,
+.learning p {
+  margin: var(--space-150) 0 0;
+  color: var(--text-secondary);
+  font: 14px/1.5 var(--font-family-body);
+}
+
+.decision {
+  display: grid;
+  grid-template-columns: minmax(220px, .78fr) minmax(0, 2fr);
+  gap: var(--space-800);
+  align-items: start;
+  padding-block: var(--space-600);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.decisionIntro h3 {
+  max-width: 15ch;
+}
+
+.decisionIntro p {
+  max-width: 38ch;
+}
+
+.responsibilities {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.responsibilities li {
+  min-width: 0;
+  padding-inline: var(--space-300);
+}
+
+.responsibilities li:first-child {
+  padding-left: 0;
+}
+
+.responsibilities li + li {
+  border-left: 1px solid var(--border-default);
+}
+
+.responsibilities strong {
+  display: block;
+  margin-top: var(--space-200);
+  color: var(--text-primary);
+  font: 500 18px/1.35 var(--font-family-heading);
+}
+
+.responsibilities p {
+  font-size: 13px;
+}
+
+.learning {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid var(--border-default);
+}
+
+.learning li {
+  padding: var(--space-300) var(--space-300) var(--space-400) 0;
+}
+
+.learning li + li {
+  padding-left: var(--space-300);
+  border-left: 1px solid var(--border-default);
+}
+
+.feedback {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-150);
+  margin: var(--space-300) 0 0;
+  color: var(--text-secondary);
+  font: 13px/1.5 var(--font-family-body);
+}
+
+.feedback > span {
+  flex: 0 0 auto;
+  color: var(--text-accent);
+  font-size: 18px;
+}
+
+@media (max-width: 1000px) {
+  .section {
+    padding-block: var(--space-600) var(--space-800);
+  }
+
+  .discovery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: var(--space-400);
+  }
+
+  .discovery li {
+    padding: var(--space-300);
+  }
+
+  .discovery li:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .discovery li:nth-child(even) {
+    padding-right: 0;
+  }
+
+  .discovery li:nth-child(n + 3) {
+    border-top: 1px solid var(--border-default);
+  }
+
+  .decision {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-300);
+    padding-block: var(--space-400);
+  }
+
+  .decisionIntro h3 {
+    max-width: none;
+  }
+
+  .decisionIntro p {
+    max-width: 70ch;
+  }
+}
+
+@media (max-width: 600px) {
+  .section {
+    padding-block: var(--space-400) var(--space-600);
+  }
+
+  .header h2 {
+    font-size: clamp(24px, 7vw, 34px);
+  }
+
+  .discovery {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: var(--space-300);
+  }
+
+  .discovery li,
+  .discovery li:nth-child(odd),
+  .discovery li:nth-child(even) {
+    padding: var(--space-200) 0;
+    border-left: 0;
+  }
+
+  .discovery li + li {
+    border-top: 1px solid var(--border-default);
+  }
+
+  .discovery h3,
+  .decisionIntro h3 {
+    margin-top: var(--space-100);
+    font-size: 19px;
+  }
+
+  .discovery p,
+  .decisionIntro p {
+    margin-top: var(--space-100);
+    font-size: 13px;
+  }
+
+  .decision {
+    gap: var(--space-200);
+    padding-block: var(--space-300);
+  }
+
+  .responsibilities {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .responsibilities li,
+  .responsibilities li:first-child {
+    padding: var(--space-200) 0;
+    border-left: 0;
+  }
+
+  .responsibilities li + li {
+    border-top: 1px solid var(--border-default);
+  }
+
+  .responsibilities strong {
+    margin-top: var(--space-100);
+    font-size: 16px;
+  }
+
+  .responsibilities p {
+    margin-top: var(--space-50);
+    font-size: 13px;
+  }
+
+  .learning {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .learning li,
+  .learning li + li {
+    padding: var(--space-200) 0;
+    border-left: 0;
+  }
+
+  .learning li + li {
+    border-top: 1px solid var(--border-default);
+  }
+
+  .learning p {
+    margin-top: var(--space-100);
+    font-size: 13px;
+  }
+
+  .feedback {
+    align-items: flex-start;
+    margin-top: var(--space-200);
+    font-size: 12px;
+  }
+}

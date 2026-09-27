@@ -5,7 +5,8 @@ import { Footer } from "@/components/Footer/Footer";
 import { BackButton } from "@/components/BackButton/BackButton";
 import { LatticeBenefitIcon } from "@/components/services/LatticeBenefitIcon/LatticeBenefitIcon";
 import { DesignSystemGraphic } from "@/components/services/DesignSystemGraphic/DesignSystemGraphic";
-import { AiOperationsGraphic } from "@/components/services/AiOperationsGraphic/AiOperationsGraphic";
+import { AiOperationsGraphic, AiOperationalLoop } from "@/components/services/AiOperationsGraphic/AiOperationsGraphic";
+import { AiOperationsApproach } from "@/components/services/AiOperationsApproach/AiOperationsApproach";
 import { GovernanceScaleGraphic } from "@/components/services/GovernanceScaleGraphic/GovernanceScaleGraphic";
 import { CollaborationAlignmentGraphic } from "@/components/services/CollaborationAlignmentGraphic/CollaborationAlignmentGraphic";
 import { ServiceSection, ServiceSectionHeader } from "@/components/services/ServiceSection/ServiceSection";
@@ -27,7 +28,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 const benefits = [["Consistency at scale", "Unified experiences across products and platforms."], ["Faster delivery", "Reusable building blocks and clear patterns."], ["Better collaboration", "A shared language between design and engineering."], ["Long-term impact", "Systems that evolve with your product."]];
-const aiOperationsBenefits = [["More capacity, safely", "Assistive workflows that preserve a consistent quality bar."], ["Shorter review cycles", "AI-supported preparation and iteration where it genuinely helps."], ["Visible human judgement", "Clear review points keep decisions accountable and explainable."], ["Operations that learn", "Workflows improve as your team gathers evidence and feedback."]];
+const aiOperationsBenefits = [["More capacity, safely", "Assistive workflows that preserve a consistent quality bar."], ["Shorter review cycles", "AI-supported preparation and iteration where it genuinely helps."], ["Visible human judgement", "Clear review points keep decisions accountable and explainable."], ["Operations that learn", "People review evidence and approve changes to the workflow."]];
+const aiOperationsBenefitStages = ["CAPACITY", "SPEED", "OVERSIGHT", "LEARNING"] as const;
 const governanceScaleBenefits = [["Shared ownership", "Clear responsibilities make a system easier to trust and contribute to."], ["Lightweight decisions", "Principles and contribution paths reduce unnecessary debate."], ["Visible stewardship", "Teams know who maintains the system and how decisions are made."], ["Durable momentum", "Governance evolves with the organisation instead of slowing it down."]];
 const collaborationAlignmentBenefits = [["Shared ownership", "Clear responsibilities make a system easier to trust and contribute to."], ["Lightweight decisions", "Principles and contribution paths reduce unnecessary debate."], ["Visible stewardship", "Teams know who maintains the system and how decisions are made."], ["Durable momentum", "Governance evolves with the organisation instead of slowing it down."]];
 const steps = [["01", "Discover", "Understand your product, users and team."], ["02", "Define", "Establish the principles, tokens and structure."], ["03", "Design", "Craft components, patterns and guidelines."], ["04", "Build", "Work with your team to implement and integrate."], ["05", "Evolve", "Measure, iterate and help the system grow."]];
@@ -65,8 +67,16 @@ const productArchitectureRecognition = [
   "Teams disagree about where capabilities belong.",
   "Nobody can confidently explain how the whole product fits together.",
 ];
+const aiOperationsRecognition = [
+  "AI is already being used, but everyone uses it differently.",
+  "Review effort is growing almost as quickly as AI-generated output.",
+  "Teams can automate tasks, but are not sure which decisions should remain human.",
+  "Good AI workflows exist as individual habits rather than shared practice.",
+  "Nobody is quite sure who is accountable when AI gets something wrong.",
+  "AI makes work faster, but quality is becoming harder to predict.",
+];
 const defaultDeliverables = ["Design system strategy and roadmap", "Information architecture and structure", "Design tokens and theming", "Component library and patterns", "Accessibility and inclusive design", "Documentation and guidelines", "Governance and adoption model"];
-const aiOperationsDeliverables = ["AI opportunity and automation roadmap", "Workflow and operational journey mapping", "Human-in-the-loop decision design", "AI interaction and prompt patterns", "Exception handling and escalation flows", "Prototype-to-production implementation guidance", "Measurement, governance and adoption framework"];
+const aiOperationsDeliverables = ["AI opportunity and delegation mapping", "Workflow and operational journey mapping", "Human-in-the-loop decision design", "AI interaction and prompt patterns", "Exception handling and escalation flows", "Prototype-to-production implementation guidance", "Measurement, governance and adoption framework"];
 const governanceScaleDeliverables = ["Governance strategy and operating model", "Roles, responsibilities and ownership map", "Decision principles and escalation paths", "Contribution and change-management workflow", "Review cadence and quality guardrails", "Adoption measurement and reporting framework", "Long-term evolution and stewardship roadmap"];
 const collaborationAlignmentDeliverables = ["Stakeholder alignment and working-session plan", "Shared vision, principles and success criteria", "Cross-functional decision framework", "Roles, responsibilities and handoff model", "Collaborative journey and workshop outputs", "Communication and decision documentation", "Team rituals and alignment playbook"];
 
@@ -309,6 +319,30 @@ function ProductArchitectureRecognition() {
   </ServiceSection>;
 }
 
+function AiOperationsRecognition() {
+  return <ServiceSection labelledBy="service-recognition-title" width="wide" className={`${styles.recognition} ${styles.aiOperationsRecognition}`}>
+    <ServiceSectionHeader
+      eyebrow="RECOGNITION"
+      title="The way your team works may need attention when…"
+      titleId="service-recognition-title"
+      className={styles.recognitionHeader}
+    />
+    <ol className={`${styles.recognitionList} ${styles.aiOperationsRecognitionList}`}>
+      {aiOperationsRecognition.map((condition, index) => <li key={condition}>
+        <span className={styles.recognitionNumber}>{String(index + 1).padStart(2, "0")}</span>
+        <p>{condition}</p>
+      </li>)}
+    </ol>
+    <div className={styles.aiSignalsConvergence} aria-hidden="true">
+      <svg viewBox="0 0 1200 100" preserveAspectRatio="none">
+        <path d="M70 0 L600 72 M282 0 L600 72 M494 0 L600 72 M706 0 L600 72 M918 0 L600 72 M1130 0 L600 72 M600 72 L600 100" />
+        <circle cx="600" cy="72" r="4" />
+        <path className={styles.aiSignalsArrow} d="M594 94 L600 100 L606 94" />
+      </svg>
+    </div>
+  </ServiceSection>;
+}
+
 function ServiceClosingCta({ title, description }: { title: string; description: string }) {
   return <ServiceSection labelledBy="service-closing-cta-title" className={styles.recognitionCta}>
     <div className={styles.recognitionCtaInner}>
@@ -337,8 +371,12 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   const isCollaborationAlignment = service.slug === "collaboration-alignment";
   const content = isProductArchitecture ? productArchitecture : {
     eyebrow: "DESIGN SYSTEMS",
-    lead: "Build scalable, consistent and adaptable systems that drive better products.",
-    description: isDesignSystems
+    lead: isAiEnabledOperations
+      ? "Give AI more responsibility without giving up control."
+      : "Build scalable, consistent and adaptable systems that drive better products.",
+    description: isAiEnabledOperations
+      ? "Put AI to work inside real design and product workflows, with clear boundaries for what it can decide alone and what still needs a person’s judgement."
+      : isDesignSystems
       ? "A design system is more than a component library: it is the shared language, principles and governance that connect how teams design, build and evolve products."
       : service.description,
     benefits: isAiEnabledOperations ? aiOperationsBenefits : isGovernanceScale ? governanceScaleBenefits : isCollaborationAlignment ? collaborationAlignmentBenefits : benefits,
@@ -367,7 +405,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           <div className={styles.heroActions}><Link href="/contact" className={styles.primaryButton}>Let&apos;s talk <span aria-hidden="true">→</span></Link></div>
         </div>
       </section>
-      <section className={`${styles.benefits} ${isDesignSystems || isProductArchitecture ? styles.benefitsQuiet : ""}`}><div className={`container ${styles.benefitsGrid}`}>{content.benefits.map(([title, description], index) => <article key={title} className={styles.benefit}><LatticeBenefitIcon index={index} /><h2>{title}</h2><p>{description}</p></article>)}</div></section>
+      <section className={`${styles.benefits} ${isDesignSystems || isProductArchitecture || isAiEnabledOperations ? styles.benefitsQuiet : ""} ${isAiEnabledOperations ? styles.aiOperationsBenefits : ""}`}><div className={`container ${styles.benefitsGrid}`}>{content.benefits.map(([title, description], index) => <article key={title} className={styles.benefit}>{isAiEnabledOperations ? <span className={styles.aiOutcomeStage}>{aiOperationsBenefitStages[index]}</span> : <LatticeBenefitIcon index={index} />}<h2>{title}</h2><p>{description}</p></article>)}</div></section>
       {isDesignSystems ? <ServiceSection labelledBy="service-work-title" className={`${styles.delivery} ${styles.designSystemDelivery}`}>
         <ServiceSectionHeader
           eyebrow="WHAT THE WORK CAN INVOLVE"
@@ -378,10 +416,10 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           titleClassName={`heading-02 ${styles.deliveryHeading}`}
         />
         <ul className={styles.deliverables}>{content.deliverables.map((item) => <li key={item}>{item}</li>)}</ul>
-      </ServiceSection> : <ServiceSection labelledBy="service-deliverables-title" width={isProductArchitecture ? "wide" : "contained"} className={`${styles.delivery} ${isProductArchitecture ? styles.architectureDelivery : ""}`}>
+      </ServiceSection> : <ServiceSection labelledBy="service-deliverables-title" width={isProductArchitecture || isAiEnabledOperations ? "wide" : "contained"} className={`${styles.delivery} ${isProductArchitecture ? styles.architectureDelivery : ""} ${isAiEnabledOperations ? styles.aiOperationsDelivery : ""}`}>
         <div className={styles.deliveryCopy}>
           <ServiceSectionHeader
-            eyebrow={isProductArchitecture ? "WHAT THE WORK CAN INVOLVE" : "DELIVERABLES"}
+            eyebrow={isProductArchitecture || isAiEnabledOperations ? "WHAT THE WORK CAN INVOLVE" : "DELIVERABLES"}
             title={content.deliverablesIntro}
             titleId="service-deliverables-title"
             eyebrowClassName={styles.deliveryEyebrow}
@@ -391,19 +429,23 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         </div>
         {isProductArchitecture ? <ProductArchitectureGraphic /> : isAiEnabledOperations ? <AiOperationsGraphic /> : isGovernanceScale ? <GovernanceScaleGraphic /> : isCollaborationAlignment ? <CollaborationAlignmentGraphic /> : <div className={styles.systemPreview}><strong>Aa</strong><div className={styles.tokenRow}><span className={`${styles.token} ${styles.tokenLight}`} /><span className={`${styles.token} ${styles.tokenDark}`} /></div><p className={styles.systemCaption}>Tokens / components / code</p></div>}
       </ServiceSection>}
+      {isAiEnabledOperations && <AiOperationalLoop />}
       {isDesignSystems && <DesignSystemEcosystem />}
-      {isDesignSystems ? <DesignSystemApproach /> : isProductArchitecture ? <><ProductArchitectureTransformation /><ProductArchitectureApproach /></> : <ServiceSection labelledBy="service-approach-title" className={styles.approach}><ServiceSectionHeader eyebrow="APPROACH" title={content.approachTitle} titleId="service-approach-title" /><div className={styles.approachGrid}>{steps.map(([number, title, description]) => <article key={number} className={styles.step}><span className={styles.stepNumber}>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
-      {(isDesignSystems || isProductArchitecture) && <ServiceEvidence
-        categoryName={isProductArchitecture ? "Product Architecture" : "Design Systems"}
-        title={isProductArchitecture ? "Product architecture in practice." : "Design systems in practice."}
+      {isDesignSystems ? <DesignSystemApproach /> : isProductArchitecture ? <><ProductArchitectureTransformation /><ProductArchitectureApproach /></> : isAiEnabledOperations ? <AiOperationsApproach /> : <ServiceSection labelledBy="service-approach-title" className={styles.approach}><ServiceSectionHeader eyebrow="APPROACH" title={content.approachTitle} titleId="service-approach-title" /><div className={styles.approachGrid}>{steps.map(([number, title, description]) => <article key={number} className={styles.step}><span className={styles.stepNumber}>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
+      {(isDesignSystems || isProductArchitecture || isAiEnabledOperations) && <ServiceEvidence
+        categoryName={isProductArchitecture ? "Product Architecture" : isAiEnabledOperations ? "AI-Enabled Design Operations" : "Design Systems"}
+        title={isProductArchitecture ? "Product architecture in practice." : isAiEnabledOperations ? "AI-enabled operations in practice." : "Design systems in practice."}
         description={isProductArchitecture
           ? "Selected work and thinking where product structure clarified journeys, boundaries and decisions."
+          : isAiEnabledOperations
+          ? "Selected work and thinking where AI changed how work could be done without removing the judgement it still needed."
           : "Selected work and thinking where shared foundations, patterns and governance shaped the outcome."}
       />}
-      {isDesignSystems ? <DesignSystemRecognition /> : isProductArchitecture ? <ProductArchitectureRecognition /> : <ServiceSection labelledBy="service-audience-title" className={styles.audience}><ServiceSectionHeader eyebrow="IS THIS YOU?" title={content.audienceTitle} description={content.audienceLead} titleId="service-audience-title" descriptionClassName={styles.audienceLead} /><div className={styles.audienceGrid}>{audiences.map(([number, title, description]) => <article key={number} className={styles.audienceCard}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
+      {isDesignSystems ? <DesignSystemRecognition /> : isProductArchitecture ? <ProductArchitectureRecognition /> : isAiEnabledOperations ? <AiOperationsRecognition /> : <ServiceSection labelledBy="service-audience-title" className={styles.audience}><ServiceSectionHeader eyebrow="IS THIS YOU?" title={content.audienceTitle} description={content.audienceLead} titleId="service-audience-title" descriptionClassName={styles.audienceLead} /><div className={styles.audienceGrid}>{audiences.map(([number, title, description]) => <article key={number} className={styles.audienceCard}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
       {isDesignSystems && <ServiceClosingCta title="Tell me where things are getting stuck." description="We can look at what’s creating the friction and work out where attention would make the biggest difference." />}
       {isProductArchitecture && <ServiceClosingCta title="Tell me where the product is becoming difficult to reason about." description="We can trace what sits underneath the complexity and work out where clearer structure would make the biggest difference." />}
+      {isAiEnabledOperations && <ServiceClosingCta title="Tell me where the work is getting harder to control." description="We can look at where friction, repetition or uncertainty is building and work out what deserves attention first." />}
     </main>
-    <Footer hideContactCta={isDesignSystems || isProductArchitecture} />
+    <Footer hideContactCta={isDesignSystems || isProductArchitecture || isAiEnabledOperations} />
   </>;
 }
