@@ -1,0 +1,227 @@
+.section {
+  padding-block: var(--space-1200);
+}
+
+.header {
+  max-width: 1000px;
+}
+
+.header h2 {
+  max-width: none;
+  text-wrap: pretty;
+}
+
+.model {
+  margin-top: var(--space-800);
+}
+
+.entry,
+.outcomes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  align-items: stretch;
+  border-block: 1px solid var(--border-default);
+}
+
+.entry li {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-150);
+  padding: var(--space-300) var(--space-400) var(--space-300) 0;
+}
+
+.entry li + li {
+  padding-left: var(--space-400);
+  border-left: 1px solid var(--border-default);
+}
+
+.entry li:first-child::after {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--space-200) * -1);
+  color: var(--text-accent);
+  content: "→";
+  font: 20px/1 var(--font-family-body);
+  transform: translate(50%, -50%);
+}
+
+.entry li > span,
+.routeLabel,
+.outcomes li > span {
+  color: var(--text-accent);
+  font: 600 10px/1.4 var(--font-family-body);
+  letter-spacing: .07em;
+}
+
+.entry strong {
+  color: var(--text-primary);
+  font: 500 clamp(18px, 2vw, 24px)/1.3 var(--font-family-heading);
+}
+
+.branches {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-800);
+  padding-top: var(--space-600);
+}
+
+.route {
+  min-width: 0;
+  padding: var(--space-200) var(--space-300) 0 0;
+  border-top: 2px solid var(--accent-foundation);
+}
+
+.route + .route {
+  padding-left: var(--space-300);
+  border-left: 1px solid var(--border-default);
+  border-top-color: var(--accent-foundation);
+}
+
+.route h3 {
+  margin: var(--space-200) 0 0;
+  color: var(--text-primary);
+  font: 500 clamp(19px, 2vw, 25px)/1.25 var(--font-family-heading);
+}
+
+.route p {
+  max-width: 54ch;
+  margin: var(--space-150) 0 0;
+  color: var(--text-secondary);
+  font: 14px/1.5 var(--font-family-body);
+}
+
+@media (min-width: 901px) {
+  .route,
+  .route + .route { padding-bottom: var(--space-200); }
+}
+
+.convergence {
+  position: relative;
+  height: 48px;
+  margin-inline: 25%;
+}
+
+.convergence::before {
+  position: absolute;
+  inset: 0 0 17px;
+  border-right: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+  border-left: 1px solid var(--border-default);
+  content: "";
+}
+
+.convergence::after {
+  position: absolute;
+  top: 31px;
+  bottom: 0;
+  left: 50%;
+  border-left: 1px solid var(--accent-foundation);
+  content: "";
+}
+
+.convergence span {
+  position: absolute;
+  z-index: 1;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-foundation);
+}
+
+.convergence span:nth-child(1) { top: -4px; left: 0; }
+.convergence span:nth-child(2) { top: -4px; right: 0; background: var(--text-tertiary); }
+.convergence span:nth-child(3) { bottom: -1px; left: calc(50% - 4px); }
+
+.outcomes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--border-default);
+}
+
+.outcomes li {
+  position: relative;
+  min-width: 0;
+  padding: var(--space-300) var(--space-300) var(--space-400) 0;
+}
+
+.outcomes li + li {
+  padding-left: var(--space-300);
+  border-left: 1px solid var(--border-default);
+}
+
+.outcomes li > span {
+  display: block;
+}
+
+.outcomes p {
+  max-width: 32ch;
+  margin: var(--space-150) 0 0;
+  color: var(--text-secondary);
+  font: 13px/1.5 var(--font-family-body);
+}
+
+.feedback {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-150);
+  margin: var(--space-300) 0 0;
+  padding-top: var(--space-200);
+  border-top: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  font: 13px/1.5 var(--font-family-body);
+}
+
+.feedback > span {
+  flex: 0 0 auto;
+  color: var(--text-accent);
+  font-size: 18px;
+}
+
+@media (max-width: 900px) {
+  .section { padding-block: var(--space-800); }
+  .model { margin-top: var(--space-600); }
+  .branches { gap: var(--space-400); padding-top: var(--space-400); }
+  .route { padding-right: var(--space-200); }
+  .route + .route { padding-left: var(--space-200); }
+  .outcomes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .outcomes li { padding: var(--space-300) var(--space-200) var(--space-300) 0; }
+  .outcomes li:nth-child(even) { padding-left: var(--space-200); border-left: 1px solid var(--border-default); }
+  .outcomes li:nth-child(n + 3) { border-top: 1px solid var(--border-default); }
+}
+
+@media (max-width: 600px) {
+  .section { padding-block: var(--space-600); }
+  .header h2 { font-size: clamp(24px, 7vw, 34px); }
+  .model { margin-top: var(--space-400); }
+  .entry { grid-template-columns: minmax(0, 1fr); }
+  .entry li,
+  .entry li + li { padding: var(--space-200) 0 var(--space-200) var(--space-300); border-left: 0; }
+  .entry li + li { border-top: 1px solid var(--border-default); }
+  .entry li:first-child::after { top: auto; right: auto; bottom: -13px; left: 10px; z-index: 2; transform:rotate(90deg); }
+  .entry strong { font-size: 18px; }
+  .branches { grid-template-columns: minmax(0, 1fr); gap: var(--space-300); padding-top: var(--space-300); }
+  .route,
+  .route + .route { padding: var(--space-200) 0 0; border-left: 0; }
+  .route h3 { margin-top: var(--space-100); font-size: 19px; }
+  .route p { margin-top: var(--space-100); font-size: 13px; }
+  .convergence { width:20px; height:34px; margin-inline:auto; }
+  .convergence::before { display:none; }
+  .convergence::after { top:0; bottom:0; }
+  .convergence span:nth-child(1),
+  .convergence span:nth-child(2) { display:none; }
+  .convergence span:nth-child(3) { top:50%; bottom:auto; transform:translateY(-50%); }
+  .outcomes { grid-template-columns: minmax(0, 1fr); }
+  .outcomes li,
+  .outcomes li:nth-child(even) { padding: var(--space-200) 0; border-left:0; }
+  .outcomes li:nth-child(n + 2) { border-top:1px solid var(--border-default); }
+  .outcomes p { margin-top:var(--space-100); }
+  .feedback { align-items:flex-start; margin-top:var(--space-200); font-size:12px; }
+}

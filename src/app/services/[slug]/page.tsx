@@ -7,7 +7,10 @@ import { LatticeBenefitIcon } from "@/components/services/LatticeBenefitIcon/Lat
 import { DesignSystemGraphic } from "@/components/services/DesignSystemGraphic/DesignSystemGraphic";
 import { AiOperationsGraphic, AiOperationalLoop } from "@/components/services/AiOperationsGraphic/AiOperationsGraphic";
 import { AiOperationsApproach } from "@/components/services/AiOperationsApproach/AiOperationsApproach";
-import { GovernanceScaleGraphic } from "@/components/services/GovernanceScaleGraphic/GovernanceScaleGraphic";
+import { GovernanceChangeModel } from "@/components/services/GovernanceChangeModel/GovernanceChangeModel";
+import { GovernanceTension } from "@/components/services/GovernanceTension/GovernanceTension";
+import { GovernanceApproach } from "@/components/services/GovernanceApproach/GovernanceApproach";
+import { GovernanceRecognition } from "@/components/services/GovernanceRecognition/GovernanceRecognition";
 import { CollaborationAlignmentGraphic } from "@/components/services/CollaborationAlignmentGraphic/CollaborationAlignmentGraphic";
 import { ServiceSection, ServiceSectionHeader } from "@/components/services/ServiceSection/ServiceSection";
 import { getCaseStudies } from "@/data/caseStudies";
@@ -77,7 +80,7 @@ const aiOperationsRecognition = [
 ];
 const defaultDeliverables = ["Design system strategy and roadmap", "Information architecture and structure", "Design tokens and theming", "Component library and patterns", "Accessibility and inclusive design", "Documentation and guidelines", "Governance and adoption model"];
 const aiOperationsDeliverables = ["AI opportunity and delegation mapping", "Workflow and operational journey mapping", "Human-in-the-loop decision design", "AI interaction and prompt patterns", "Exception handling and escalation flows", "Prototype-to-production implementation guidance", "Measurement, governance and adoption framework"];
-const governanceScaleDeliverables = ["Governance strategy and operating model", "Roles, responsibilities and ownership map", "Decision principles and escalation paths", "Contribution and change-management workflow", "Review cadence and quality guardrails", "Adoption measurement and reporting framework", "Long-term evolution and stewardship roadmap"];
+const governanceScaleDeliverables = ["Governance strategy and operating model", "Roles, responsibilities and ownership map", "Decision principles and escalation paths", "Contribution and change-management workflow", "Review cadence and quality guardrails", "Adoption measurement and reporting framework", "Evolution and stewardship model"];
 const collaborationAlignmentDeliverables = ["Stakeholder alignment and working-session plan", "Shared vision, principles and success criteria", "Cross-functional decision framework", "Roles, responsibilities and handoff model", "Collaborative journey and workshop outputs", "Communication and decision documentation", "Team rituals and alignment playbook"];
 
 const productArchitecture = {
@@ -373,9 +376,13 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
     eyebrow: "DESIGN SYSTEMS",
     lead: isAiEnabledOperations
       ? "Give AI more responsibility without giving up control."
+      : isGovernanceScale
+      ? "Help good systems survive growth."
       : "Build scalable, consistent and adaptable systems that drive better products.",
     description: isAiEnabledOperations
       ? "Put AI to work inside real design and product workflows, with clear boundaries for what it can decide alone and what still needs a person’s judgement."
+      : isGovernanceScale
+      ? "Clear ownership, standards and a process for exceptions, so a system stays trustworthy as more teams start depending on it, not just at launch."
       : isDesignSystems
       ? "A design system is more than a component library: it is the shared language, principles and governance that connect how teams design, build and evolve products."
       : service.description,
@@ -405,7 +412,8 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           <div className={styles.heroActions}><Link href="/contact" className={styles.primaryButton}>Let&apos;s talk <span aria-hidden="true">→</span></Link></div>
         </div>
       </section>
-      <section className={`${styles.benefits} ${isDesignSystems || isProductArchitecture || isAiEnabledOperations ? styles.benefitsQuiet : ""} ${isAiEnabledOperations ? styles.aiOperationsBenefits : ""}`}><div className={`container ${styles.benefitsGrid}`}>{content.benefits.map(([title, description], index) => <article key={title} className={styles.benefit}>{isAiEnabledOperations ? <span className={styles.aiOutcomeStage}>{aiOperationsBenefitStages[index]}</span> : <LatticeBenefitIcon index={index} />}<h2>{title}</h2><p>{description}</p></article>)}</div></section>
+      <section className={`${styles.benefits} ${isDesignSystems || isProductArchitecture || isAiEnabledOperations ? styles.benefitsQuiet : ""} ${isAiEnabledOperations ? styles.aiOperationsBenefits : ""} ${isGovernanceScale ? styles.governanceOutcomes : ""}`}><div className={`container ${styles.benefitsGrid}`}>{content.benefits.map(([title, description], index) => <article key={title} className={styles.benefit}>{isAiEnabledOperations ? <span className={styles.aiOutcomeStage}>{aiOperationsBenefitStages[index]}</span> : isGovernanceScale ? null : <LatticeBenefitIcon index={index} />}<h2>{title}</h2><p>{description}</p></article>)}</div>{isGovernanceScale && <p className={`container ${styles.governanceFeedback}`}><span aria-hidden="true">↻</span> Ownership, decisions and stewardship reinforce one another over time.</p>}</section>
+      {isGovernanceScale && <GovernanceTension />}
       {isDesignSystems ? <ServiceSection labelledBy="service-work-title" className={`${styles.delivery} ${styles.designSystemDelivery}`}>
         <ServiceSectionHeader
           eyebrow="WHAT THE WORK CAN INVOLVE"
@@ -416,10 +424,10 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           titleClassName={`heading-02 ${styles.deliveryHeading}`}
         />
         <ul className={styles.deliverables}>{content.deliverables.map((item) => <li key={item}>{item}</li>)}</ul>
-      </ServiceSection> : <ServiceSection labelledBy="service-deliverables-title" width={isProductArchitecture || isAiEnabledOperations ? "wide" : "contained"} className={`${styles.delivery} ${isProductArchitecture ? styles.architectureDelivery : ""} ${isAiEnabledOperations ? styles.aiOperationsDelivery : ""}`}>
+      </ServiceSection> : <ServiceSection labelledBy="service-deliverables-title" width={isProductArchitecture || isAiEnabledOperations || isGovernanceScale ? "wide" : "contained"} className={`${styles.delivery} ${isProductArchitecture ? styles.architectureDelivery : ""} ${isAiEnabledOperations ? styles.aiOperationsDelivery : ""} ${isGovernanceScale ? styles.governanceDelivery : ""}`}>
         <div className={styles.deliveryCopy}>
           <ServiceSectionHeader
-            eyebrow={isProductArchitecture || isAiEnabledOperations ? "WHAT THE WORK CAN INVOLVE" : "DELIVERABLES"}
+            eyebrow={isProductArchitecture || isAiEnabledOperations || isGovernanceScale ? "WHAT THE WORK CAN INVOLVE" : "DELIVERABLES"}
             title={content.deliverablesIntro}
             titleId="service-deliverables-title"
             eyebrowClassName={styles.deliveryEyebrow}
@@ -427,25 +435,29 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           />
           <ul className={styles.deliverables}>{content.deliverables.map((item) => <li key={item}>{item}</li>)}</ul>
         </div>
-        {isProductArchitecture ? <ProductArchitectureGraphic /> : isAiEnabledOperations ? <AiOperationsGraphic /> : isGovernanceScale ? <GovernanceScaleGraphic /> : isCollaborationAlignment ? <CollaborationAlignmentGraphic /> : <div className={styles.systemPreview}><strong>Aa</strong><div className={styles.tokenRow}><span className={`${styles.token} ${styles.tokenLight}`} /><span className={`${styles.token} ${styles.tokenDark}`} /></div><p className={styles.systemCaption}>Tokens / components / code</p></div>}
+        {isProductArchitecture ? <ProductArchitectureGraphic /> : isAiEnabledOperations ? <AiOperationsGraphic /> : isGovernanceScale ? null : isCollaborationAlignment ? <CollaborationAlignmentGraphic /> : <div className={styles.systemPreview}><strong>Aa</strong><div className={styles.tokenRow}><span className={`${styles.token} ${styles.tokenLight}`} /><span className={`${styles.token} ${styles.tokenDark}`} /></div><p className={styles.systemCaption}>Tokens / components / code</p></div>}
       </ServiceSection>}
       {isAiEnabledOperations && <AiOperationalLoop />}
+      {isGovernanceScale && <GovernanceChangeModel />}
       {isDesignSystems && <DesignSystemEcosystem />}
-      {isDesignSystems ? <DesignSystemApproach /> : isProductArchitecture ? <><ProductArchitectureTransformation /><ProductArchitectureApproach /></> : isAiEnabledOperations ? <AiOperationsApproach /> : <ServiceSection labelledBy="service-approach-title" className={styles.approach}><ServiceSectionHeader eyebrow="APPROACH" title={content.approachTitle} titleId="service-approach-title" /><div className={styles.approachGrid}>{steps.map(([number, title, description]) => <article key={number} className={styles.step}><span className={styles.stepNumber}>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
-      {(isDesignSystems || isProductArchitecture || isAiEnabledOperations) && <ServiceEvidence
-        categoryName={isProductArchitecture ? "Product Architecture" : isAiEnabledOperations ? "AI-Enabled Design Operations" : "Design Systems"}
-        title={isProductArchitecture ? "Product architecture in practice." : isAiEnabledOperations ? "AI-enabled operations in practice." : "Design systems in practice."}
+      {isDesignSystems ? <DesignSystemApproach /> : isProductArchitecture ? <><ProductArchitectureTransformation /><ProductArchitectureApproach /></> : isAiEnabledOperations ? <AiOperationsApproach /> : isGovernanceScale ? <GovernanceApproach /> : <ServiceSection labelledBy="service-approach-title" className={styles.approach}><ServiceSectionHeader eyebrow="APPROACH" title={content.approachTitle} titleId="service-approach-title" /><div className={styles.approachGrid}>{steps.map(([number, title, description]) => <article key={number} className={styles.step}><span className={styles.stepNumber}>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
+      {(isDesignSystems || isProductArchitecture || isAiEnabledOperations || isGovernanceScale) && <ServiceEvidence
+        categoryName={isProductArchitecture ? "Product Architecture" : isAiEnabledOperations ? "AI-Enabled Design Operations" : isGovernanceScale ? "Governance & Scale" : "Design Systems"}
+        title={isProductArchitecture ? "Product architecture in practice." : isAiEnabledOperations ? "AI-enabled operations in practice." : isGovernanceScale ? "Governance in practice." : "Design systems in practice."}
         description={isProductArchitecture
           ? "Selected work and thinking where product structure clarified journeys, boundaries and decisions."
           : isAiEnabledOperations
           ? "Selected work and thinking where AI changed how work could be done without removing the judgement it still needed."
+          : isGovernanceScale
+          ? "Selected work and thinking where clearer ownership, decisions and stewardship helped systems keep working as they grew."
           : "Selected work and thinking where shared foundations, patterns and governance shaped the outcome."}
       />}
-      {isDesignSystems ? <DesignSystemRecognition /> : isProductArchitecture ? <ProductArchitectureRecognition /> : isAiEnabledOperations ? <AiOperationsRecognition /> : <ServiceSection labelledBy="service-audience-title" className={styles.audience}><ServiceSectionHeader eyebrow="IS THIS YOU?" title={content.audienceTitle} description={content.audienceLead} titleId="service-audience-title" descriptionClassName={styles.audienceLead} /><div className={styles.audienceGrid}>{audiences.map(([number, title, description]) => <article key={number} className={styles.audienceCard}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
+      {isDesignSystems ? <DesignSystemRecognition /> : isProductArchitecture ? <ProductArchitectureRecognition /> : isAiEnabledOperations ? <AiOperationsRecognition /> : isGovernanceScale ? <GovernanceRecognition /> : <ServiceSection labelledBy="service-audience-title" className={styles.audience}><ServiceSectionHeader eyebrow="IS THIS YOU?" title={content.audienceTitle} description={content.audienceLead} titleId="service-audience-title" descriptionClassName={styles.audienceLead} /><div className={styles.audienceGrid}>{audiences.map(([number, title, description]) => <article key={number} className={styles.audienceCard}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
       {isDesignSystems && <ServiceClosingCta title="Tell me where things are getting stuck." description="We can look at what’s creating the friction and work out where attention would make the biggest difference." />}
       {isProductArchitecture && <ServiceClosingCta title="Tell me where the product is becoming difficult to reason about." description="We can trace what sits underneath the complexity and work out where clearer structure would make the biggest difference." />}
       {isAiEnabledOperations && <ServiceClosingCta title="Tell me where the work is getting harder to control." description="We can look at where friction, repetition or uncertainty is building and work out what deserves attention first." />}
+      {isGovernanceScale && <ServiceClosingCta title="Tell me where decisions are getting stuck." description="We can look at what’s creating the friction and work out what needs to become clearer." />}
     </main>
-    <Footer hideContactCta={isDesignSystems || isProductArchitecture || isAiEnabledOperations} />
+    <Footer hideContactCta={isDesignSystems || isProductArchitecture || isAiEnabledOperations || isGovernanceScale} />
   </>;
 }

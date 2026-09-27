@@ -1,0 +1,170 @@
+.section {
+  margin-top: var(--space-400);
+  padding-block: var(--space-800);
+  border-block: 1px solid var(--border-on-deep);
+  background: var(--bg-deep);
+}
+
+.inner {
+  width: 100%;
+  max-width: 1920px;
+  margin-inline: auto;
+  padding-left: max(var(--layout-gutter-visual), var(--safe-area-left));
+  padding-right: max(var(--layout-gutter-visual), var(--safe-area-right));
+}
+
+.header {
+  max-width: 1000px;
+}
+
+.eyebrow { color: var(--text-on-deep-accent); }
+.header .description { color: var(--text-on-deep-secondary); }
+
+.header h2 {
+  max-width: none;
+  color: var(--text-on-deep-primary);
+  text-wrap: pretty;
+}
+
+.model {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, .9fr) minmax(0, 1fr);
+  gap: var(--space-800);
+  margin-top: var(--space-800);
+  padding-top: var(--space-400);
+}
+
+.model::before {
+  position: absolute;
+  top: 0;
+  right: 4%;
+  left: 4%;
+  border-top: 1px solid var(--border-on-deep);
+  content: "";
+}
+
+.pole,
+.context {
+  position: relative;
+  min-width: 0;
+}
+
+.pole::before,
+.context::before {
+  position: absolute;
+  top: calc(-1 * var(--space-400) - 4px);
+  left: 0;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--bg-deep);
+  border-radius: 50%;
+  background: var(--text-on-deep-tertiary);
+  content: "";
+}
+
+.context::before {
+  left: 50%;
+  background: var(--text-on-deep-accent);
+  transform: translateX(-50%);
+}
+
+.poleLabel,
+.context > span {
+  margin: 0;
+  color: var(--text-on-deep-tertiary);
+  font: 600 10px/1.4 var(--font-family-body);
+  letter-spacing: .07em;
+}
+
+.pole ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-200) var(--space-300);
+  margin: var(--space-300) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pole li {
+  padding-top: var(--space-150);
+  border-top: 1px solid var(--border-on-deep);
+  color: var(--text-on-deep-secondary);
+  font: 500 clamp(15px, 1.35vw, 18px)/1.35 var(--font-family-heading);
+}
+
+.poleRight .poleLabel {
+  text-align: right;
+}
+
+.poleRight::before {
+  right: 0;
+  left: auto;
+}
+
+.context {
+  text-align: center;
+}
+
+.context > span {
+  color: var(--text-on-deep-accent);
+}
+
+.context h3 {
+  max-width: 22ch;
+  margin: var(--space-200) auto 0;
+  color: var(--text-on-deep-primary);
+  font: 500 clamp(22px, 2.5vw, 34px)/1.2 var(--font-family-heading);
+}
+
+.context p {
+  max-width: 42ch;
+  margin: var(--space-200) auto 0;
+  color: var(--text-on-deep-secondary);
+  font: 13px/1.5 var(--font-family-body);
+}
+
+@media (max-width: 900px) {
+  .section { padding-block: var(--space-600); }
+  .model {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-600) var(--space-400);
+    margin-top: var(--space-600);
+  }
+  .model::before { display: none; }
+  .pole,
+  .context { padding-top: var(--space-300); border-top: 1px solid var(--border-on-deep); }
+  .pole::before,
+  .context::before { top: -5px; }
+  .pole:first-child { grid-column: 1; grid-row: 1; }
+  .poleRight { grid-column: 2; grid-row: 1; }
+  .context { grid-column: 1 / -1; grid-row: 2; }
+  .context h3 { max-width: 30ch; }
+  .pole ul { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .pole li { font-size: 15px; }
+  .poleRight .poleLabel { text-align: left; }
+  .poleRight::before { right: auto; left: 0; }
+}
+
+@media (max-width: 600px) {
+  .section { padding-block: var(--space-400); }
+  .model {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-300);
+    margin-top: var(--space-400);
+  }
+  .pole:first-child,
+  .poleRight,
+  .context { grid-column:1; grid-row:auto; }
+  .pole,
+  .context { grid-column: 1; padding-top: var(--space-200); text-align: left; }
+  .pole { order: 1; }
+  .poleRight { order: 2; }
+  .context { order: 3; }
+  .pole::before,
+  .context::before { top: -5px; left: 0; transform:none; }
+  .pole ul { grid-template-columns: minmax(0, 1fr); gap: var(--space-100); margin-top: var(--space-200); }
+  .pole li { padding-top: var(--space-100); font-size: 16px; }
+  .context h3 { max-width: 100%; margin: var(--space-100) 0 0; font-size: 22px; }
+  .context p { margin: var(--space-100) 0 0; font-size: 13px; }
+}
