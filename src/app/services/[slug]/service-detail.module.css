@@ -53,33 +53,82 @@
 .architectureSpine strong { color:var(--text-primary); font:600 24px/1.05 var(--font-family-heading); }
 .architectureLayers { display:flex; justify-content:center; gap:var(--space-150); }
 .architectureLayers i { padding:4px 8px; border-radius:999px; background:var(--accent-foundation); color:var(--text-primary); font:500 10px/1.2 var(--font-family-body); font-style:normal; }
-.designSystemGraphic { display:flex; min-height:420px; flex-direction:column; justify-content:space-between; overflow:hidden; padding:var(--space-500) 0; }
-.designSystemGraphicMeta, .designSystemGraphicFooter { display:flex; align-items:center; justify-content:space-between; color:var(--text-tertiary); font:600 10px/1.2 var(--font-family-body); letter-spacing:.08em; }
-.designSystemGraphicMeta span:last-child, .designSystemGraphicFooter span:last-child { color:var(--text-accent); }
-.designSystemGraphicMap { position:relative; min-height:330px; }
-.designSystemGraphicMap svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
-.designSystemGraphicMap path { fill:none; stroke:var(--accent-foundation); stroke-width:1.2; opacity:.7; }
-.designSystemGraphicMap circle { fill:var(--accent-foundation); }
-.designSystemGraphicCore, .designSystemGraphicNode { position:absolute; display:flex; flex-direction:column; justify-content:center; }
-.designSystemGraphicCore { top:50%; left:50%; width:220px; min-height:126px; align-items:center; transform:translate(-50%, -50%); border:2px solid var(--accent-foundation); border-radius:var(--radius-md); background:var(--bg-canvas); text-align:center; }
-.designSystemGraphicCore span { color:var(--text-accent); font:600 10px/1.2 var(--font-family-body); letter-spacing:.07em; }
-.designSystemGraphicCore strong { margin-top:var(--space-150); color:var(--text-primary); font:600 22px/1.05 var(--font-family-heading); }
-.designSystemGraphicNode { width:140px; min-height:64px; gap:4px; background:var(--bg-canvas); }
-.designSystemGraphicNode span { color:var(--text-accent); font:600 10px/1 var(--font-family-body); }
-.designSystemGraphicNode strong { color:var(--text-primary); font:600 16px/1.2 var(--font-family-heading); }
-.designSystemGraphicNode small { color:var(--text-secondary); font:12px/1.3 var(--font-family-body); }
-.designSystemGraphicNode0 { top:12%; left:8%; }
-.designSystemGraphicNode1 { top:12%; right:8%; }
-.designSystemGraphicNode2 { top:50%; left:2%; transform:translateY(-50%); }
-.designSystemGraphicNode3 { top:50%; right:2%; transform:translateY(-50%); }
-.designSystemGraphicNode4 { bottom:4%; left:8%; }
-.designSystemGraphicNode5 { right:8%; bottom:4%; }
+.designSystemGraphic { width:100%; min-width:0; margin:0; }
+.designSystemGraphicDiagram { display:grid; width:100%; max-width:720px; min-width:0; grid-template-columns:minmax(0,445fr) minmax(145px,159fr); align-items:center; }
+.designSystemLayerPlot { display:block; width:100%; height:auto; overflow:visible; }
+.designSystemLayerPlot polygon { stroke:color-mix(in srgb,var(--border-default) 60%,transparent); stroke-width:1; vector-effect:non-scaling-stroke; }
+.designSystemLayerGuidance { fill:color-mix(in srgb,var(--accent-foundation) 14%,transparent); }
+.designSystemLayerComponents { fill:color-mix(in srgb,var(--accent-foundation) 22%,transparent); }
+.designSystemLayerPatterns { fill:color-mix(in srgb,var(--accent-foundation) 32%,transparent); }
+.designSystemLayerTokens { fill:color-mix(in srgb,var(--accent-foundation) 45%,transparent); }
+.designSystemLayerFoundations { fill:color-mix(in srgb,var(--accent-foundation) 28%,var(--bg-deep)); }
+.designSystemLayerGovernance { fill:var(--bg-deep); }
+.designSystemLeaderRail, .designSystemLeader { stroke:var(--accent-foundation); stroke-width:1; vector-effect:non-scaling-stroke; }
+.designSystemLeaderRail { opacity:.22; }
+.designSystemLeader { stroke-dasharray:3 3; stroke-linecap:round; opacity:.7; }
+.designSystemNode { fill:var(--accent-foundation); opacity:.82; }
+.designSystemNodeMuted { fill:var(--text-primary); opacity:.5; }
+.designSystemLegend { position:relative; align-self:stretch; margin:0; padding:0; list-style:none; }
+.designSystemLegend li { position:absolute; left:0; display:flex; width:100%; min-width:0; flex-direction:column; justify-content:center; transform:translateY(-50%); padding-left:13px; }
+.designSystemLegend li:nth-child(1) { top:26.309%; }
+.designSystemLegend li:nth-child(2) { top:37.827%; }
+.designSystemLegend li:nth-child(3) { top:49.476%; }
+.designSystemLegend li:nth-child(4) { top:60.995%; }
+.designSystemLegend li:nth-child(5) { top:72.382%; }
+.designSystemLegend li:nth-child(6) { top:83.770%; }
+.designSystemLegendBullet { position:absolute; top:50%; left:0; width:6px; height:6px; transform:translate(-50%,-50%); border-radius:50%; background:var(--accent-foundation); }
+.designSystemLegend strong { color:var(--text-primary); font:500 14px/1.25 var(--font-family-body); }
+.designSystemLegend small { margin-top:2px; color:var(--text-secondary); font:12px/1.3 var(--font-family-body); }
+.designSystemDelivery { grid-template-columns:minmax(280px,.82fr) minmax(0,1.18fr); column-gap:var(--space-1200); row-gap:var(--space-300); }
+.designSystemDelivery .deliveryCopy { display:contents; }
+.designSystemDelivery .deliveryEyebrow { grid-column:1 / -1; grid-row:1; align-self:start; }
+.designSystemDelivery .deliveryHeading { grid-column:1 / -1; grid-row:2; align-self:start; max-width:920px; margin-top:0; }
+.designSystemDelivery .deliverables { grid-column:1; grid-row:3; display:grid; grid-template-columns:1fr; align-self:start; gap:0; margin-top:var(--space-500); }
+.designSystemDelivery .deliverables li { min-width:0; padding-block:var(--space-300); border-top:1px solid var(--border-default); }
+.designSystemDelivery .deliverables li::before { content:none; }
+.designSystemDelivery .designSystemGraphic { grid-column:2; grid-row:3; align-self:start; justify-self:stretch; margin-top:var(--space-500); }
+@media (max-width:1100px) {
+  .designSystemDelivery { grid-template-columns:1fr; gap:0; }
+  .designSystemDelivery .deliveryEyebrow { grid-column:1; grid-row:1; }
+  .designSystemDelivery .deliveryHeading { grid-column:1; grid-row:2; max-width:680px; margin-top:var(--space-200); }
+  .designSystemDelivery .deliverables { grid-column:1; grid-row:3; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 var(--space-500); margin-top:var(--space-500); }
+  .designSystemDelivery .designSystemGraphic { grid-column:1; grid-row:4; max-width:720px; margin:var(--space-800) auto 0; }
+}
 .approach { padding-block:var(--space-800) var(--space-1200); }
 .approachGrid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:var(--space-300); margin-top:var(--space-800); }
 .step { display:flex; min-width:0; flex-direction:column; gap:var(--space-150); padding-top:var(--space-300); border-top:1px solid var(--border-default); }
 .stepNumber { color:var(--text-accent); font:500 12px/1.35 var(--font-family-body); }
 .step h3 { font:500 18px/1.35 var(--font-family-heading); }
 .step p { color:var(--text-secondary); font:13px/1.45 var(--font-family-body); }
+.designSystemApproachHeader { width:100%; max-width:none; }
+.designSystemApproachHeader h2 { width:fit-content; max-width:100%; margin-top:var(--space-200); white-space:normal; }
+.designSystemApproachLead { width:fit-content; max-width:100%; margin-top:var(--space-300); white-space:normal; color:var(--text-secondary); }
+.designSystemApproachCycle { margin-top:var(--space-800); padding:32px; border:1px solid var(--border-default); border-radius:var(--radius-lg); }
+.designSystemApproachGrid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); column-gap:48px; row-gap:56px; margin:0; padding:0; list-style:none; }
+.designSystemApproachStep { position:relative; min-width:0; min-height:200px; padding:42px 16px 28px; border-top:2px solid var(--border-default); }
+.designSystemApproachStep::before { position:absolute; top:-6px; left:0; display:none; width:10px; height:10px; border:2px solid var(--bg-canvas); border-radius:50%; background:var(--accent-foundation); content:""; }
+.designSystemApproachStep:nth-child(5) { grid-column:4; grid-row:2; }
+.designSystemApproachStep:nth-child(6) { grid-column:3; grid-row:2; }
+.designSystemApproachStep:nth-child(7) { grid-column:2; grid-row:2; }
+.designSystemApproachStep:nth-child(8) { grid-column:1; grid-row:2; }
+.designSystemApproachStep:nth-child(-n+3)::after { position:absolute; top:10px; right:calc(var(--space-500) * -0.72); color:var(--text-accent); font:22px/1 var(--font-family-body); content:"→"; }
+.designSystemApproachStep:nth-child(4)::after { position:absolute; right:8px; bottom:calc(var(--space-500) * -0.72); color:var(--text-accent); font:22px/1 var(--font-family-body); content:"↓"; }
+.designSystemApproachStep:nth-child(n+5):nth-child(-n+7)::after { position:absolute; top:10px; left:calc(var(--space-500) * -0.72); color:var(--text-accent); font:22px/1 var(--font-family-body); content:"←"; }
+.designSystemApproachMeta { display:flex; align-items:center; justify-content:flex-start; gap:var(--space-150); color:var(--text-accent); font:600 10px/1.2 var(--font-family-body); letter-spacing:.07em; }
+.designSystemApproachMeta span + span::before { margin-right:var(--space-150); content:"/"; opacity:.6; }
+.designSystemApproachStep h3 { width:100%; margin-top:12px; overflow-wrap:anywhere; white-space:normal; font:500 20px/1.25 var(--font-family-heading); }
+.designSystemApproachStep p { width:100%; max-width:31ch; margin-top:var(--space-150); overflow-wrap:anywhere; white-space:normal; color:var(--text-secondary); font:13px/1.5 var(--font-family-body); }
+.designSystemApproachStep:first-child, .designSystemApproachStep:nth-child(4) { border-top-color:var(--accent-foundation); }
+.designSystemApproachReturn { display:flex; align-items:center; gap:var(--space-150); margin:var(--space-300) 0 0; padding-top:var(--space-300); border-top:1px solid var(--border-default); color:var(--text-secondary); font:13px/1.45 var(--font-family-body); }
+.designSystemApproachReturn span { color:var(--text-accent); font-size:24px; line-height:1; }
+@media (max-width:1100px) {
+  .designSystemApproachCycle { padding:0; border:0; border-radius:0; }
+  .designSystemApproachGrid { position:relative; display:flex; flex-direction:column; gap:0; padding-left:var(--space-300); border-left:1px solid color-mix(in srgb,var(--accent-foundation) 55%,transparent); }
+  .designSystemApproachStep { min-height:0; padding:36px 0 44px var(--space-200); border-top:0; border-bottom:1px solid var(--border-default); }
+  .designSystemApproachStep::before { top:36px; left:calc((var(--space-300) + 6px) * -1); display:block; }
+  .designSystemApproachStep::after { display:none; }
+  .designSystemApproachReturn { margin-left:var(--space-300); }
+}
 .audience { padding-block:var(--space-1200); }
 .audienceLead { max-width:600px; margin-top:var(--space-300); color:var(--text-secondary); }
 .audienceGrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--space-400); margin-top:var(--space-800); }
@@ -88,7 +137,11 @@
 .audienceCard h3 { margin-top:var(--space-200); font:500 20px/1.3 var(--font-family-heading); }
 .audienceCard p { margin-top:var(--space-200); color:var(--text-secondary); font:14px/1.5 var(--font-family-body); }
 @media (max-width:900px) { .hero { grid-template-columns:1fr; min-height:0; padding-block:var(--space-800); } .lattice { width:min(100%,420px); justify-self:start; } .benefitsGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } .delivery { grid-template-columns:1fr; gap:var(--space-600); } .approachGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-@media (max-width:600px) { .benefitsGrid, .audienceGrid, .approachGrid { grid-template-columns:1fr; } .heroActions { align-items:stretch; flex-direction:column; } .heroActions a { justify-content:center; width:100%; box-sizing:border-box; } .systemPreview { padding:var(--space-400); } .architectureGraphic { min-height:360px; padding:var(--space-300); } .architectureMap { min-height:270px; gap:var(--space-150); } .architectureNode { padding:var(--space-150); } .architectureNode strong { font-size:14px; } .architectureNode small { font-size:11px; } .architectureSpine strong { font-size:20px; } .architectureLayers { gap:4px; } .architectureLayers i { padding:3px 5px; font-size:9px; } .designSystemGraphic { min-height:390px; padding-block:var(--space-300); } .designSystemGraphicMap { min-height:310px; } .designSystemGraphicCore { width:150px; min-height:96px; } .designSystemGraphicCore strong { font-size:18px; } .designSystemGraphicNode { width:96px; } .designSystemGraphicNode strong { font-size:13px; } .designSystemGraphicNode small { font-size:10px; } .designSystemGraphicNode0, .designSystemGraphicNode4 { left:0; } .designSystemGraphicNode1, .designSystemGraphicNode5 { right:0; } }
+@media (max-width:600px) { .benefitsGrid, .audienceGrid, .approachGrid { grid-template-columns:1fr; } .heroActions { align-items:stretch; flex-direction:column; } .heroActions a { justify-content:center; width:100%; box-sizing:border-box; } .systemPreview { padding:var(--space-400); } .architectureGraphic { min-height:360px; padding:var(--space-300); } .architectureMap { min-height:270px; gap:var(--space-150); } .architectureNode { padding:var(--space-150); } .architectureNode strong { font-size:14px; } .architectureNode small { font-size:11px; } .architectureSpine strong { font-size:20px; } .architectureLayers { gap:4px; } .architectureLayers i { padding:3px 5px; font-size:9px; } .designSystemDelivery .deliverables { grid-template-columns:1fr; gap:0; } .designSystemDelivery .deliverables li { display:flex; min-height:52px; align-items:center; box-sizing:border-box; padding-block:16px; line-height:1.45; } .designSystemDelivery .deliverables li:last-child { border-bottom:1px solid var(--border-default); } .designSystemGraphicDiagram { grid-template-columns:minmax(0,1.55fr) minmax(118px,1fr); } .designSystemLegend li { padding-left:10px; } .designSystemLegend strong { font-size:12px; } .designSystemLegend small { font-size:10px; } }
+@media (max-width:480px) {
+  .designSystemLegend strong { font-size:11px; line-height:1.15; }
+  .designSystemLegend small { display:none; }
+}
 .aiOperationsGraphic { display:flex; min-height:420px; align-items:center; overflow:hidden; }
 .aiOperationsGraphic svg { width:100%; height:auto; overflow:visible; }
 .aiOperationsGrid { fill:none; stroke:var(--border-default); stroke-width:1; opacity:.65; }
@@ -150,4 +203,41 @@
 @media (max-width: 600px) {
   .benefit h2, .benefit p, .step h3, .step p,
   .audienceCard h3, .audienceCard p { width: 100%; max-width: none; }
+}
+
+/* Design Systems outcomes are orientation, rather than the primary story.
+   Treat them as one restrained band instead of four prominent feature cards. */
+.benefitsQuiet {
+  --text-on-deep-primary: var(--text-secondary);
+  --text-on-deep-secondary: var(--text-tertiary);
+  --text-on-deep-accent: var(--text-accent);
+  --border-on-deep: var(--border-default);
+  border-block: 1px solid var(--border-default);
+  background: transparent;
+}
+.benefitsQuiet .benefitsGrid { gap: 0; padding-block: 0; }
+.benefitsQuiet .benefit { gap: var(--space-100); padding: var(--space-400); border-left: 1px solid var(--border-default); }
+.benefitsQuiet .benefit:first-child { border-left: 0; }
+.benefitsQuiet .benefit svg { width: 28px; height: 28px; opacity: .78; }
+.benefitsQuiet .benefit h2 { color: var(--text-primary); font-size: 16px; }
+.benefitsQuiet .benefit p { color: var(--text-tertiary); font-size: 13px; line-height: 1.45; }
+
+@media (max-width: 900px) {
+  .benefitsQuiet .benefit { padding: var(--space-300); }
+  .benefitsQuiet .benefit:nth-child(odd) { border-left: 0; }
+  .benefitsQuiet .benefit:nth-child(n+3) { border-top: 1px solid var(--border-default); }
+}
+
+@media (max-width: 600px) {
+  .benefitsQuiet .benefitsGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .benefitsQuiet .benefit { gap: var(--space-50); padding: var(--space-200); }
+  .benefitsQuiet .benefit svg { width: 24px; height: 24px; }
+  .benefitsQuiet .benefit h2 { font-size: 15px; line-height: 1.3; }
+  .benefitsQuiet .benefit p { font-size: 12px; line-height: 1.4; }
+}
+
+@media (max-width: 320px) {
+  .benefitsQuiet .benefitsGrid { grid-template-columns: minmax(0, 1fr); }
+  .benefitsQuiet .benefit { border-left: 0; }
+  .benefitsQuiet .benefit:nth-child(n+2) { border-top: 1px solid var(--border-default); }
 }

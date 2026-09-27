@@ -29,6 +29,16 @@ const aiOperationsBenefits = [["More capacity, safely", "Assistive workflows tha
 const governanceScaleBenefits = [["Shared ownership", "Clear responsibilities make a system easier to trust and contribute to."], ["Lightweight decisions", "Principles and contribution paths reduce unnecessary debate."], ["Visible stewardship", "Teams know who maintains the system and how decisions are made."], ["Durable momentum", "Governance evolves with the organisation instead of slowing it down."]];
 const collaborationAlignmentBenefits = [["Shared ownership", "Clear responsibilities make a system easier to trust and contribute to."], ["Lightweight decisions", "Principles and contribution paths reduce unnecessary debate."], ["Visible stewardship", "Teams know who maintains the system and how decisions are made."], ["Durable momentum", "Governance evolves with the organisation instead of slowing it down."]];
 const steps = [["01", "Discover", "Understand your product, users and team."], ["02", "Define", "Establish the principles, tokens and structure."], ["03", "Design", "Craft components, patterns and guidelines."], ["04", "Build", "Work with your team to implement and integrate."], ["05", "Evolve", "Measure, iterate and help the system grow."]];
+const designSystemApproachSteps = [
+  ["01", "Overall discovery", "BROAD VIEW", "Understand the product landscape, teams, constraints and existing system as a whole."],
+  ["02", "Opportunity landscape", "MAP", "Make friction, inconsistency, risk and areas of leverage visible across the system."],
+  ["03", "Prioritise", "FOCUS", "Choose the opportunity where action can create the clearest and most useful value."],
+  ["04", "Deep discovery", "ACTIVE OPPORTUNITY", "Investigate the selected opportunity with focused evidence before committing to a solution."],
+  ["05", "Decide", "DIRECTION", "Align on the response, scope, principles and evidence that will define success."],
+  ["06", "Execute", "DELIVERY", "Build, integrate and support the change within the real product and team context."],
+  ["07", "Learn", "EVIDENCE", "Observe adoption and outcomes, then capture what the work reveals about the wider system."],
+  ["08", "Reprioritise", "NEXT CYCLE", "Return new evidence to the opportunity landscape and choose where to go next."],
+] as const;
 const audiences = [["01", "Growing product teams", "Bring consistency to a product portfolio that is expanding faster than the system behind it."], ["02", "Design & engineering leads", "Align decisions, ownership and implementation around one shared product language."], ["03", "Organisations in transition", "Turn fragmented patterns into a durable foundation for the next stage of growth."]];
 const defaultDeliverables = ["Design system strategy and roadmap", "Information architecture and structure", "Design tokens and theming", "Component library and patterns", "Accessibility and inclusive design", "Documentation and guidelines", "Governance and adoption model"];
 const aiOperationsDeliverables = ["AI opportunity and automation roadmap", "Workflow and operational journey mapping", "Human-in-the-loop decision design", "AI interaction and prompt patterns", "Exception handling and escalation flows", "Prototype-to-production implementation guidance", "Measurement, governance and adoption framework"];
@@ -61,18 +71,41 @@ function ProductArchitectureGraphic() {
   </div>;
 }
 
+function DesignSystemApproach() {
+  return <section className={`container ${styles.approach} ${styles.designSystemApproach}`}>
+    <div className={styles.designSystemApproachHeader}>
+      <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>APPROACH</p>
+      <h2 className="heading-02">Understand broadly. Go deep where action becomes useful.</h2>
+      <p className={styles.designSystemApproachLead}>Map the whole system, focus on the most valuable active opportunity, then use what the work reveals to shape the next priority.</p>
+    </div>
+    <div className={styles.designSystemApproachCycle}>
+      <ol className={styles.designSystemApproachGrid}>
+        {designSystemApproachSteps.map(([number, title, phase, description]) => <li key={number} className={styles.designSystemApproachStep}>
+          <div className={styles.designSystemApproachMeta}><span>{number}</span><span>{phase}</span></div>
+          <h3>{title}</h3>
+          <p>{description}</p>
+        </li>)}
+      </ol>
+      <p className={styles.designSystemApproachReturn}><span aria-hidden="true">↺</span> Learning returns to the opportunity landscape and begins the next cycle.</p>
+    </div>
+  </section>;
+}
+
 export default async function ServiceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const service = getServiceItemBySlug(slug);
   if (!service) notFound();
   const isProductArchitecture = service.slug === "product-architecture";
+  const isDesignSystems = service.slug === "design-systems";
   const isAiEnabledOperations = service.slug === "ai-enabled-design-operations";
   const isGovernanceScale = service.slug === "governance-scale";
   const isCollaborationAlignment = service.slug === "collaboration-alignment";
   const content = isProductArchitecture ? productArchitecture : {
     eyebrow: "DESIGN SYSTEMS",
     lead: "Build scalable, consistent and adaptable systems that drive better products.",
-    description: service.description,
+    description: isDesignSystems
+      ? "A design system is more than a component library: it is the shared language, principles and governance that connect how teams design, build and evolve products."
+      : service.description,
     benefits: isAiEnabledOperations ? aiOperationsBenefits : isGovernanceScale ? governanceScaleBenefits : isCollaborationAlignment ? collaborationAlignmentBenefits : benefits,
     deliverablesIntro: isCollaborationAlignment ? "An alignment practice shaped around the decisions your product and teams need to make." : isGovernanceScale ? "A governance model shaped around your products, teams and stage of scale." : isAiEnabledOperations ? "Practical AI-enabled design operations tailored to your product, team and working culture." : "A complete design system tailored to your product, team and stage of growth.",
     deliverables: isAiEnabledOperations ? aiOperationsDeliverables : isGovernanceScale ? governanceScaleDeliverables : isCollaborationAlignment ? collaborationAlignmentDeliverables : defaultDeliverables,
@@ -100,9 +133,9 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         </div>
         <div className={styles.lattice} aria-hidden="true"><LatticeInteractive><LatticeDiagram /></LatticeInteractive></div>
       </section>
-      <section className={styles.benefits}><div className={`container ${styles.benefitsGrid}`}>{content.benefits.map(([title, description], index) => <article key={title} className={styles.benefit}><LatticeBenefitIcon index={index} /><h2>{title}</h2><p>{description}</p></article>)}</div></section>
-      <section className={`container ${styles.delivery}`}><div className={styles.deliveryCopy}><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>DELIVERABLES</p><h2 className="heading-02">{content.deliverablesIntro}</h2><ul className={styles.deliverables}>{content.deliverables.map((item) => <li key={item}>{item}</li>)}</ul></div>{isProductArchitecture ? <ProductArchitectureGraphic /> : service.slug === "design-systems" ? <DesignSystemGraphic /> : isAiEnabledOperations ? <AiOperationsGraphic /> : isGovernanceScale ? <GovernanceScaleGraphic /> : isCollaborationAlignment ? <CollaborationAlignmentGraphic /> : <div className={styles.systemPreview}><strong>Aa</strong><div className={styles.tokenRow}><span className={`${styles.token} ${styles.tokenLight}`} /><span className={`${styles.token} ${styles.tokenDark}`} /></div><p className={styles.systemCaption}>Tokens / components / code</p></div>}</section>
-      <section className={`container ${styles.approach}`}><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>APPROACH</p><h2 className="heading-02">{content.approachTitle}</h2><div className={styles.approachGrid}>{steps.map(([number, title, description]) => <article key={number} className={styles.step}><span className={styles.stepNumber}>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></section>
+      <section className={`${styles.benefits} ${isDesignSystems ? styles.benefitsQuiet : ""}`}><div className={`container ${styles.benefitsGrid}`}>{content.benefits.map(([title, description], index) => <article key={title} className={styles.benefit}><LatticeBenefitIcon index={index} /><h2>{title}</h2><p>{description}</p></article>)}</div></section>
+      <section className={`container ${styles.delivery} ${isDesignSystems ? styles.designSystemDelivery : ""}`}><div className={styles.deliveryCopy}><p className={`label-eyebrow ${styles.deliveryEyebrow}`} style={{ color: "var(--text-accent)" }}>{isDesignSystems ? "WHAT THE WORK CAN INVOLVE" : "DELIVERABLES"}</p><h2 className={`heading-02 ${styles.deliveryHeading}`}>{content.deliverablesIntro}</h2><ul className={styles.deliverables}>{content.deliverables.map((item) => <li key={item}>{item}</li>)}</ul></div>{isProductArchitecture ? <ProductArchitectureGraphic /> : service.slug === "design-systems" ? <DesignSystemGraphic /> : isAiEnabledOperations ? <AiOperationsGraphic /> : isGovernanceScale ? <GovernanceScaleGraphic /> : isCollaborationAlignment ? <CollaborationAlignmentGraphic /> : <div className={styles.systemPreview}><strong>Aa</strong><div className={styles.tokenRow}><span className={`${styles.token} ${styles.tokenLight}`} /><span className={`${styles.token} ${styles.tokenDark}`} /></div><p className={styles.systemCaption}>Tokens / components / code</p></div>}</section>
+      {isDesignSystems ? <DesignSystemApproach /> : <section className={`container ${styles.approach}`}><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>APPROACH</p><h2 className="heading-02">{content.approachTitle}</h2><div className={styles.approachGrid}>{steps.map(([number, title, description]) => <article key={number} className={styles.step}><span className={styles.stepNumber}>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></section>}
       <section className={`container ${styles.audience}`}><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>IS THIS YOU?</p><h2 className="heading-02">{content.audienceTitle}</h2><p className={styles.audienceLead}>{content.audienceLead}</p><div className={styles.audienceGrid}>{audiences.map(([number, title, description]) => <article key={number} className={styles.audienceCard}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></section>
     </main>
     <Footer />

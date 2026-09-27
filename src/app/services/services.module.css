@@ -15,6 +15,8 @@
   flex-direction: column;
   gap: var(--space-300);
   width: 100%;
+  max-width: 1180px;
+  min-width: 0;
 }
 
 .heroCopy h1 { width: max-content; max-width: 100%; }
@@ -33,6 +35,18 @@
 
 .servicesSection { padding-bottom: 160px; }
 
+/* Services deliberately alternates its section widths: a constrained hero,
+   a full-content-width index, a wide project chapter and a full editorial
+   insights chapter. Shared section components keep their own internal
+   structure while this page controls the outer composition. */
+.main > :global(#selected_impact) > :global(.container) {
+  max-width: 1680px;
+}
+
+.main > :global(#latest_insights) > :global(.container) {
+  max-width: 1920px;
+}
+
 .list {
   list-style: none;
   margin: 0;
@@ -48,7 +62,17 @@
   .heroCopy { gap: 0; }
   .heroCopy > :global(.label-eyebrow) { margin-bottom: var(--hero-space-eyebrow-title); }
   .heroCopy h1 { margin-bottom: var(--hero-space-title-copy); }
-  .heroCopy h1, .heroDescription { width: 100%; max-width: none; }
-  .heroDescription :global(p) { font-size: var(--type-mobile-body); }
+  .heroCopy h1,
+  .heroDescription,
+  .heroDescription :global(.content),
+  .heroDescription :global(p) {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .heroDescription :global(p) {
+    font-size: var(--type-mobile-body);
+    overflow-wrap: break-word;
+  }
   .servicesSection { padding-bottom: 96px; }
 }
