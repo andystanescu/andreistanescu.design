@@ -41,6 +41,13 @@ const designSystemApproachSteps = [
   ["07", "Learn", "EVIDENCE", "Observe adoption and outcomes, then capture what the work reveals about the wider system."],
   ["08", "Reprioritise", "NEXT CYCLE", "Return new evidence to the opportunity landscape and choose where to go next."],
 ] as const;
+const productArchitectureApproachStages = [
+  ["01", "LANDSCAPE", "Bring the whole product into view.", [["01", "Overall discovery", "Map products, users, journeys, domains and constraints."]]],
+  ["02", "PRIORITY AREA", "Find where structure is creating the most friction.", [["02", "Identify opportunities", "Make structural tensions and areas of leverage visible."], ["03", "Prioritise", "Choose the problem where focused work can make the biggest difference."]]],
+  ["03", "FOCUSED INVESTIGATION", "Zoom in before deciding what to change.", [["04", "Deep discovery", "Investigate the active structural problem with focused evidence."], ["05", "Decide", "Agree the boundaries, response and evidence for success."]]],
+  ["04", "INTERVENTION", "Change the structure in its real product context.", [["06", "Execute", "Put the decision into practice across journeys, systems and teams."]]],
+  ["05", "UPDATED LANDSCAPE", "Learn from the change and choose what deserves attention next.", [["07", "Learn", "Observe what changed and what the product reveals."], ["08", "Reprioritise", "Return learning to the opportunity landscape and begin the next cycle."]]],
+] as const;
 const audiences = [["01", "Growing product teams", "Bring consistency to a product portfolio that is expanding faster than the system behind it."], ["02", "Design & engineering leads", "Align decisions, ownership and implementation around one shared product language."], ["03", "Organisations in transition", "Turn fragmented patterns into a durable foundation for the next stage of growth."]];
 const designSystemRecognition = [
   "The component library exists, but teams adopt it inconsistently.",
@@ -49,6 +56,14 @@ const designSystemRecognition = [
   "Documentation can no longer be trusted to describe how the system works.",
   "Nobody is sure who owns changes to the system.",
   "New products cannot use the system safely without workarounds.",
+];
+const productArchitectureRecognition = [
+  "Journeys work independently, but they do not feel like parts of one product.",
+  "Navigation keeps growing through exceptions and special cases.",
+  "The same concept means different things in different areas of the product.",
+  "Adding functionality requires changes to unrelated parts of the product.",
+  "Teams disagree about where capabilities belong.",
+  "Nobody can confidently explain how the whole product fits together.",
 ];
 const defaultDeliverables = ["Design system strategy and roadmap", "Information architecture and structure", "Design tokens and theming", "Component library and patterns", "Accessibility and inclusive design", "Documentation and guidelines", "Governance and adoption model"];
 const aiOperationsDeliverables = ["AI opportunity and automation roadmap", "Workflow and operational journey mapping", "Human-in-the-loop decision design", "AI interaction and prompt patterns", "Exception handling and escalation flows", "Prototype-to-production implementation guidance", "Measurement, governance and adoption framework"];
@@ -59,26 +74,69 @@ const productArchitecture = {
   eyebrow: "PRODUCT ARCHITECTURE",
   lead: "Shape the structure behind complex products so teams can make better decisions, faster.",
   description: "I clarify domains, journeys and system boundaries so the product can scale without accumulating avoidable complexity.",
-  benefits: [["Clearer decisions", "Make the relationships between domains, journeys and capabilities visible."], ["Coherent experiences", "Connect product surfaces around a shared structure and vocabulary."], ["Stronger alignment", "Give design, engineering and product one model to work from."], ["Confident growth", "Create boundaries that support change without fragmenting the product."]],
+  benefits,
   deliverablesIntro: "A practical architecture that connects the product language, its users and the teams who evolve it.",
-  deliverables: ["Product architecture strategy and roadmap", "Domain and capability mapping", "Information architecture and navigation model", "End-to-end journey and service blueprint", "Content and data model alignment", "Platform and integration boundary definition", "Architecture principles and governance model"],
-  approachTitle: "A practical path from ambiguity to product structure.",
+  deliverables: ["Architectural direction and evolution strategy", "Domain and capability mapping", "Information architecture and navigation model", "End-to-end journey and service blueprint", "Content and data model alignment", "Platform and integration boundary definition", "Architecture principles and governance model"],
+  approachTitle: "Start with the whole product. Focus where structure matters most.",
   audienceTitle: "A structure for products at a turning point.",
   audienceLead: "Whether you are shaping a new product or untangling an existing one, I make the underlying relationships clear enough for teams to move with confidence."
 };
 
 function ProductArchitectureGraphic() {
-  return <div className={styles.architectureGraphic} aria-label="Product architecture model showing how users, domains, surfaces and teams connect through a shared product language.">
-    <div className={styles.architectureHeader}><span>PRODUCT ARCHITECTURE</span><span>COHESION MODEL</span></div>
+  const territories = [
+    ["01", "Users", "Needs, behaviours and journeys"],
+    ["02", "Domains", "Capabilities, rules and ownership"],
+    ["03", "Surfaces", "Products, services and interactions"],
+    ["04", "Teams", "Responsibilities and delivery"],
+  ];
+
+  return <figure className={styles.architectureGraphic} aria-label="Product Architecture Cohesion Model">
+    <figcaption className={styles.architectureHeader}><span>PRODUCT ARCHITECTURE</span><span>COHESION MODEL</span></figcaption>
     <div className={styles.architectureMap}>
-      <div className={`${styles.architectureNode} ${styles.architectureSatellite}`}><span>01</span><strong>Users</strong><small>Needs and journeys</small></div>
-      <div className={`${styles.architectureNode} ${styles.architectureSatellite}`}><span>02</span><strong>Domains</strong><small>Capabilities and rules</small></div>
-      <div className={styles.architectureSpine}><span>SHARED PRODUCT LANGUAGE</span><strong>Structure<br />that holds</strong><div className={styles.architectureLayers}><i>Model</i><i>Patterns</i><i>Governance</i></div></div>
-      <div className={`${styles.architectureNode} ${styles.architectureSatellite}`}><span>03</span><strong>Surfaces</strong><small>Flows and interfaces</small></div>
-      <div className={`${styles.architectureNode} ${styles.architectureSatellite}`}><span>04</span><strong>Teams</strong><small>Ownership and delivery</small></div>
+      <ol className={styles.architectureTerritories}>
+        {territories.map(([number, title, description]) => <li className={styles.architectureTerritory} key={number}>
+          <span className={styles.architectureNumber}>{number}</span>
+          <h3>{title}</h3>
+          <p>{description}</p>
+        </li>)}
+      </ol>
+      <p className={styles.architectureLanguage}>Shared Product Language</p>
+      <p className={styles.architectureBoundaryLabel}>BOUNDARY</p>
     </div>
-    <div className={styles.architectureFooter}><span>CONNECTED BY INTENT</span><span aria-hidden="true">↗</span></div>
-  </div>;
+    <p className={styles.architectureFooter}><span>DECISIONS CONNECT CONTEXT, STRUCTURE, EXPERIENCE AND DELIVERY</span><span aria-hidden="true">↗</span></p>
+  </figure>;
+}
+
+function ProductArchitectureTransformation() {
+  const symptoms = ["Disconnected journeys", "Duplicated concepts", "Navigation exceptions", "Conflicting terminology"];
+  const outcomes = ["Shared boundaries", "Shared vocabulary", "Coherent journeys", "Clearer decisions"];
+
+  return <ServiceSection labelledBy="service-transformation-title" width="wide" className={styles.architectureTransformation}>
+    <ServiceSectionHeader
+      eyebrow="ARCHITECTURE TRANSFORMATION"
+      title="Different symptoms can share the same structural cause."
+      description="When the underlying product structure is unclear, friction appears across journeys, language and decisions."
+      titleId="service-transformation-title"
+      className={styles.architectureTransformationHeader}
+      descriptionClassName={styles.architectureTransformationLead}
+    />
+    <div className={styles.transformationFlow}>
+      <div className={styles.transformationStage}>
+        <p className={styles.transformationLabel}>WHAT PEOPLE EXPERIENCE</p>
+        <ul>{symptoms.map((item) => <li key={item}>{item}</li>)}</ul>
+      </div>
+      <span className={styles.transformationArrow} aria-hidden="true">↓</span>
+      <div className={styles.transformationCore}>
+        <span>THE SHARED CAUSE</span>
+        <strong>Underlying product structure</strong>
+      </div>
+      <span className={styles.transformationArrow} aria-hidden="true">↓</span>
+      <div className={styles.transformationStage}>
+        <p className={styles.transformationLabel}>WHAT BECOMES POSSIBLE</p>
+        <ul>{outcomes.map((item) => <li key={item}>{item}</li>)}</ul>
+      </div>
+    </div>
+  </ServiceSection>;
 }
 
 function DesignSystemApproach() {
@@ -101,6 +159,32 @@ function DesignSystemApproach() {
       </ol>
       <p className={styles.designSystemApproachReturn}><span aria-hidden="true">↺</span> Learning returns to the opportunity landscape and begins the next cycle.</p>
     </div>
+  </ServiceSection>;
+}
+
+function ProductArchitectureApproach() {
+  return <ServiceSection labelledBy="service-approach-title" width="wide" className={`${styles.approach} ${styles.productArchitectureApproach}`}>
+    <ServiceSectionHeader
+      eyebrow="APPROACH"
+      title="Start with the whole product. Focus where structure matters most."
+      description="Move from broad context into evidence-led investigation, then carry what you learn back into the map."
+      titleId="service-approach-title"
+      className={styles.productArchitectureApproachHeader}
+      descriptionClassName={styles.productArchitectureApproachLead}
+    />
+    <ol className={styles.architectureApproachStages}>
+      {productArchitectureApproachStages.map(([number, phase, summary, activities]) => <li className={styles.architectureApproachStage} key={number}>
+        <div className={styles.architectureApproachPhase}><span>{number}</span><span>{phase}</span></div>
+        <p className={styles.architectureApproachSummary}>{summary}</p>
+        <ol className={styles.architectureApproachActivities}>
+          {activities.map(([step, title, description]) => <li key={step}>
+            <span>{step}</span>
+            <div><h3>{title}</h3><p>{description}</p></div>
+          </li>)}
+        </ol>
+      </li>)}
+    </ol>
+    <p className={styles.architectureApproachReturn}><span aria-hidden="true">↺</span> Learning updates the landscape, so the next investigation starts with better context.</p>
   </ServiceSection>;
 }
 
@@ -136,8 +220,8 @@ type EvidenceItem = {
   href: string;
 };
 
-function DesignSystemEvidence() {
-  const category = normalizeCategory("Design Systems");
+function ServiceEvidence({ categoryName, title, description }: { categoryName: string; title: string; description: string }) {
+  const category = normalizeCategory(categoryName);
   const evidence: Array<{ publishedAt: string; id: number; item: EvidenceItem }> = [
     ...getCaseStudies()
       .filter((study) => normalizeCategory(study.category) === category)
@@ -164,8 +248,8 @@ function DesignSystemEvidence() {
   return <ServiceSection labelledBy="service-evidence-title" className={styles.evidence}>
     <ServiceSectionHeader
       eyebrow="EVIDENCE"
-      title="Design systems in practice."
-      description="Selected work and thinking where shared foundations, patterns and governance shaped the outcome."
+      title={title}
+      description={description}
       titleId="service-evidence-title"
       className={styles.evidenceHeader}
       descriptionClassName={styles.evidenceLead}
@@ -208,17 +292,34 @@ function DesignSystemRecognition() {
   </ServiceSection>;
 }
 
-function DesignSystemClosingCta() {
+function ProductArchitectureRecognition() {
+  return <ServiceSection labelledBy="service-recognition-title" width="wide" className={`${styles.recognition} ${styles.productArchitectureRecognition}`}>
+    <ServiceSectionHeader
+      eyebrow="RECOGNITION"
+      title="Product architecture may need attention when…"
+      titleId="service-recognition-title"
+      className={styles.recognitionHeader}
+    />
+    <ol className={`${styles.recognitionList} ${styles.productArchitectureRecognitionList}`}>
+      {productArchitectureRecognition.map((condition, index) => <li key={condition}>
+        <span className={styles.recognitionNumber}>{String(index + 1).padStart(2, "0")}</span>
+        <p>{condition}</p>
+      </li>)}
+    </ol>
+  </ServiceSection>;
+}
+
+function ServiceClosingCta({ title, description }: { title: string; description: string }) {
   return <ServiceSection labelledBy="service-closing-cta-title" className={styles.recognitionCta}>
     <div className={styles.recognitionCtaInner}>
       <ServiceSectionHeader
         eyebrow="START WITH THE FRICTION"
-        title="Tell me where things are getting stuck."
+        title={title}
         titleId="service-closing-cta-title"
         className={styles.recognitionCtaHeading}
       />
       <div className={styles.recognitionCtaCopy}>
-        <p>We can look at what’s creating the friction and work out where attention would make the biggest difference.</p>
+        <p>{description}</p>
         <Link href="/contact" className={styles.primaryButton}>Let&apos;s talk <span aria-hidden="true">→</span></Link>
       </div>
     </div>
@@ -254,7 +355,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
     }) }} />
     <Nav />
     <main className={styles.main}>
-      <section className={`container ${styles.hero}`}>
+      <section className={`container ${styles.hero} ${isProductArchitecture ? styles.heroArchitecture : ""}`}>
         <div className={styles.heroCopy}>
           <BackButton label="Back to services" fallbackHref="/services" />
           <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>
@@ -263,10 +364,10 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           <h1 className="display-small">{service.title}</h1>
           <p className={`body-large ${styles.heroLead}`}>{content.lead}</p>
           <p className={`body-default ${styles.heroDescription}`}>{content.description}</p>
-          <div className={styles.heroActions}><Link href="/contact" className={styles.primaryButton}>Start a project <span aria-hidden="true">→</span></Link></div>
+          <div className={styles.heroActions}><Link href="/contact" className={styles.primaryButton}>Let&apos;s talk <span aria-hidden="true">→</span></Link></div>
         </div>
       </section>
-      <section className={`${styles.benefits} ${isDesignSystems ? styles.benefitsQuiet : ""}`}><div className={`container ${styles.benefitsGrid}`}>{content.benefits.map(([title, description], index) => <article key={title} className={styles.benefit}><LatticeBenefitIcon index={index} /><h2>{title}</h2><p>{description}</p></article>)}</div></section>
+      <section className={`${styles.benefits} ${isDesignSystems || isProductArchitecture ? styles.benefitsQuiet : ""}`}><div className={`container ${styles.benefitsGrid}`}>{content.benefits.map(([title, description], index) => <article key={title} className={styles.benefit}><LatticeBenefitIcon index={index} /><h2>{title}</h2><p>{description}</p></article>)}</div></section>
       {isDesignSystems ? <ServiceSection labelledBy="service-work-title" className={`${styles.delivery} ${styles.designSystemDelivery}`}>
         <ServiceSectionHeader
           eyebrow="WHAT THE WORK CAN INVOLVE"
@@ -277,10 +378,10 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           titleClassName={`heading-02 ${styles.deliveryHeading}`}
         />
         <ul className={styles.deliverables}>{content.deliverables.map((item) => <li key={item}>{item}</li>)}</ul>
-      </ServiceSection> : <ServiceSection labelledBy="service-deliverables-title" className={styles.delivery}>
+      </ServiceSection> : <ServiceSection labelledBy="service-deliverables-title" width={isProductArchitecture ? "wide" : "contained"} className={`${styles.delivery} ${isProductArchitecture ? styles.architectureDelivery : ""}`}>
         <div className={styles.deliveryCopy}>
           <ServiceSectionHeader
-            eyebrow="DELIVERABLES"
+            eyebrow={isProductArchitecture ? "WHAT THE WORK CAN INVOLVE" : "DELIVERABLES"}
             title={content.deliverablesIntro}
             titleId="service-deliverables-title"
             eyebrowClassName={styles.deliveryEyebrow}
@@ -291,10 +392,18 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         {isProductArchitecture ? <ProductArchitectureGraphic /> : isAiEnabledOperations ? <AiOperationsGraphic /> : isGovernanceScale ? <GovernanceScaleGraphic /> : isCollaborationAlignment ? <CollaborationAlignmentGraphic /> : <div className={styles.systemPreview}><strong>Aa</strong><div className={styles.tokenRow}><span className={`${styles.token} ${styles.tokenLight}`} /><span className={`${styles.token} ${styles.tokenDark}`} /></div><p className={styles.systemCaption}>Tokens / components / code</p></div>}
       </ServiceSection>}
       {isDesignSystems && <DesignSystemEcosystem />}
-      {isDesignSystems ? <DesignSystemApproach /> : <ServiceSection labelledBy="service-approach-title" className={styles.approach}><ServiceSectionHeader eyebrow="APPROACH" title={content.approachTitle} titleId="service-approach-title" /><div className={styles.approachGrid}>{steps.map(([number, title, description]) => <article key={number} className={styles.step}><span className={styles.stepNumber}>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
-      {isDesignSystems && <DesignSystemEvidence />}
-      {isDesignSystems ? <><DesignSystemRecognition /><DesignSystemClosingCta /></> : <ServiceSection labelledBy="service-audience-title" className={styles.audience}><ServiceSectionHeader eyebrow="IS THIS YOU?" title={content.audienceTitle} description={content.audienceLead} titleId="service-audience-title" descriptionClassName={styles.audienceLead} /><div className={styles.audienceGrid}>{audiences.map(([number, title, description]) => <article key={number} className={styles.audienceCard}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
+      {isDesignSystems ? <DesignSystemApproach /> : isProductArchitecture ? <><ProductArchitectureTransformation /><ProductArchitectureApproach /></> : <ServiceSection labelledBy="service-approach-title" className={styles.approach}><ServiceSectionHeader eyebrow="APPROACH" title={content.approachTitle} titleId="service-approach-title" /><div className={styles.approachGrid}>{steps.map(([number, title, description]) => <article key={number} className={styles.step}><span className={styles.stepNumber}>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
+      {(isDesignSystems || isProductArchitecture) && <ServiceEvidence
+        categoryName={isProductArchitecture ? "Product Architecture" : "Design Systems"}
+        title={isProductArchitecture ? "Product architecture in practice." : "Design systems in practice."}
+        description={isProductArchitecture
+          ? "Selected work and thinking where product structure clarified journeys, boundaries and decisions."
+          : "Selected work and thinking where shared foundations, patterns and governance shaped the outcome."}
+      />}
+      {isDesignSystems ? <DesignSystemRecognition /> : isProductArchitecture ? <ProductArchitectureRecognition /> : <ServiceSection labelledBy="service-audience-title" className={styles.audience}><ServiceSectionHeader eyebrow="IS THIS YOU?" title={content.audienceTitle} description={content.audienceLead} titleId="service-audience-title" descriptionClassName={styles.audienceLead} /><div className={styles.audienceGrid}>{audiences.map(([number, title, description]) => <article key={number} className={styles.audienceCard}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
+      {isDesignSystems && <ServiceClosingCta title="Tell me where things are getting stuck." description="We can look at what’s creating the friction and work out where attention would make the biggest difference." />}
+      {isProductArchitecture && <ServiceClosingCta title="Tell me where the product is becoming difficult to reason about." description="We can trace what sits underneath the complexity and work out where clearer structure would make the biggest difference." />}
     </main>
-    <Footer hideContactCta={isDesignSystems} />
+    <Footer hideContactCta={isDesignSystems || isProductArchitecture} />
   </>;
 }
