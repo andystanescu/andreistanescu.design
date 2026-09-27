@@ -11,7 +11,6 @@ import { GovernanceChangeModel } from "@/components/services/GovernanceChangeMod
 import { GovernanceTension } from "@/components/services/GovernanceTension/GovernanceTension";
 import { GovernanceApproach } from "@/components/services/GovernanceApproach/GovernanceApproach";
 import { GovernanceRecognition } from "@/components/services/GovernanceRecognition/GovernanceRecognition";
-import { CollaborationAlignmentGraphic } from "@/components/services/CollaborationAlignmentGraphic/CollaborationAlignmentGraphic";
 import { ServiceSection, ServiceSectionHeader } from "@/components/services/ServiceSection/ServiceSection";
 import { getCaseStudies } from "@/data/caseStudies";
 import { getInsights } from "@/data/insights";
@@ -34,7 +33,7 @@ const benefits = [["Consistency at scale", "Unified experiences across products 
 const aiOperationsBenefits = [["More capacity, safely", "Assistive workflows that preserve a consistent quality bar."], ["Shorter review cycles", "AI-supported preparation and iteration where it genuinely helps."], ["Visible human judgement", "Clear review points keep decisions accountable and explainable."], ["Operations that learn", "People review evidence and approve changes to the workflow."]];
 const aiOperationsBenefitStages = ["CAPACITY", "SPEED", "OVERSIGHT", "LEARNING"] as const;
 const governanceScaleBenefits = [["Shared ownership", "Clear responsibilities make a system easier to trust and contribute to."], ["Lightweight decisions", "Principles and contribution paths reduce unnecessary debate."], ["Visible stewardship", "Teams know who maintains the system and how decisions are made."], ["Durable momentum", "Governance evolves with the organisation instead of slowing it down."]];
-const collaborationAlignmentBenefits = [["Shared ownership", "Clear responsibilities make a system easier to trust and contribute to."], ["Lightweight decisions", "Principles and contribution paths reduce unnecessary debate."], ["Visible stewardship", "Teams know who maintains the system and how decisions are made."], ["Durable momentum", "Governance evolves with the organisation instead of slowing it down."]];
+const collaborationAlignmentBenefits = [["Shared context", "Everyone is solving the same version of the problem."], ["Useful disagreement", "Different perspectives surface assumptions rather than creating parallel conversations."], ["Clear decisions", "Teams know what was decided and why."], ["Coordinated action", "Different disciplines can move independently without pulling in different directions."]];
 const steps = [["01", "Discover", "Understand your product, users and team."], ["02", "Define", "Establish the principles, tokens and structure."], ["03", "Design", "Craft components, patterns and guidelines."], ["04", "Build", "Work with your team to implement and integrate."], ["05", "Evolve", "Measure, iterate and help the system grow."]];
 const designSystemApproachSteps = [
   ["01", "Overall discovery", "BROAD VIEW", "Understand the product landscape, teams, constraints and existing system as a whole."],
@@ -81,7 +80,21 @@ const aiOperationsRecognition = [
 const defaultDeliverables = ["Design system strategy and roadmap", "Information architecture and structure", "Design tokens and theming", "Component library and patterns", "Accessibility and inclusive design", "Documentation and guidelines", "Governance and adoption model"];
 const aiOperationsDeliverables = ["AI opportunity and delegation mapping", "Workflow and operational journey mapping", "Human-in-the-loop decision design", "AI interaction and prompt patterns", "Exception handling and escalation flows", "Prototype-to-production implementation guidance", "Measurement, governance and adoption framework"];
 const governanceScaleDeliverables = ["Governance strategy and operating model", "Roles, responsibilities and ownership map", "Decision principles and escalation paths", "Contribution and change-management workflow", "Review cadence and quality guardrails", "Adoption measurement and reporting framework", "Evolution and stewardship model"];
-const collaborationAlignmentDeliverables = ["Stakeholder alignment and working-session plan", "Shared vision, principles and success criteria", "Cross-functional decision framework", "Roles, responsibilities and handoff model", "Collaborative journey and workshop outputs", "Communication and decision documentation", "Team rituals and alignment playbook"];
+const collaborationAlignmentDeliverables = ["Shared problem framing and success criteria", "Cross-functional decision principles", "Responsibilities and collaboration boundaries", "Decision and communication models", "Collaborative working sessions where useful", "Decision documentation and traceability", "Team rituals and ways of working"];
+const collaborationPerspectives = [
+  ["Product", "Goals, priorities and how the product creates value."],
+  ["Design", "User needs, experience quality and interaction."],
+  ["Engineering", "Technical constraints, feasibility and system health."],
+  ["Business & users", "Operational realities, evidence and lived context."],
+] as const;
+const collaborationRecognition = [
+  "The same decision keeps resurfacing in different meetings.",
+  "Design, product and engineering describe the same problem differently.",
+  "Decisions are made, but different teams leave with different interpretations.",
+  "Important context lives with individuals rather than the team.",
+  "Work repeatedly stalls because assumptions surface too late.",
+  "Everyone agrees in the meeting, but execution immediately starts diverging.",
+];
 
 const productArchitecture = {
   eyebrow: "PRODUCT ARCHITECTURE",
@@ -149,6 +162,101 @@ function ProductArchitectureTransformation() {
         <ul>{outcomes.map((item) => <li key={item}>{item}</li>)}</ul>
       </div>
     </div>
+  </ServiceSection>;
+}
+
+function CollaborationAlignmentModel() {
+  const stages = [
+    ["Discussion & disagreement", "Surface assumptions and test different interpretations."],
+    ["Decision", "Make clear what was decided, why and what remains open."],
+    ["Coordinated action", "Move independently while working toward the same direction."],
+  ];
+
+  return <ServiceSection labelledBy="service-alignment-model-title" width="wide" className={styles.collaborationAlignmentModel}>
+    <ServiceSectionHeader
+      eyebrow="ALIGNMENT MODEL"
+      title="Different perspectives can move in the same direction."
+      description="Shared understanding gives teams a basis for useful disagreement and clear decisions, without requiring everyone to think alike."
+      titleId="service-alignment-model-title"
+      className={styles.collaborationModelHeader}
+    />
+    <div className={styles.collaborationModelCanvas}>
+      <ul className={styles.collaborationPerspectives} aria-label="Distinct perspectives and context">
+        {collaborationPerspectives.map(([name, description]) => <li key={name}>
+          <h3>{name}</h3>
+          <p>{description}</p>
+        </li>)}
+      </ul>
+      <div className={styles.collaborationSharedContext}>
+        <span>SHARED CONTEXT</span>
+        <p>What we know, what matters, and where perspectives differ.</p>
+      </div>
+      <ol className={styles.collaborationDecisionFlow}>
+        {stages.map(([title, description], index) => <li key={title}>
+          <span className={styles.collaborationFlowNumber}>{`0${index + 1}`}</span>
+          <h3>{title}</h3>
+          <p>{description}</p>
+        </li>)}
+      </ol>
+      <p className={styles.collaborationModelFeedback}><span aria-hidden="true">↶</span> Action creates new evidence. Teams can revisit a decision when the context changes.</p>
+    </div>
+  </ServiceSection>;
+}
+
+function CollaborationAgreement() {
+  const sharedUnderstanding = ["The problem", "The alternatives", "What was decided", "Why it was decided", "What happens next"];
+
+  return <ServiceSection labelledBy="service-alignment-agreement-title" width="wide" className={styles.collaborationAgreement}>
+    <ServiceSectionHeader
+      eyebrow="ALIGNMENT ≠ AGREEMENT"
+      title="Alignment doesn’t require agreement."
+      description="Different perspectives should surface early enough to be useful. The problem is when there is no way to turn that difference into a decision."
+      titleId="service-alignment-agreement-title"
+      className={styles.collaborationAgreementHeader}
+    />
+    <div className={styles.collaborationAgreementContrast}>
+      <div className={styles.collaborationAgreementSide}>
+        <span>AGREEMENT</span>
+        <p className={styles.collaborationAgreementQuote}>“We all prefer the same option.”</p>
+      </div>
+      <span className={styles.collaborationAgreementNotEqual} aria-label="does not equal">≠</span>
+      <div className={`${styles.collaborationAgreementSide} ${styles.collaborationAgreementDefinition}`}>
+        <span>ALIGNMENT</span>
+        <p className={styles.collaborationAgreementQuote}>“We understand…”</p>
+        <ul>{sharedUnderstanding.map((item) => <li key={item}>{item}</li>)}</ul>
+      </div>
+    </div>
+    <p className={styles.collaborationAgreementFootnote}>Healthy disagreement helps teams test assumptions. Clear decisions give different disciplines a way to move forward together.</p>
+  </ServiceSection>;
+}
+
+function CollaborationApproach() {
+  const stages = [
+    ["Understand the landscape", "Build a broad view of goals, constraints, responsibilities and incentives."],
+    ["Find where understanding diverges", "Notice where teams are working from different versions of the problem."],
+    ["Surface assumptions and constraints", "Make the evidence, tradeoffs and limits behind each perspective visible."],
+    ["Create shared context", "Establish what is understood and where meaningful differences remain."],
+    ["Make or enable the decision", "Clarify who decides, what matters and how the decision will be carried forward."],
+    ["Move through real work", "Try the shared direction in delivery, where ownership and constraints become concrete."],
+    ["Observe where alignment breaks", "Learn where context, incentives or decision paths need to change."],
+  ];
+
+  return <ServiceSection labelledBy="service-approach-title" width="wide" className={styles.collaborationApproach}>
+    <ServiceSectionHeader
+      eyebrow="APPROACH"
+      title="Build shared understanding. Test it in the work."
+      description="More communication alone rarely fixes misalignment. Friction can come from missing context, unclear ownership, competing incentives or no usable way to make a decision."
+      titleId="service-approach-title"
+      className={styles.collaborationApproachHeader}
+    />
+    <ol className={styles.collaborationApproachStages}>
+      {stages.map(([title, description], index) => <li key={title}>
+        <span>{`0${index + 1}`}</span>
+        <h3>{title}</h3>
+        <p>{description}</p>
+      </li>)}
+    </ol>
+    <p className={styles.collaborationApproachFeedback}><span aria-hidden="true">↺</span> Real work reveals what needs attention next, so understanding and decisions can keep evolving.</p>
   </ServiceSection>;
 }
 
@@ -346,6 +454,23 @@ function AiOperationsRecognition() {
   </ServiceSection>;
 }
 
+function CollaborationRecognition() {
+  return <ServiceSection labelledBy="service-recognition-title" width="wide" className={`${styles.recognition} ${styles.collaborationRecognition}`}>
+    <ServiceSectionHeader
+      eyebrow="RECOGNITION"
+      title="Teams can be talking constantly and still be misaligned."
+      titleId="service-recognition-title"
+      className={styles.recognitionHeader}
+    />
+    <ol className={`${styles.recognitionList} ${styles.collaborationRecognitionList}`}>
+      {collaborationRecognition.map((condition, index) => <li key={condition}>
+        <span className={styles.recognitionNumber}>{String(index + 1).padStart(2, "0")}</span>
+        <p>{condition}</p>
+      </li>)}
+    </ol>
+  </ServiceSection>;
+}
+
 function ServiceClosingCta({ title, description }: { title: string; description: string }) {
   return <ServiceSection labelledBy="service-closing-cta-title" className={styles.recognitionCta}>
     <div className={styles.recognitionCtaInner}>
@@ -378,11 +503,15 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
       ? "Give AI more responsibility without giving up control."
       : isGovernanceScale
       ? "Help good systems survive growth."
+      : isCollaborationAlignment
+      ? "Turn different perspectives into shared direction."
       : "Build scalable, consistent and adaptable systems that drive better products.",
     description: isAiEnabledOperations
       ? "Put AI to work inside real design and product workflows, with clear boundaries for what it can decide alone and what still needs a person’s judgement."
       : isGovernanceScale
       ? "Clear ownership, standards and a process for exceptions, so a system stays trustworthy as more teams start depending on it, not just at launch."
+      : isCollaborationAlignment
+      ? "Create enough shared context for product, design and engineering to challenge ideas, make decisions and move forward without repeatedly reopening the same questions. Alignment does not mean everyone agrees; it means understanding what was decided, why, and what happens next."
       : isDesignSystems
       ? "A design system is more than a component library: it is the shared language, principles and governance that connect how teams design, build and evolve products."
       : service.description,
@@ -412,7 +541,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           <div className={styles.heroActions}><Link href="/contact" className={styles.primaryButton}>Let&apos;s talk <span aria-hidden="true">→</span></Link></div>
         </div>
       </section>
-      <section className={`${styles.benefits} ${isDesignSystems || isProductArchitecture || isAiEnabledOperations ? styles.benefitsQuiet : ""} ${isAiEnabledOperations ? styles.aiOperationsBenefits : ""} ${isGovernanceScale ? styles.governanceOutcomes : ""}`}><div className={`container ${styles.benefitsGrid}`}>{content.benefits.map(([title, description], index) => <article key={title} className={styles.benefit}>{isAiEnabledOperations ? <span className={styles.aiOutcomeStage}>{aiOperationsBenefitStages[index]}</span> : isGovernanceScale ? null : <LatticeBenefitIcon index={index} />}<h2>{title}</h2><p>{description}</p></article>)}</div>{isGovernanceScale && <p className={`container ${styles.governanceFeedback}`}><span aria-hidden="true">↻</span> Ownership, decisions and stewardship reinforce one another over time.</p>}</section>
+      <section className={`${styles.benefits} ${isDesignSystems || isProductArchitecture || isAiEnabledOperations || isCollaborationAlignment ? styles.benefitsQuiet : ""} ${isAiEnabledOperations ? styles.aiOperationsBenefits : ""} ${isGovernanceScale ? styles.governanceOutcomes : ""} ${isCollaborationAlignment ? styles.collaborationOutcomes : ""}`}><div className={`container ${styles.benefitsGrid}`}>{content.benefits.map(([title, description], index) => <article key={title} className={styles.benefit}>{isAiEnabledOperations ? <span className={styles.aiOutcomeStage}>{aiOperationsBenefitStages[index]}</span> : isGovernanceScale || isCollaborationAlignment ? null : <LatticeBenefitIcon index={index} />}<h2>{title}</h2><p>{description}</p></article>)}</div>{isGovernanceScale && <p className={`container ${styles.governanceFeedback}`}><span aria-hidden="true">↻</span> Ownership, decisions and stewardship reinforce one another over time.</p>}{isCollaborationAlignment && <p className={`container ${styles.collaborationFeedback}`}>Shared context makes disagreement useful; clear decisions help different disciplines act in the same direction.</p>}</section>
       {isGovernanceScale && <GovernanceTension />}
       {isDesignSystems ? <ServiceSection labelledBy="service-work-title" className={`${styles.delivery} ${styles.designSystemDelivery}`}>
         <ServiceSectionHeader
@@ -424,10 +553,10 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           titleClassName={`heading-02 ${styles.deliveryHeading}`}
         />
         <ul className={styles.deliverables}>{content.deliverables.map((item) => <li key={item}>{item}</li>)}</ul>
-      </ServiceSection> : <ServiceSection labelledBy="service-deliverables-title" width={isProductArchitecture || isAiEnabledOperations || isGovernanceScale ? "wide" : "contained"} className={`${styles.delivery} ${isProductArchitecture ? styles.architectureDelivery : ""} ${isAiEnabledOperations ? styles.aiOperationsDelivery : ""} ${isGovernanceScale ? styles.governanceDelivery : ""}`}>
+      </ServiceSection> : <ServiceSection labelledBy="service-deliverables-title" width={isProductArchitecture || isAiEnabledOperations || isGovernanceScale ? "wide" : "contained"} className={`${styles.delivery} ${isProductArchitecture ? styles.architectureDelivery : ""} ${isAiEnabledOperations ? styles.aiOperationsDelivery : ""} ${isGovernanceScale ? styles.governanceDelivery : ""} ${isCollaborationAlignment ? styles.collaborationDelivery : ""}`}>
         <div className={styles.deliveryCopy}>
           <ServiceSectionHeader
-            eyebrow={isProductArchitecture || isAiEnabledOperations || isGovernanceScale ? "WHAT THE WORK CAN INVOLVE" : "DELIVERABLES"}
+            eyebrow={isProductArchitecture || isAiEnabledOperations || isGovernanceScale || isCollaborationAlignment ? "WHAT THE WORK CAN INVOLVE" : "DELIVERABLES"}
             title={content.deliverablesIntro}
             titleId="service-deliverables-title"
             eyebrowClassName={styles.deliveryEyebrow}
@@ -435,29 +564,34 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           />
           <ul className={styles.deliverables}>{content.deliverables.map((item) => <li key={item}>{item}</li>)}</ul>
         </div>
-        {isProductArchitecture ? <ProductArchitectureGraphic /> : isAiEnabledOperations ? <AiOperationsGraphic /> : isGovernanceScale ? null : isCollaborationAlignment ? <CollaborationAlignmentGraphic /> : <div className={styles.systemPreview}><strong>Aa</strong><div className={styles.tokenRow}><span className={`${styles.token} ${styles.tokenLight}`} /><span className={`${styles.token} ${styles.tokenDark}`} /></div><p className={styles.systemCaption}>Tokens / components / code</p></div>}
+        {isProductArchitecture ? <ProductArchitectureGraphic /> : isAiEnabledOperations ? <AiOperationsGraphic /> : isGovernanceScale || isCollaborationAlignment ? null : <div className={styles.systemPreview}><strong>Aa</strong><div className={styles.tokenRow}><span className={`${styles.token} ${styles.tokenLight}`} /><span className={`${styles.token} ${styles.tokenDark}`} /></div><p className={styles.systemCaption}>Tokens / components / code</p></div>}
       </ServiceSection>}
+      {isCollaborationAlignment && <CollaborationAlignmentModel />}
+      {isCollaborationAlignment && <CollaborationAgreement />}
       {isAiEnabledOperations && <AiOperationalLoop />}
       {isGovernanceScale && <GovernanceChangeModel />}
       {isDesignSystems && <DesignSystemEcosystem />}
-      {isDesignSystems ? <DesignSystemApproach /> : isProductArchitecture ? <><ProductArchitectureTransformation /><ProductArchitectureApproach /></> : isAiEnabledOperations ? <AiOperationsApproach /> : isGovernanceScale ? <GovernanceApproach /> : <ServiceSection labelledBy="service-approach-title" className={styles.approach}><ServiceSectionHeader eyebrow="APPROACH" title={content.approachTitle} titleId="service-approach-title" /><div className={styles.approachGrid}>{steps.map(([number, title, description]) => <article key={number} className={styles.step}><span className={styles.stepNumber}>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
-      {(isDesignSystems || isProductArchitecture || isAiEnabledOperations || isGovernanceScale) && <ServiceEvidence
-        categoryName={isProductArchitecture ? "Product Architecture" : isAiEnabledOperations ? "AI-Enabled Design Operations" : isGovernanceScale ? "Governance & Scale" : "Design Systems"}
-        title={isProductArchitecture ? "Product architecture in practice." : isAiEnabledOperations ? "AI-enabled operations in practice." : isGovernanceScale ? "Governance in practice." : "Design systems in practice."}
+      {isDesignSystems ? <DesignSystemApproach /> : isProductArchitecture ? <><ProductArchitectureTransformation /><ProductArchitectureApproach /></> : isAiEnabledOperations ? <AiOperationsApproach /> : isGovernanceScale ? <GovernanceApproach /> : isCollaborationAlignment ? <CollaborationApproach /> : <ServiceSection labelledBy="service-approach-title" className={styles.approach}><ServiceSectionHeader eyebrow="APPROACH" title={content.approachTitle} titleId="service-approach-title" /><div className={styles.approachGrid}>{steps.map(([number, title, description]) => <article key={number} className={styles.step}><span className={styles.stepNumber}>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
+      {(isDesignSystems || isProductArchitecture || isAiEnabledOperations || isGovernanceScale || isCollaborationAlignment) && <ServiceEvidence
+        categoryName={isProductArchitecture ? "Product Architecture" : isAiEnabledOperations ? "AI-Enabled Design Operations" : isGovernanceScale ? "Governance & Scale" : isCollaborationAlignment ? "Collaboration & Alignment" : "Design Systems"}
+        title={isProductArchitecture ? "Product architecture in practice." : isAiEnabledOperations ? "AI-enabled operations in practice." : isGovernanceScale ? "Governance in practice." : isCollaborationAlignment ? "Collaboration in practice." : "Design systems in practice."}
         description={isProductArchitecture
           ? "Selected work and thinking where product structure clarified journeys, boundaries and decisions."
           : isAiEnabledOperations
           ? "Selected work and thinking where AI changed how work could be done without removing the judgement it still needed."
           : isGovernanceScale
           ? "Selected work and thinking where clearer ownership, decisions and stewardship helped systems keep working as they grew."
+          : isCollaborationAlignment
+          ? "Selected work and thinking where shared understanding changed how teams made decisions and moved forward."
           : "Selected work and thinking where shared foundations, patterns and governance shaped the outcome."}
       />}
-      {isDesignSystems ? <DesignSystemRecognition /> : isProductArchitecture ? <ProductArchitectureRecognition /> : isAiEnabledOperations ? <AiOperationsRecognition /> : isGovernanceScale ? <GovernanceRecognition /> : <ServiceSection labelledBy="service-audience-title" className={styles.audience}><ServiceSectionHeader eyebrow="IS THIS YOU?" title={content.audienceTitle} description={content.audienceLead} titleId="service-audience-title" descriptionClassName={styles.audienceLead} /><div className={styles.audienceGrid}>{audiences.map(([number, title, description]) => <article key={number} className={styles.audienceCard}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
+      {isDesignSystems ? <DesignSystemRecognition /> : isProductArchitecture ? <ProductArchitectureRecognition /> : isAiEnabledOperations ? <AiOperationsRecognition /> : isGovernanceScale ? <GovernanceRecognition /> : isCollaborationAlignment ? <CollaborationRecognition /> : <ServiceSection labelledBy="service-audience-title" className={styles.audience}><ServiceSectionHeader eyebrow="IS THIS YOU?" title={content.audienceTitle} description={content.audienceLead} titleId="service-audience-title" descriptionClassName={styles.audienceLead} /><div className={styles.audienceGrid}>{audiences.map(([number, title, description]) => <article key={number} className={styles.audienceCard}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
       {isDesignSystems && <ServiceClosingCta title="Tell me where things are getting stuck." description="We can look at what’s creating the friction and work out where attention would make the biggest difference." />}
       {isProductArchitecture && <ServiceClosingCta title="Tell me where the product is becoming difficult to reason about." description="We can trace what sits underneath the complexity and work out where clearer structure would make the biggest difference." />}
       {isAiEnabledOperations && <ServiceClosingCta title="Tell me where the work is getting harder to control." description="We can look at where friction, repetition or uncertainty is building and work out what deserves attention first." />}
       {isGovernanceScale && <ServiceClosingCta title="Tell me where decisions are getting stuck." description="We can look at what’s creating the friction and work out what needs to become clearer." />}
+      {isCollaborationAlignment && <ServiceClosingCta title="Tell me what keeps coming back into the conversation." description="We can look at why it isn't turning into a durable decision and what would help the team move forward." />}
     </main>
-    <Footer hideContactCta={isDesignSystems || isProductArchitecture || isAiEnabledOperations || isGovernanceScale} />
+    <Footer hideContactCta={isDesignSystems || isProductArchitecture || isAiEnabledOperations || isGovernanceScale || isCollaborationAlignment} />
   </>;
 }
