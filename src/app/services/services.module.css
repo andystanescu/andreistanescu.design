@@ -41,6 +41,7 @@
    structure while this page controls the outer composition. */
 .main > :global(#selected_impact) > :global(.container) {
   max-width: 1680px;
+  gap: var(--space-400);
 }
 
 .main > :global(#latest_insights) > :global(.container) {
