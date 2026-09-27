@@ -17,13 +17,15 @@
   width: 100%;
 }
 
-.heroCopy h1 { max-width: 12ch; }
+.heroCopy h1 { width: max-content; max-width: 100%; }
 
-.heroDescription { max-width: 680px; }
+.heroDescription { width: max-content; max-width: 100%; }
 
-.heroDescription :global(.content) { max-width: none; }
+.heroDescription :global(.content) { width: max-content; max-width: 100%; }
 
 .heroDescription :global(p) {
+  width: max-content;
+  max-width: 100%;
   color: var(--text-secondary);
   font-size: 18px;
   line-height: 1.55;
