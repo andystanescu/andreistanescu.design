@@ -8,19 +8,33 @@ import { getSettings } from "@/lib/settings";
 import { getNavLinks, getPublishedPage } from "@/lib/pages";
 import styles from "./Footer.module.css";
 
-export function Footer({ variant = "full", hideContactCta = false }: { variant?: "full" | "compact"; hideContactCta?: boolean }) {
+type FooterProps = {
+  variant?: "full" | "compact";
+  hideContactCta?: boolean;
+  contactPrompt?: string;
+  contactActionLabel?: string;
+};
+
+export function Footer({
+  variant = "full",
+  hideContactCta = false,
+  contactPrompt,
+  contactActionLabel = "Let's talk",
+}: FooterProps) {
   const navigationLinks = getNavLinks();
   const settings = getSettings();
   const services = getServiceItems();
   const copyrightName = settings.logo_identity === "personal" ? "Andrei Stanescu" : "ConScept";
   const privacyPage = getPublishedPage("privacy");
   const termsPage = getPublishedPage("terms");
+  const defaultContactPrompt = `Have a project in mind or want to explore how ${settings.logo_identity === "personal" ? "I" : "we"} can help?`;
+  const resolvedContactPrompt = contactPrompt || defaultContactPrompt;
   const compactContent = (
     <div className={`container ${styles.compactInner}`}>
       {!hideContactCta && (
         <div className={styles.compactPrompt}>
-          <p className="body-large">Have a project in mind or want to explore how I can help?</p>
-          <FooterLink href="/contact" className={styles.compactCta}>Let&apos;s talk <span aria-hidden="true">→</span></FooterLink>
+          <p className="body-large">{resolvedContactPrompt}</p>
+          <FooterLink href="/contact" className={styles.compactCta}>{contactActionLabel} <span aria-hidden="true">→</span></FooterLink>
         </div>
       )}
       <nav className={styles.compactLinks} aria-label="Footer navigation">
@@ -90,10 +104,10 @@ export function Footer({ variant = "full", hideContactCta = false }: { variant?:
               <div className={styles.connect}>
                 <p className="label-small">Let&apos;s connect</p>
                 <p className="body-small" style={{ color: "var(--text-secondary)" }}>
-                  Have a project in mind or want to explore how {settings.logo_identity === "personal" ? "I" : "we"} can help?
+                  {resolvedContactPrompt}
                 </p>
                 <Button href="/contact" icon={<ArrowIcon size={16} />}>
-                  Let&apos;s talk
+                  {contactActionLabel}
                 </Button>
               </div>
             )}

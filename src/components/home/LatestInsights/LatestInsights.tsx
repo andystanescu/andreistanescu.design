@@ -1,19 +1,38 @@
 import Link from "next/link";
 import { ArrowIcon } from "@/components/Icon/ArrowIcon";
+import { ArticlePreview } from "@/components/insights/ArticlePreview/ArticlePreview";
 import { getInsights } from "@/data/insights";
-import { ArticleCard } from "@/components/ArticleCard/ArticleCard";
 import { getSection } from "@/lib/homepage";
+import { calculateReadingTime } from "@/lib/readingTime";
+import { getServiceItems } from "@/lib/serviceItems";
 import { HomepageSectionHeader } from "@/components/home/SectionHeader/HomepageSectionHeader";
 import styles from "./LatestInsights.module.css";
+
+function normalize(value: string) {
+  return value.toLocaleLowerCase("en-GB").replace(/[^a-z0-9]+/g, " ").trim();
+}
 
 export function LatestInsights() {
   const insights = getInsights();
   const section = getSection("latest_insights")!;
-  if (insights.length === 0) {
-    return null;
-  }
+  if (insights.length === 0) return null;
 
-  const [featured] = insights;
+  const serviceCategories = getServiceItems().map((service) => normalize(service.title));
+  const prioritized = insights
+    .map((insight, order) => {
+      const category = normalize(insight.category || "");
+      const tags = normalize(insight.tags || "");
+      const relevance = serviceCategories.some((service) => category === service)
+        ? 2
+        : serviceCategories.some((service) => tags.includes(service))
+          ? 1
+          : 0;
+      return { insight, order, relevance };
+    })
+    .sort((a, b) => b.relevance - a.relevance || a.order - b.order)
+    .map(({ insight }) => insight);
+
+  const [featured, ...supporting] = prioritized.slice(0, 3);
 
   return (
     <section id="latest_insights" className={`${styles.insights} section-dark`}>
@@ -21,6 +40,7 @@ export function LatestInsights() {
         <HomepageSectionHeader
           eyebrow={section.eyebrow}
           title={section.headline}
+          className={styles.sectionHeader}
           action={
             <Link href="/insights" className={styles.seeAll}>
               See all insights
@@ -29,47 +49,32 @@ export function LatestInsights() {
           }
         />
 
-        <div className={styles.cards}>
-          <Link
-            href={`/insights/${featured.slug}`}
-            className={`${styles.card} section-light`}
-          >
-            <div
-              className={styles.cover}
-              style={
-                featured.thumbnail_image
-                  ? {
-                      backgroundImage: `url(${featured.thumbnail_image})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }
-                  : undefined
-              }
-              aria-hidden="true"
-            />
-            <div className={styles.cardContent}>
-              <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>
-                featured article
-              </p>
-              <h3 className="heading-02">{featured.title}</h3>
-              <p className="body-small" style={{ color: "var(--text-secondary)" }}>
-                {featured.excerpt}
-              </p>
-              <span className={styles.link}>
-                Read article
-                <ArrowIcon size={16} />
-              </span>
+        <div className={styles.editorial}>
+          <ArticlePreview
+            slug={featured.slug}
+            category={featured.category}
+            title={featured.title}
+            excerpt={featured.excerpt}
+            minutes={calculateReadingTime(featured.body)}
+            thumbnail={featured.thumbnail_image}
+            featured
+            headingLevel="h2"
+            presentation="editorial"
+          />
+          {supporting.length > 0 && (
+            <div className={styles.supporting}>
+              {supporting.map((article) => (
+                <ArticlePreview
+                  key={article.slug}
+                  slug={article.slug}
+                  category={article.category}
+                  title={article.title}
+                  excerpt={article.excerpt}
+                  minutes={calculateReadingTime(article.body)}
+                  presentation="editorial"
+                />
+              ))}
             </div>
-          </Link>
-
-          {insights[1] && (
-            <ArticleCard
-              slug={insights[1].slug}
-              title={insights[1].title}
-              excerpt={insights[1].excerpt}
-              thumbnail={insights[1].thumbnail_image}
-              className="section-light"
-            />
           )}
         </div>
       </div>

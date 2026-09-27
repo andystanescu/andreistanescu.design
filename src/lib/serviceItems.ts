@@ -13,6 +13,18 @@ export type ServiceItem = {
   card_size: "standard" | "large";
 };
 
+const SERVICE_CAPABILITIES: Record<string, string[]> = {
+  "design-systems": ["Strategy & roadmap", "Tokens & components", "Documentation", "Governance & adoption"],
+  "product-architecture": ["Domain mapping", "Information architecture", "Journey mapping", "Architecture principles"],
+  "ai-enabled-design-operations": ["Workflow automation", "AI interaction patterns", "Human-in-the-loop design", "Quality assurance"],
+  "governance-scale": ["Operating model", "Ownership mapping", "Contribution workflows", "Adoption measurement"],
+  "collaboration-alignment": ["Stakeholder alignment", "Decision frameworks", "Working sessions", "Team rituals"],
+};
+
+export function getServiceCapabilities(slug: string): string[] {
+  return SERVICE_CAPABILITIES[slug] ?? [];
+}
+
 export function getServiceItems(): ServiceItem[] {
   return db
     .prepare("SELECT * FROM service_items WHERE published = 1 ORDER BY position ASC")

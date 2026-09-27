@@ -5,9 +5,7 @@ import { RichContent } from "@/components/RichContent/RichContent";
 import { getPublishedPage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
-import { getServiceItems } from "@/lib/serviceItems";
-import { LatticeDiagram } from "@/components/home/Hero/LatticeDiagram";
-import { LatticeInteractive } from "@/components/home/Hero/LatticeInteractive";
+import { getServiceCapabilities, getServiceItems } from "@/lib/serviceItems";
 import { SelectedImpact } from "@/components/home/SelectedImpact/SelectedImpact";
 import { LatestInsights } from "@/components/home/LatestInsights/LatestInsights";
 import { ServiceIndexItem } from "@/components/services/ServiceIndexItem/ServiceIndexItem";
@@ -39,11 +37,6 @@ export default function ServicesPage() {
               <RichContent html={page.body} />
             </div>
           </div>
-          <div className={styles.lattice} aria-hidden="true">
-            <LatticeInteractive>
-              <LatticeDiagram />
-            </LatticeInteractive>
-          </div>
         </section>
 
         <section className={`container ${styles.servicesSection}`}>
@@ -54,7 +47,14 @@ export default function ServicesPage() {
           ) : (
             <ul className={styles.list}>
               {services.map((service, index) => (
-                <ServiceIndexItem key={service.slug} slug={service.slug} title={service.title} description={service.description} index={index + 1} icon={service.icon} featured={service.card_size === "large"} />
+                <ServiceIndexItem
+                  key={service.slug}
+                  slug={service.slug}
+                  title={service.title}
+                  description={service.description}
+                  capabilities={getServiceCapabilities(service.slug)}
+                  index={index + 1}
+                />
               ))}
             </ul>
           )}
@@ -62,7 +62,10 @@ export default function ServicesPage() {
         <SelectedImpact />
         <LatestInsights />
       </main>
-      <Footer />
+      <Footer
+        contactPrompt="Recognise the problem but not sure which service it fits? Tell me what is getting in the way and we can work out the right direction together."
+        contactActionLabel="Start a conversation"
+      />
     </>
   );
 }

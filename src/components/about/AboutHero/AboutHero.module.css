@@ -3,7 +3,7 @@
   grid-template-columns:minmax(0,7fr) minmax(280px,3fr);
   align-items:start;
   gap:clamp(var(--space-600),7vw,var(--space-1200));
-  padding-block:clamp(var(--space-700),6vw,88px) clamp(var(--space-600),4vw,64px);
+  padding-block:clamp(80px,7vw,var(--space-1200)) clamp(var(--space-600),4vw,var(--space-800));
   background:var(--bg-canvas);
 }
 
@@ -45,7 +45,7 @@
 .lattice>div{width:min(100%,500px)}
 
 @media(max-width:900px) and (min-width:641px){
-  .hero{grid-template-columns:minmax(0,3fr) minmax(250px,2fr);gap:var(--space-500);padding-block:var(--space-800)}
+  .hero{grid-template-columns:minmax(0,3fr) minmax(250px,2fr);gap:var(--space-500);padding-block:72px var(--space-800)}
   .copy{max-width:none}
   .headline{font-size:clamp(42px,5.6vw,56px)}
   .personalMark{width:min(100%,360px)}
@@ -58,7 +58,7 @@
     display:flex;
     flex-direction:column;
     gap:var(--space-600);
-    padding-block:var(--space-600) var(--hero-space-after);
+    padding-block:56px var(--hero-space-after);
   }
 
   .copy{order:1;width:100%;max-width:none;gap:0}

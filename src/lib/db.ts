@@ -439,7 +439,7 @@ const SEED_PAGES = [
     slug: "services",
     eyebrow: "services",
     title: "Services",
-    body: "<p>A full breakdown of our services is coming soon. In the meantime, see an overview on the homepage.</p>",
+    body: "<p>I help product teams turn complexity into clear, scalable products through stronger architecture, design systems and ways of working.</p>",
     showInNav: 1,
     position: 1,
   },

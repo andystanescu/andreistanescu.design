@@ -29,8 +29,12 @@ export function SelectedImpact() {
           <ProjectCollection studies={caseStudies} limit={4} responsivePreview />
           {featuredMetrics.length > 0 && (
             <div className={styles.impactSummary}>
-              <p className="label-eyebrow">Featured impact</p>
-              <ImpactMetrics metrics={featuredMetrics} label={`${featured.title} impact metrics`} />
+              <p className="label-eyebrow">Featured project results</p>
+              <ImpactMetrics
+                metrics={featuredMetrics}
+                label={`${featured.title} impact metrics`}
+                context={`Results from “${featured.title}”`}
+              />
             </div>
           )}
         </div>
