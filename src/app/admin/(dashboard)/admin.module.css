@@ -252,8 +252,8 @@
 
 .editLink {
   display: inline-flex;
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
@@ -265,6 +265,73 @@
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color 0.15s ease;
+}
+
+@media (max-width: 760px) {
+  .list {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    padding: 0;
+  }
+
+  .listItem {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    padding: 16px;
+  }
+
+  .listItemMeta,
+  .listItemMeta p {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .listItemMeta p:first-child {
+    overflow: visible;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .listItemActions {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .listItemActions form:not(.deleteForm) button,
+  .deleteButton,
+  .editLink {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .listItemActions form:has(.publishSwitch) {
+    display: grid;
+    width: 48px;
+    min-width: 48px;
+    height: 44px;
+    place-items: center;
+  }
+
+  .pageHeader,
+  .pageHeaderTop,
+  .contentTitleRow {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pageHeader > a,
+  .pageHeader > button,
+  .pageHeaderTop > a,
+  .contentTitleRow > a {
+    align-self: flex-start;
+    min-height: 44px;
+  }
 }
 
 .editLink:hover,

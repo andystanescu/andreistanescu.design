@@ -82,3 +82,85 @@
 .sidePanels{position:static}
 @media (max-width:900px){.editorLayout{grid-template-columns:1fr}.sidePanels{overflow:visible}.editorMain{overflow-y:auto}}
 @media (max-width:700px){.editorForm{--editor-sticky-header-offset:0}.editorHeader{padding-inline:var(--space-300)}.editorLayout{padding-inline:var(--space-300)}}
+
+/* Tablet and phone layouts use the page's natural vertical scroll instead
+   of squeezing editor actions and independent scroll columns side by side. */
+@media (max-width:900px) {
+  .editorHeader {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-200);
+    overflow: visible;
+  }
+
+  .editorActions {
+    grid-column: 1;
+    grid-row: auto;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .editorActions > * {
+    min-height: 44px;
+  }
+
+  .editorForm {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+  }
+
+  .editorLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    flex: 0 0 auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .editorMain,
+  .sidePanels {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .sidePanels {
+    grid-row: auto;
+  }
+}
+
+@media (max-width:760px) {
+  .editorHeader {
+    padding: calc(max(16px, var(--safe-area-top)) + 56px) var(--space-300) var(--space-200);
+  }
+
+  .editorHeading h1 {
+    font-size: clamp(24px, 7vw, 32px);
+    line-height: 1.12;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .editorActions {
+    gap: var(--space-100);
+  }
+
+  .editorActions > * {
+    min-height: 44px;
+  }
+
+  .tabs {
+    gap: 4px;
+  }
+
+  .tab,
+  .tabActive {
+    min-height: 44px;
+    padding-inline: 10px;
+  }
+
+  .editorLayout {
+    padding: 0 var(--space-300) var(--space-400);
+  }
+}

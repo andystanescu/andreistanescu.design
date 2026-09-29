@@ -37,6 +37,10 @@
   color: var(--text-primary);
 }
 
+.eyebrow {
+  color: var(--text-accent);
+}
+
 .actions {
   display: flex;
   align-items: center;
@@ -185,6 +189,10 @@
 
   .headline {
     margin-bottom: var(--hero-space-title-copy);
+  }
+
+  .copy > .eyebrow {
+    margin-bottom: var(--hero-space-eyebrow-title);
   }
 
   .copy > p {

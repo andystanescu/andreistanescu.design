@@ -23,6 +23,11 @@ export function Hero() {
       <HeroCollage />
       <div className={`container ${styles.heroInner}`}>
         <div className={styles.copy}>
+          {section.eyebrow && (
+            <p className={`label-eyebrow ${styles.eyebrow}`}>
+              {section.eyebrow}
+            </p>
+          )}
           <h1 className={`display-large ${styles.headline}`}>
             <AccentText text={section.headline} color="var(--accent-foundation)" />
           </h1>

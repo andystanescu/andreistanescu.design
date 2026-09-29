@@ -19,6 +19,7 @@ export function Approach() {
           eyebrow={section.eyebrow}
           title={section.headline}
           intro={section.description}
+          className={styles.approachHeader}
         />
         <ProcessStepper steps={steps} label={section.headline} />
       </div>
