@@ -2,13 +2,16 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { listSubmissions, countSubmissionsSince, countSubmissionsPeriod } from "@/lib/submissions";
 import { DashboardGreeting } from "@/components/admin/DashboardGreeting/DashboardGreeting";
-import { getAnalyticsCountSince, getAnalyticsCountPeriod, getVisitorBreakdown } from "@/lib/analytics";
+import { getAnalyticsCountSince, getAnalyticsCountPeriod, getVisitorBreakdown, getEngagementDashboardData, type EngagementRange } from "@/lib/analytics";
 import { MostReadPanel, type MostReadItem } from "./MostReadPanel";
 import styles from "./dashboard-home.module.css";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminHomePage() {
+export default async function AdminHomePage({ searchParams }: { searchParams?: Promise<{ range?: string }> }) {
+  const query = searchParams ? await searchParams : {};
+  const range: EngagementRange = ["7d", "30d", "90d", "all"].includes(query.range || "") ? query.range as EngagementRange : "30d";
+  const engagement = getEngagementDashboardData(range);
   const caseStudies = db.prepare("SELECT id, title, tags, thumbnail_image, published FROM case_studies ORDER BY id DESC").all() as Array<{ id: number; title: string; tags: string; thumbnail_image: string; published: number }>;
   const insights = db.prepare("SELECT id, title, tags, thumbnail_image, published FROM insights ORDER BY id DESC").all() as Array<{ id: number; title: string; tags: string; thumbnail_image: string; published: number }>;
   const submissions = listSubmissions();
@@ -33,6 +36,24 @@ export default function AdminHomePage() {
 
   return <>
     <div className={styles.header}><div><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>Content control centre</p><DashboardGreeting /></div></div>
+    <section className={`${styles.panel} ${styles.engagementPanel}`} aria-labelledby="people-engagement">
+      <div className={styles.panelHeader}><div><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>PEOPLE &amp; ENGAGEMENT</p><h2 id="people-engagement" className="heading-02">How many people engaged with the work?</h2></div><span className={styles.panelNote}>Counts are tab-scoped sessions, not identified visitors.</span></div>
+      <nav className={styles.rangeTabs} aria-label="Engagement date range">{(["7d", "30d", "90d", "all"] as EngagementRange[]).map((value) => <Link key={value} href={value === "30d" ? "/admin" : `/admin?range=${value}`} aria-current={range === value ? "page" : undefined} className={range === value ? styles.rangeActive : undefined}>{value === "all" ? "All time" : `Last ${value.slice(0, -1)} days`}</Link>)}</nav>
+      <div className={styles.engagementStats}>
+        <EngagementStat value={engagement.counts.humans} label="Likely humans" detail="Sessions with combined attention and interaction evidence" />
+        <EngagementStat value={engagement.counts.explored} label="Explored" detail="At least one meaningful progression signal" />
+        <EngagementStat value={engagement.counts.engaged} label="Engaged" detail="Content-specific evidence of consumption" />
+        <EngagementStat value={engagement.counts.deep} label="Deep" detail="Sustained attention and substantial content depth" />
+      </div>
+      <p className={styles.funnelNote}>{engagement.counts.engaged} of {engagement.counts.humans} likely-human sessions engaged; {engagement.counts.deep} reached deep engagement.</p>
+      <div className={styles.qualityStrip}><span><strong>{engagement.counts.uncertain}</strong> uncertain</span><span><strong>{engagement.counts.likelyBot + engagement.counts.verifiedBot}</strong> observed automation ({engagement.counts.verifiedBot} verified, {engagement.counts.likelyBot} likely)</span><span><strong>{engagement.counts.portfolioExplorers}</strong> explored 3+ pages</span></div>
+      <p className={styles.coverageNote}>{engagement.trackingStart ? `Engagement tracking has data since ${new Date(`${engagement.trackingStart.replace(" ", "T")}Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}. Older traffic contains no attention or depth data.` : "No engagement sessions are available yet. New human-engagement tracking begins after this version is deployed; legacy view counts are shown separately below."} Browser-side tracking cannot observe crawlers that do not execute the site scripts.</p>
+    </section>
+    <section className={styles.panel} aria-labelledby="content-engagement"><div className={styles.panelHeader}><h2 id="content-engagement" className="heading-03">Content engagement</h2><span className={styles.panelNote}>Likely-human sessions only · {range === "all" ? "all time" : `last ${range.slice(0, -1)} days`}</span></div>
+      {engagement.content.length ? <div className={styles.tableWrap}><table className={styles.analyticsTable}><thead><tr><th>Content</th><th>Humans</th><th>Explored</th><th>Engaged</th><th>Deep</th><th>Median active</th><th>25 / 50 / 75 / 90 / end</th><th>Continued</th><th>Evidence opened</th></tr></thead><tbody>{engagement.content.map((item) => <tr key={item.key}><th scope="row"><Link href={analyticsHref(item.type, item.id, item.key)}>{item.title}</Link><small>{contentTypeLabel(item.type)}</small></th><td>{item.humans}</td><td>{item.explored}</td><td>{item.engaged}</td><td>{item.deep}</td><td>{formatDuration(item.medianAttention)}</td><td>{item.depth25} / {item.depth50} / {item.depth75} / {item.depth90} / {item.reachedEnd}</td><td>{item.onward}</td><td>{item.type === "service" ? item.evidenceOpened : "—"}</td></tr>)}</tbody></table></div> : <p className={styles.emptyAnalytics}>No likely-human sessions are available for this range. New metrics begin when tracking is deployed; missing historical data is not treated as zero engagement.</p>}
+    </section>
+    {engagement.chapters.length > 0 && <section className={styles.panel} aria-labelledby="chapter-depth"><div className={styles.panelHeader}><h2 id="chapter-depth" className="heading-03">Case-study chapter progression</h2><span className={styles.panelNote}>Distinct likely-human sessions reaching each chapter</span></div><div className={styles.chapterGrid}>{engagement.chapters.map((chapter) => <div className={styles.chapterRow} key={`${chapter.content_id}-${chapter.detail}`}><span>{chapter.detail}</span><small>{chapter.content_id}</small><strong>{chapter.count}</strong></div>)}</div></section>}
+    <section className={styles.panel} aria-labelledby="human-journeys"><div className={styles.panelHeader}><h2 id="human-journeys" className="heading-03">Anonymous human journeys</h2><span className={styles.panelNote}>Multi-page likely-human sessions; no visitor identity is collected</span></div>{engagement.journeys.length ? <div className={styles.journeyList}>{engagement.journeys.map((journey, index) => <details className={styles.journey} key={`${journey.started}-${index}`}><summary><span>{journey.source}</span><strong>{journey.pages.length} pages · {formatDuration(journey.duration)} · {journey.engagement}</strong><time>{new Date(`${journey.started.replace(" ", "T")}Z`).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</time></summary><ol>{journey.pages.map((page, pageIndex) => <li key={`${page.page_key}-${pageIndex}`}><span>{page.title || page.page_key}</span><small>{formatDuration(page.active_seconds)} active · {page.max_depth ? `${page.max_depth}% depth` : "no depth signal"}{page.chapter_count ? ` · ${page.chapter_count} chapters` : ""}</small></li>)}</ol>{journey.actions.length > 0 && <p className={styles.journeyActions}>Actions: {journey.actions.map((action) => action.detail.replaceAll("_", " ")).join(" · ")}</p>}</details>)}</div> : <p className={styles.emptyAnalytics}>No multi-page likely-human journeys are available in this range.</p>}</section>
     <section className={styles.dashboardSection} aria-labelledby="general-metrics"><SectionHeading id="general-metrics" title="General content metrics" /><div className={styles.stats}><ContentStat href="/admin/case-studies" value={publishedCaseStudies} label="Published case studies" /><ContentStat href="/admin/insights" value={publishedArticles} label="Published articles" /><ContentStat href="/admin/case-studies" value={draftCount} label="Drafts" detail="Articles + case studies" /></div></section>
     <section className={styles.dashboardSection} aria-labelledby="detailed-metrics"><SectionHeading id="detailed-metrics" title="Detailed content metrics" /><div className={styles.detailStats}><Metric value={contentViews} previous={previousContentViews} label="Unique views, last 30 days" /><Metric value={cvDownloads} previous={previousCvDownloads} label="CV downloads, last 30 days" /><Metric value={contactSubmissions} previous={previousContactSubmissions} label="Contact submissions, last 30 days" /></div></section>
     <MostReadPanel items={mostRead} />
@@ -43,6 +64,10 @@ export default function AdminHomePage() {
 }
 
 function SectionHeading({ id, title }: { id: string; title: string }) { return <h2 id={id} className={styles.sectionHeading}>{title}</h2>; }
+function EngagementStat({ value, label, detail }: { value: number; label: string; detail: string }) { return <div className={styles.engagementStat}><span className={styles.statValue}>{value.toLocaleString()}</span><strong>{label}</strong><small>{detail}</small></div>; }
+function formatDuration(seconds: number | null) { if (seconds === null) return "—"; if (seconds < 60) return `${seconds}s`; const minutes = Math.floor(seconds / 60); const remainder = seconds % 60; return `${minutes}m ${String(remainder).padStart(2, "0")}s`; }
+function contentTypeLabel(type: string) { return ({ case_study: "Case study", article: "Article", service: "Service page", home: "Home", work_index: "Work index", articles_index: "Articles index", services_index: "Services index", about: "About", contact: "Contact", page: "Page" } as Record<string, string>)[type] || type; }
+function analyticsHref(type: string, id: string, key: string) { if (type === "case_study") return `/work/${id}`; if (type === "article") return `/insights/${id}`; if (type === "service") return `/services/${id}`; return key; }
 function ContentStat({ href, value, label, detail }: { href: string; value: number; label: string; detail?: string }) { return <Link href={href} className={styles.stat}><span className={styles.statValue}>{value}</span><span className="body-small">{label}</span>{detail && <span className={styles.statDetail}>{detail}</span>}</Link>; }
 function Metric({ value, previous, label }: { value: number; previous: number; label: string }) {
   const direction = value > previous ? "up" : value < previous ? "down" : "same";

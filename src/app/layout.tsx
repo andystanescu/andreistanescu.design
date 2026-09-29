@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Mono, Inter } from "next/font/google";
 import { ScrollToTop } from "@/components/ScrollToTop/ScrollToTop";
 import { PageTransition } from "@/components/PageTransition/PageTransition";
+import { EngagementTracker } from "@/components/EngagementTracker/EngagementTracker";
 import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           description: "Design systems, product architecture and AI-enabled design operations.",
         }) }} />
         <ScrollToTop />
+        <EngagementTracker />
         <PageTransition>{children}</PageTransition>
       </body>
     </html>

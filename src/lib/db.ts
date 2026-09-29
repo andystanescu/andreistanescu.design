@@ -115,6 +115,54 @@ function initializeDatabase() {
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
+  CREATE TABLE IF NOT EXISTS engagement_sessions (
+    session_id TEXT PRIMARY KEY,
+    actor_class TEXT NOT NULL DEFAULT 'uncertain',
+    source TEXT NOT NULL DEFAULT 'Direct',
+    started_at TEXT NOT NULL DEFAULT (datetime('now')),
+    last_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+    page_count INTEGER NOT NULL DEFAULT 0,
+    interaction_count INTEGER NOT NULL DEFAULT 0,
+    active_seconds INTEGER NOT NULL DEFAULT 0,
+    duration_seconds INTEGER NOT NULL DEFAULT 0,
+    engagement_level TEXT NOT NULL DEFAULT 'visited'
+  );
+
+  CREATE TABLE IF NOT EXISTS engagement_pages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    page_key TEXT NOT NULL,
+    title TEXT NOT NULL DEFAULT '',
+    content_type TEXT NOT NULL DEFAULT 'page',
+    content_id TEXT NOT NULL DEFAULT '',
+    first_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+    last_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+    active_seconds INTEGER NOT NULL DEFAULT 0,
+    max_depth INTEGER NOT NULL DEFAULT 0,
+    chapter_count INTEGER NOT NULL DEFAULT 0,
+    interaction_count INTEGER NOT NULL DEFAULT 0,
+    engagement_level TEXT NOT NULL DEFAULT 'visited',
+    UNIQUE(session_id, page_key)
+  );
+
+  CREATE TABLE IF NOT EXISTS engagement_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_key TEXT NOT NULL UNIQUE,
+    session_id TEXT NOT NULL,
+    page_key TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    content_type TEXT NOT NULL DEFAULT 'page',
+    content_id TEXT NOT NULL DEFAULT '',
+    detail TEXT NOT NULL DEFAULT '',
+    value INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS engagement_sessions_started ON engagement_sessions(started_at);
+  CREATE INDEX IF NOT EXISTS engagement_sessions_actor ON engagement_sessions(actor_class, started_at);
+  CREATE INDEX IF NOT EXISTS engagement_pages_content ON engagement_pages(content_type, content_id, first_seen_at);
+  CREATE INDEX IF NOT EXISTS engagement_events_session ON engagement_events(session_id, created_at);
+
   CREATE TABLE IF NOT EXISTS pages (
     slug TEXT PRIMARY KEY,
     eyebrow TEXT NOT NULL DEFAULT '',
