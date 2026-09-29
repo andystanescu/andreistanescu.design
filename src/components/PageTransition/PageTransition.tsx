@@ -32,7 +32,11 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
     const destination = new URL(href, window.location.href);
     if (destination.origin !== window.location.origin) return;
-    if (destination.pathname === window.location.pathname && destination.search === window.location.search) return;
+    // Same-route filter and anchor links can update search params without
+    // changing the pathname. Let Next handle those directly: the page-exit
+    // animation only resets on pathname changes and would otherwise leave the
+    // current content hidden after a query-only navigation.
+    if (destination.pathname === window.location.pathname) return;
 
     const destinationUrl = `${destination.pathname}${destination.search}${destination.hash}`;
 
