@@ -114,7 +114,12 @@ export function recordEngagementBatch(sessionId: string, events: EngagementInput
     let actor = verifiedBot ? "verified_bot" : session.actor_class;
     if (actor !== "verified_bot") {
       if (session.page_count >= 8 && elapsed < 15 && session.interaction_count === 0 && session.active_seconds === 0) actor = "likely_bot";
-      else if ((session.interaction_count >= 2 && session.active_seconds >= 15) || (session.interaction_count >= 1 && pageRows.some((page) => page.max_depth >= 50 || page.chapter_count >= 2))) actor = "likely_human";
+      // Any recorded pointer, keyboard, scroll, or explicit action is direct
+      // evidence of user input. Attention time is only accumulated after such
+      // input while the tab remains focused, so a modest attention threshold
+      // is also useful for readers who do not continue interacting. A single
+      // chapter observation is content-specific evidence of active reading.
+      else if (session.interaction_count >= 1 || session.active_seconds >= 20 || pageRows.some((page) => page.chapter_count > 0)) actor = "likely_human";
     }
     const groups = new Set(pageRows.map((page) => page.content_type));
     let engagement = pageRows.reduce((level, page) => maxLevel(level, page.engagement_level), "visited");
@@ -135,6 +140,14 @@ function rangeSql(range: EngagementRange, column = "s.started_at") { return rang
 const median = (values: number[]) => { if (!values.length) return null; const sorted = [...values].sort((a, b) => a - b); const mid = Math.floor(sorted.length / 2); return sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2); };
 
 export function getEngagementDashboardData(range: EngagementRange) {
+  // Apply the more inclusive evidence rule to previously recorded uncertain
+  // sessions too; otherwise only visits that send a future event would ever
+  // benefit from the classifier update.
+  db.prepare(`UPDATE engagement_sessions SET actor_class = 'likely_human'
+    WHERE actor_class = 'uncertain' AND (
+      interaction_count >= 1 OR active_seconds >= 20 OR
+      session_id IN (SELECT session_id FROM engagement_pages WHERE chapter_count > 0)
+    )`).run();
   const filter = rangeSql(range);
   const rows = db.prepare(`SELECT s.*, (SELECT COUNT(*) FROM engagement_pages p WHERE p.session_id=s.session_id) AS page_total FROM engagement_sessions s WHERE 1=1${filter.clause}`).all(...filter.params) as Array<{ session_id: string; actor_class: string; source: string; started_at: string; last_seen_at: string; page_count: number; interaction_count: number; active_seconds: number; duration_seconds: number; engagement_level: string; page_total: number }>;
   const human = rows.filter((row) => row.actor_class === "likely_human");
@@ -161,7 +174,10 @@ export function getEngagementDashboardData(range: EngagementRange) {
   }
   const content = [...contentMap.values()].map((item) => ({ ...item, medianAttention: median(item.attention) })).sort((a, b) => b.humans - a.humans || a.title.localeCompare(b.title));
   for (const item of content) {
-    const pageKey = item.id ? `/${item.type === "case_study" ? "work" : item.type === "article" ? "insights" : item.type === "service" ? "services" : ""}/${item.id}` : item.key;
+    const separator = item.key.indexOf(":");
+    const pageKey = item.id
+      ? `/${item.type === "case_study" ? "work" : item.type === "article" ? "insights" : item.type === "service" ? "services" : ""}/${item.id}`
+      : separator >= 0 ? item.key.slice(separator + 1) : item.key;
     const filterClause = filter.clause.replace("s.started_at", "s.started_at");
     item.onward = (db.prepare(`SELECT COUNT(DISTINCT e.session_id) AS count FROM engagement_events e JOIN engagement_sessions s USING(session_id)
       WHERE s.actor_class='likely_human'${filterClause} AND e.event_type='page_view' AND e.page_key = ? AND EXISTS

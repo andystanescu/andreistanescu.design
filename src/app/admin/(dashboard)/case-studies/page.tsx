@@ -38,12 +38,7 @@ export default function AdminCaseStudiesPage() {
                 <div className={styles.listItemMeta}>
                   <p className="body-default">
                     {study.title}
-                    {!study.published && (
-                      <span className={styles.unpublished}> — unpublished</span>
-                    )}
-                    {Boolean(study.published && study.in_progress) && (
-                      <span className={styles.unpublished}> — in progress</span>
-                    )}
+                    <span className={styles.unpublished}> — {study.published ? study.in_progress ? "published · in progress" : "published" : "draft"}</span>
                     {study.body_draft !== null && (
                       <span className={styles.unpublished}> — body draft</span>
                     )}
@@ -83,7 +78,7 @@ export default function AdminCaseStudiesPage() {
                     </button>
                   </form>
                   <form action={`/api/admin/case-studies/${study.id}/toggle`} method="POST">
-                    <button type="submit" className={`${styles.publishSwitch} ${study.published ? styles.publishSwitchOn : ""}`} aria-label={study.published ? "Unpublish case study" : "Publish case study"} title={study.published ? "Unpublish case study" : "Publish case study"}>
+                    <button type="submit" className={`${styles.publishSwitch} ${study.published ? styles.publishSwitchOn : ""}`} aria-label={study.published ? "Unpublish case study" : "Publish case study"} aria-pressed={Boolean(study.published)} title={study.published ? "Unpublish case study" : "Publish case study"}>
                       <span className={styles.publishSwitchKnob} aria-hidden="true" />
                     </button>
                   </form>

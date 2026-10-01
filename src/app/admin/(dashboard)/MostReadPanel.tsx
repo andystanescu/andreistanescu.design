@@ -19,8 +19,8 @@ export function MostReadPanel({ items }: { items: MostReadItem[] }) {
   return (
     <section className={styles.panel} aria-labelledby="most-read">
       <div className={styles.panelHeader}>
-        <h2 id="most-read" className="heading-03">Most read, last 30 days</h2>
-        <span className={styles.panelNote}>What&apos;s actually resonating</span>
+        <h2 id="most-read" className="heading-03">Most viewed, last 30 days</h2>
+        <span className={styles.panelNote}>Recorded page views</span>
       </div>
       {items.length ? (
         <>
@@ -40,7 +40,7 @@ export function MostReadPanel({ items }: { items: MostReadItem[] }) {
           </div>
           {hasMore && (
             <div className={styles.readListFooter}>
-              <span>{expanded ? `Showing all ${items.length}` : `+${items.length - 3} more with unique views`}</span>
+              <span>{expanded ? `Showing all ${items.length}` : `+${items.length - 3} more with recorded views`}</span>
               <button type="button" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}>
                 {expanded ? "Show top 3" : "View all"}
                 <span aria-hidden="true">{expanded ? "−" : "+"}</span>

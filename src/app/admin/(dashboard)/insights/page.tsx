@@ -20,7 +20,7 @@ export default function AdminInsightsPage() {
       <div className={styles.pageHeader}><h1 className="heading-01">Insights</h1><Link href="/admin/insights/new" className={styles.newLink}>New article</Link></div>
       <AdminTabs tabs={INSIGHTS_TABS} active="/admin/insights" />
       <div className={styles.toolbar}>
-        <p className="heading-02">Published articles</p>
+        <p className="heading-02">All articles</p>
       </div>
 
       {insights.length === 0 ? (
@@ -40,14 +40,10 @@ export default function AdminInsightsPage() {
                 <div className={styles.listItemMeta}>
                   <p className="body-default">
                     {insight.title}
-                    {insight.published && insight.scheduled_at && insight.scheduled_at > now ? (
-                      <span className={styles.unpublished}> — scheduled</span>
-                    ) : !insight.published && (
-                      <span className={styles.unpublished}> — unpublished</span>
-                    )}
+                    <span className={styles.unpublished}> — {insight.published && insight.scheduled_at && insight.scheduled_at > now ? "scheduled" : insight.published ? "published" : "draft"}</span>
                   </p>
                   <p className="body-small" style={{ color: "var(--text-tertiary)" }}>
-                    /insights/{insight.slug} · {insight.scheduled_at && insight.scheduled_at > now ? `publishes ${insight.scheduled_at.replace("T", " ")} UK time` : insight.published_at}
+                    /insights/{insight.slug} · {insight.published && insight.scheduled_at && insight.scheduled_at > now ? `publishes ${insight.scheduled_at.replace("T", " ")} UK time` : insight.published_at}
                   </p>
                 </div>
                 <div className={styles.listItemActions}>
@@ -81,7 +77,7 @@ export default function AdminInsightsPage() {
                     </button>
                   </form>
                   <form action={`/api/admin/insights/${insight.id}/toggle`} method="POST">
-                    <button type="submit" className={`${styles.publishSwitch} ${insight.published ? styles.publishSwitchOn : ""}`} aria-label={insight.published ? "Unpublish article" : "Publish article"} title={insight.published ? "Unpublish article" : "Publish article"}>
+                    <button type="submit" className={`${styles.publishSwitch} ${insight.published ? styles.publishSwitchOn : ""}`} aria-label={insight.published ? "Unpublish article" : "Publish article"} aria-pressed={Boolean(insight.published)} title={insight.published ? "Unpublish article" : "Publish article"}>
                       <span className={styles.publishSwitchKnob} aria-hidden="true" />
                     </button>
                   </form>
