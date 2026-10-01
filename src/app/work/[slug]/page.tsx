@@ -46,6 +46,15 @@ function relatedStudyRank(currentSlug: string, candidateSlug: string) {
   return hash;
 }
 
+function splitHtmlAfterHeading(html: string, headingId: string) {
+  const escapedId = headingId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const headingPattern = new RegExp(`<h[23]\\b(?=[^>]*\\bid="${escapedId}")[^>]*>[\\s\\S]*?<\\/h[23]>`, "i");
+  const match = headingPattern.exec(html);
+  if (!match || match.index === undefined) return null;
+  const splitAt = match.index + match[0].length;
+  return { before: html.slice(0, splitAt), after: html.slice(splitAt) };
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const study = getCaseStudyBySlug(slug);
@@ -92,8 +101,11 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
     .map(({ item }) => item));
   const likelyAdditional = applicableEngagement.filter((item) => !likelyDisplayed.includes(item));
   const primaryDrivers = getPrimaryComplexityDrivers(assessment.scores);
-  const assessmentToc = hasAssessment ? [{ id: "assessment-overview", text: "Assessment" }] : [];
-  const pageToc = [...assessmentToc, ...toc];
+  const assessmentSplit = hasAssessment && assessment.placement !== "start" ? splitHtmlAfterHeading(bodyHtml, assessment.placement) : null;
+  const assessmentPlacementIndex = assessmentSplit ? toc.findIndex((item) => item.id === assessment.placement) : -1;
+  const pageToc = [...toc];
+  if (hasAssessment) pageToc.splice(assessmentPlacementIndex >= 0 ? assessmentPlacementIndex + 1 : 0, 0, { id: "assessment-overview", text: "Assessment" });
+  const assessmentBlock = hasAssessment ? <AssessmentDisclosure overall={assessment.overall} interpretation={assessment.overallDescription} dimensions={assessmentCriteriaList.map((criterion) => ({ label: criterion.label, score: assessment.scores[criterion.key] || 0 }))}><section id="engagement-assessment" className={styles.assessment}><div className={styles.assessmentHeader}><div><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>ASSESSMENT</p><h2 className="heading-02">A clearer view of the work ahead.</h2><p className="body-default">A practical record of the complexity observed, the activities likely to help, and the work that was actually conducted.</p></div></div><div className={styles.assessmentGrid}><div className={styles.assessmentScores}><h3 id="complexity-profile" className="heading-03">Complexity profile</h3>{assessmentCriteriaList.map((criterion) => { const score=assessment.scores[criterion.key] || 0; return <div className={styles.assessmentScore} key={criterion.key}><ComplexityMetricIcon criterion={criterion.key} /><div className={styles.assessmentScoreMeta}><span>{criterion.label}</span><div className={styles.assessmentScoreValue}><strong>{score ? `${score} / 5` : "—"}</strong>{primaryDrivers.includes(criterion.key) && <em className={styles.primaryDriver}>Primary driver</em>}</div></div><div className={styles.scoreTrack}><i style={{ width: `${Math.min(100, score / 5 * 100)}%` }} /></div></div>; })}</div><div className={styles.assessmentAside}>{assessment.overall && <div className={styles.assessmentSummary}><span>OVERALL COMPLEXITY</span><strong>{assessment.overall}</strong><p>{assessment.overallDescription}</p></div>}<div className={styles.assessmentLists}><div><h3 id="likely-engagement" className="heading-03">Likely engagement</h3><EngagementActivities visibleActivities={likelyDisplayed} additionalActivities={likelyAdditional} conductedActivities={assessment.conducted} /></div></div></div></div></section></AssessmentDisclosure> : null;
 
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
@@ -108,8 +120,7 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
       {showInProgress && <section className={`container ${styles.inProgress}`}><span className={styles.inProgressBadge}>Write-up in progress</span><h2>The results are in. The story behind them is still being written.</h2><p>This case study is being written up in full—the challenge, the shift in approach, and what was built. The outcomes above are real and already delivered; the full narrative is still being prepared.</p></section>}
       {!showInProgress && <div className={`container ${styles.layout}`}>
         {(pageToc.length > 0 || relatedReadings.length > 0) && <aside className={styles.toc}><TableOfContents items={pageToc} relatedReadings={relatedReadings} /><RelatedReadingList items={relatedReadings} desktopOnly /></aside>}
-        <article className={styles.articleBody}>{hasAssessment && <AssessmentDisclosure overall={assessment.overall} interpretation={assessment.overallDescription} dimensions={assessmentCriteriaList.map((criterion) => ({ label: criterion.label, score: assessment.scores[criterion.key] || 0 }))}><section id="engagement-assessment" className={styles.assessment}><div className={styles.assessmentHeader}><div><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>CONSCEPT ENGAGEMENT ASSESSMENT</p><h2 className="heading-02">A clearer view of the work ahead.</h2><p className="body-default">A practical record of the complexity observed, the activities likely to help, and the work that was actually conducted.</p></div></div><div className={styles.assessmentGrid}><div className={styles.assessmentScores}><h3 id="complexity-profile" className="heading-03">Complexity profile</h3>{assessmentCriteriaList.map((criterion) => { const score=assessment.scores[criterion.key] || 0; return <div className={styles.assessmentScore} key={criterion.key}><ComplexityMetricIcon criterion={criterion.key} /><div className={styles.assessmentScoreMeta}><span>{criterion.label}</span><div className={styles.assessmentScoreValue}><strong>{score ? `${score} / 5` : "—"}</strong>{primaryDrivers.includes(criterion.key) && <em className={styles.primaryDriver}>Primary driver</em>}</div></div><div className={styles.scoreTrack}><i style={{ width: `${Math.min(100, score / 5 * 100)}%` }} /></div></div>; })}</div><div className={styles.assessmentAside}>{assessment.overall && <div className={styles.assessmentSummary}><span>OVERALL COMPLEXITY</span><strong>{assessment.overall}</strong><p>{assessment.overallDescription}</p></div>}<div className={styles.assessmentLists}><div><h3 id="likely-engagement" className="heading-03">Likely engagement</h3><EngagementActivities visibleActivities={likelyDisplayed} additionalActivities={likelyAdditional} conductedActivities={assessment.conducted} /></div></div></div></div></section></AssessmentDisclosure>}
-        <RichContent html={bodyHtml} />
+        <article className={styles.articleBody}>{assessmentBlock && !assessmentSplit && assessmentBlock}{assessmentSplit ? <><RichContent html={assessmentSplit.before} />{assessmentBlock}<RichContent html={assessmentSplit.after} /></> : <RichContent html={bodyHtml} />}
       </article>
       </div>}
       {(previous || next) && <nav className={`container ${styles.caseNav}`} aria-label="Case study navigation">{previous ? <Link href={`/work/${previous.slug}`}><span>Previous case study</span><strong>{previous.title}</strong></Link> : <span />}{next ? <Link href={`/work/${next.slug}`} className={styles.next}><span>Next case study</span><strong>{next.title}</strong></Link> : <span />}</nav>}

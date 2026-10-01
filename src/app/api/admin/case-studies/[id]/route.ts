@@ -7,6 +7,7 @@ import { assessmentCriteriaList, getPrimaryComplexityDrivers } from "@/data/case
 import bcrypt from "bcryptjs";
 import { getSettings } from "@/lib/settings";
 import { dateInputValue } from "@/lib/dateUtils";
+import { addHeadingIds } from "@/lib/tableOfContents";
 
 export async function POST(
   request: NextRequest,
@@ -33,6 +34,8 @@ export async function POST(
   const author = getSettings().author_name;
   const tags = String(form.get("tags") ?? "").trim();
   const body = applyHeadingAccents(String(form.get("body") ?? "").trim());
+  const requestedAssessmentPlacement = String(form.get("assessment_placement") ?? "start");
+  const assessmentPlacement = requestedAssessmentPlacement === "start" || addHeadingIds(body).toc.some((heading) => heading.id === requestedAssessmentPlacement) ? requestedAssessmentPlacement : "start";
   const metaTitle = String(form.get("meta_title") ?? "").trim();
   const metaDescription = String(form.get("meta_description") ?? "").trim();
   const metaKeywords = String(form.get("meta_keywords") ?? "").trim();
@@ -61,6 +64,7 @@ export async function POST(
     likelyEngagement: form.getAll("assessment_likely").map(String).filter(Boolean),
     conducted: form.getAll("assessment_conducted").map(String).filter(Boolean),
     notApplicable: form.getAll("assessment_not_applicable").map(String).filter(Boolean),
+    placement: assessmentPlacement,
   });
 
   if (!slug || !title || !description) {

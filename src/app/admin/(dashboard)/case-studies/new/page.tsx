@@ -17,7 +17,7 @@ export default async function NewCaseStudyPage({
     metrics: "[]", assessment: "{}", password_required: 0, password_hashes: "[]", author: settings.author_name,
     published_at: "", meta_title: "", meta_description: "", meta_keywords: "", canonical_url: "", og_image: "", no_index: 0,
   } satisfies CaseStudy;
-  const assessment = { scores: {}, likelyEngagement: [], conducted: [], notApplicable: [], overall: "", overallDescription: "", primaryDrivers: [] };
+  const assessment = { scores: {}, likelyEngagement: [], conducted: [], notApplicable: [], overall: "", overallDescription: "", primaryDrivers: [], placement: "start" };
   const services = getServiceItems().map((service) => ({ slug: service.slug, title: service.title }));
   const relatedReadings = getRelatedReadingOptions();
 

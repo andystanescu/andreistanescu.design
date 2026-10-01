@@ -71,10 +71,10 @@ export function generateActivityRecommendations(scores: AssessmentScores): Recom
   return [...activityMap.values()];
 }
 
-export type CaseStudyAssessment = { scores: AssessmentScores; likelyEngagement: string[]; conducted: string[]; notApplicable: string[]; overall: string; overallDescription: string; primaryDrivers: CriterionKey[] };
+export type CaseStudyAssessment = { scores: AssessmentScores; likelyEngagement: string[]; conducted: string[]; notApplicable: string[]; overall: string; overallDescription: string; primaryDrivers: CriterionKey[]; placement: string };
 export function parseCaseStudyAssessment(value: string | undefined): CaseStudyAssessment {
-  try { const parsed = JSON.parse(value || "{}"); return { scores: parsed?.scores && typeof parsed.scores === "object" ? parsed.scores : {}, likelyEngagement: Array.isArray(parsed?.likelyEngagement) ? parsed.likelyEngagement : [], conducted: Array.isArray(parsed?.conducted) ? parsed.conducted : [], notApplicable: Array.isArray(parsed?.notApplicable) ? parsed.notApplicable : [], overall: typeof parsed?.overall === "string" ? parsed.overall : "", overallDescription: typeof parsed?.overallDescription === "string" ? parsed.overallDescription : "", primaryDrivers: Array.isArray(parsed?.primaryDrivers) ? parsed.primaryDrivers : [] }; }
-  catch { return { scores: {}, likelyEngagement: [], conducted: [], notApplicable: [], overall: "", overallDescription: "", primaryDrivers: [] }; }
+  try { const parsed = JSON.parse(value || "{}"); return { scores: parsed?.scores && typeof parsed.scores === "object" ? parsed.scores : {}, likelyEngagement: Array.isArray(parsed?.likelyEngagement) ? parsed.likelyEngagement : [], conducted: Array.isArray(parsed?.conducted) ? parsed.conducted : [], notApplicable: Array.isArray(parsed?.notApplicable) ? parsed.notApplicable : [], overall: typeof parsed?.overall === "string" ? parsed.overall : "", overallDescription: typeof parsed?.overallDescription === "string" ? parsed.overallDescription : "", primaryDrivers: Array.isArray(parsed?.primaryDrivers) ? parsed.primaryDrivers : [], placement: typeof parsed?.placement === "string" ? parsed.placement : "start" }; }
+  catch { return { scores: {}, likelyEngagement: [], conducted: [], notApplicable: [], overall: "", overallDescription: "", primaryDrivers: [], placement: "start" }; }
 }
 
 export function getActivityDescription(name: string) {

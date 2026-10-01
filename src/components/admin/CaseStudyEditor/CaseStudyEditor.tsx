@@ -13,6 +13,7 @@ import { dateInputValue } from "@/lib/dateUtils";
 import { MetadataFields } from "@/components/admin/MetadataFields/MetadataFields";
 import Link from "next/link";
 import type { RelatedReadingOption } from "@/lib/relatedReadings";
+import { addHeadingIds } from "@/lib/tableOfContents";
 
 type ServiceOption = { slug: string; title: string };
 type PasswordEntry = { name: string; masked: string };
@@ -45,6 +46,10 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
   const primaryDrivers = useMemo(() => getPrimaryComplexityDrivers(Object.fromEntries(Object.entries(scores).map(([key, value]) => [key, Number(value)]))), [scores]);
   const recommendations = useMemo(() => generateActivityRecommendations(Object.fromEntries(Object.entries(scores).map(([key, value]) => [key, Number(value)]))), [scores]);
   const [notApplicable, setNotApplicable] = useState<string[]>(assessment.notApplicable);
+  const bodyHeadings = useMemo(() => addHeadingIds(bodyValue).toc, [bodyValue]);
+  const placementExists = assessment.placement === "start" || bodyHeadings.some((heading) => heading.id === assessment.placement);
+  const [assessmentPlacement, setAssessmentPlacement] = useState(placementExists ? assessment.placement : "start");
+  const selectedAssessmentPlacement = assessmentPlacement === "start" || bodyHeadings.some((heading) => heading.id === assessmentPlacement) ? assessmentPlacement : "start";
   const recommendationGroups = useMemo(() => assessmentCriteriaList.map((criterion) => ({
     criterion,
     activities: recommendations.filter((activity) => activity.triggeredBy[0]?.criterion === criterion.key),
@@ -125,8 +130,9 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
         <div className={adminStyles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Metrics (up to 6)</span>{Array.from({ length: 6 }, (_, i) => { const metric = metrics[i]; return <div key={i} className={styles.metricRow}><input name={`metric_${i + 1}_value`} defaultValue={metric?.value} placeholder="40+" className={adminStyles.input} /><input name={`metric_${i + 1}_label`} defaultValue={metric?.label} placeholder="Reusable components" className={adminStyles.input} /></div>; })}</div>
       </section>
 
-      <section id="case-study-panel-assessment" role="tabpanel" aria-labelledby="case-study-tab-assessment" hidden={tab !== "assessment"} className={styles.panel} aria-label="ConScept engagement assessment">
-        <div className={styles.sectionIntro}><span className="label-eyebrow">ConScept engagement assessment</span><p className="body-default">Record the complexity you observed, what the assessment suggests, and what was actually conducted.</p></div>
+      <section id="case-study-panel-assessment" role="tabpanel" aria-labelledby="case-study-tab-assessment" hidden={tab !== "assessment"} className={styles.panel} aria-label="Assessment">
+        <div className={styles.sectionIntro}><span className="label-eyebrow">Assessment</span><p className="body-default">Record the complexity you observed, what the assessment suggests, and what was actually conducted.</p></div>
+        <Field label="Position in the case study"><select name="assessment_placement" value={selectedAssessmentPlacement} onChange={(event) => setAssessmentPlacement(event.target.value)} className={adminStyles.input}><option value="start">Before the case study story</option>{bodyHeadings.map((heading) => <option key={heading.id} value={heading.id}>After “{heading.text}”</option>)}</select></Field>
         <div className={styles.assessmentGrid}>
           <div><h2 className="heading-03">Complexity scores</h2>{assessmentCriteriaList.map((criterion) => { const selectedScore = Number(scores[criterion.key]); const selectedLevel = selectedScore >= 1 && selectedScore <= 5 ? criterion.levels[selectedScore as 1 | 2 | 3 | 4 | 5] : undefined; return <div className={styles.scoreRow} key={criterion.key}><div><strong>{criterion.label}{primaryDrivers.includes(criterion.key) && <span className={styles.driverBadge}>Primary driver</span>}</strong><small>{criterion.question}</small><input type="hidden" name={`assessment_score_${criterion.key}`} value={scores[criterion.key]} /></div><div className={styles.scoreControl}><div className={styles.segmented} role="group" aria-label={`${criterion.label} score`}>{([1, 2, 3, 4, 5] as const).map((score) => <button key={score} type="button" className={scores[criterion.key] === String(score) ? styles.segmentActive : styles.segment} aria-pressed={scores[criterion.key] === String(score)} onClick={() => setScores((current) => ({ ...current, [criterion.key]: String(score) }))}><span>{score}</span><small>{criterion.levels[score].label}</small></button>)}</div>{selectedLevel && <p className={styles.scoreDescription}>{selectedLevel.description}</p>}</div></div>; })}</div>
           <div><h2 className="heading-03">Overall complexity</h2><input type="hidden" name="assessment_overall" value={overallLabel} /><p className="body-small">A default is selected from the completed scores. You can choose another label without changing the scores.</p><div className={styles.overallOptions} role="group" aria-label="Overall complexity">{overallOptions.map((label) => <button key={label} type="button" className={overallLabel === label ? styles.overallOptionActive : styles.overallOption} aria-pressed={overallLabel === label} onClick={() => setOverallOverride(label)}><strong>{label}</strong><small>{overallDescriptions[label]}</small></button>)}</div><Field label="Additional details"><textarea name="assessment_overall_description" defaultValue={assessment.overallDescription} placeholder="What makes this engagement complex?" className={adminStyles.textarea} /></Field></div>
