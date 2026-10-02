@@ -287,6 +287,7 @@ db.exec(`
 addColumnIfMissing("case_studies", "category", "category TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "year", "year TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "project_role", "project_role TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("case_studies", "contribution", "contribution TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "timeline", "timeline TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "scope", "scope TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "team", "team TEXT NOT NULL DEFAULT ''");

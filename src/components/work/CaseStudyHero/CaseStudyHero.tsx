@@ -16,6 +16,7 @@ type CaseStudyHeroProps = {
   publicationDetails?: string;
   tags?: string;
   role?: string;
+  contribution?: string;
   timeline?: string;
   scope?: string;
   team?: string;
@@ -25,7 +26,7 @@ type CaseStudyHeroProps = {
   metrics: ImpactMetric[];
 };
 
-export function CaseStudyHero({ slug, category, company, title, summary, author, publicationDetails, tags, role, timeline, scope, team, coverImage, impactEyebrow = "Impact", impactTitle, metrics }: CaseStudyHeroProps) {
+export function CaseStudyHero({ slug, category, company, title, summary, author, publicationDetails, tags, role, contribution, timeline, scope, team, coverImage, impactEyebrow = "Impact", impactTitle, metrics }: CaseStudyHeroProps) {
   const descriptors = [category, company]
     .filter((value): value is string => Boolean(value))
     .filter((value, index, values) => values.findIndex((candidate) => candidate.toLowerCase() === value.toLowerCase()) === index);
@@ -40,7 +41,7 @@ export function CaseStudyHero({ slug, category, company, title, summary, author,
           <p className={`body-large ${styles.summary}`}>{summary}</p>
           <div className={styles.projectMeta}>
             <p className={`label-eyebrow ${styles.metaLabel}`}>Project meta</p>
-            <ProjectMetadata items={[{ label: "Role", value: role || "" }, { label: "Timeline", value: timeline || "" }, { label: "Scope", value: scope || "" }, { label: "Team", value: team || "" }]} />
+            <ProjectMetadata items={[{ label: "Role", value: role || "" }, { label: "My contribution", value: contribution || "" }, { label: "Timeline", value: timeline || "" }, { label: "Scope", value: scope || "" }, { label: "Team", value: team || "" }]} />
             <div className={styles.publicationMeta}>
               <AuthorAvatar author={author} />
               {publicationDetails && <p className="body-small">{publicationDetails}</p>}

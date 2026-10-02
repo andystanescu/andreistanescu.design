@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
   const category = String(form.get("category") ?? "").trim();
   const year = String(form.get("year") ?? "").trim();
   const projectRole = String(form.get("project_role") ?? "").trim();
+  const contribution = String(form.get("contribution") ?? "").trim();
   const timeline = String(form.get("timeline") ?? "").trim();
   const scope = String(form.get("scope") ?? "").trim();
   const team = String(form.get("team") ?? "").trim();
@@ -46,14 +47,15 @@ export async function POST(request: NextRequest) {
 
   try {
     db.prepare(
-      `INSERT INTO case_studies (slug, eyebrow, category, year, project_role, timeline, scope, team, title, description, tags, body, cover_image, thumbnail_image, position, published, in_progress, author, published_at, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index)
-       VALUES (${Array(25).fill("?").join(",")})`
+      `INSERT INTO case_studies (slug, eyebrow, category, year, project_role, contribution, timeline, scope, team, title, description, tags, body, cover_image, thumbnail_image, position, published, in_progress, author, published_at, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index)
+       VALUES (${Array(26).fill("?").join(",")})`
     ).run(
       slug,
       eyebrow,
       category,
       year,
       projectRole,
+      contribution,
       timeline,
       scope,
       team,

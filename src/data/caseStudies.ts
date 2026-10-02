@@ -10,6 +10,7 @@ export type CaseStudy = {
   category: string;
   year: string;
   project_role: string;
+  contribution: string;
   timeline: string;
   scope: string;
   team: string;
