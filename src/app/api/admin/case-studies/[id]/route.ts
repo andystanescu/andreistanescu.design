@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resolveImageField } from "@/lib/uploads";
 import { applyHeadingAccents } from "@/lib/headingAccents";
-import { assessmentCriteriaList, getPrimaryComplexityDrivers } from "@/data/caseStudyAssessment";
+import { assessmentCriteriaList, getPrimaryComplexityDrivers, type EditableEngagement } from "@/data/caseStudyAssessment";
 import bcrypt from "bcryptjs";
 import { getSettings } from "@/lib/settings";
 import { dateInputValue } from "@/lib/dateUtils";
@@ -19,6 +19,33 @@ export async function POST(
   if (intent === "discard_body_draft") {
     db.prepare("UPDATE case_studies SET body_draft = NULL, body_draft_enabled = 0 WHERE id = ?").run(id);
     return NextResponse.json({ discarded: true });
+  }
+  if (intent === "save_assessment_engagements") {
+    const row = db.prepare("SELECT assessment FROM case_studies WHERE id = ?").get(id) as { assessment: string } | undefined;
+    if (!row) return NextResponse.json({ error: "Case study not found." }, { status: 404 });
+    let currentAssessment: Record<string, unknown> = {};
+    let parsedEngagements: unknown;
+    try {
+      currentAssessment = JSON.parse(row.assessment || "{}") as Record<string, unknown>;
+      parsedEngagements = JSON.parse(String(form.get("assessment_engagements") ?? "{}"));
+    } catch {
+      return NextResponse.json({ error: "Engagement data could not be read." }, { status: 400 });
+    }
+    const engagements = Object.fromEntries(assessmentCriteriaList.map(({ key }) => [key, (Array.isArray((parsedEngagements as Record<string, unknown> | null)?.[key]) ? (parsedEngagements as Record<string, unknown[]>)[key] : [])
+      .filter((item: unknown): item is EditableEngagement => Boolean(item) && typeof item === "object" && typeof (item as EditableEngagement).id === "string" && typeof (item as EditableEngagement).title === "string" && typeof (item as EditableEngagement).description === "string")
+      .map((item: EditableEngagement) => ({ id: item.id.slice(0, 180), title: item.title.trim().slice(0, 180), description: item.description.trim().slice(0, 2000) }))
+      .filter((item: EditableEngagement) => item.id && item.title)]));
+    const conductedIds = form.getAll("assessment_conducted_engagement_id").map(String).filter(Boolean);
+    const flattened = Object.values(engagements).flat();
+    const nextAssessment = {
+      ...currentAssessment,
+      engagements,
+      likelyEngagement: flattened.map((item) => item.title),
+      conductedEngagementIds: conductedIds,
+      conducted: flattened.filter((item) => conductedIds.includes(item.id)).map((item) => item.title),
+    };
+    db.prepare("UPDATE case_studies SET assessment = ? WHERE id = ?").run(JSON.stringify(nextAssessment), id);
+    return NextResponse.json({ saved: true });
   }
   const slug = String(form.get("slug") ?? "").trim();
   const eyebrow = String(form.get("eyebrow") ?? "").trim();
@@ -57,14 +84,24 @@ export async function POST(
   const assessmentScores = Object.fromEntries(assessmentCriteriaList.map((criterion) => [
       criterion.key, Math.max(0, Math.min(5, Number(form.get(`assessment_score_${criterion.key}`) ?? 0) || 0)),
     ]));
+  let submittedEngagements: Record<string, EditableEngagement[]> = {};
+  try {
+    const parsedEngagements = JSON.parse(String(form.get("assessment_engagements") ?? "{}"));
+    submittedEngagements = Object.fromEntries(assessmentCriteriaList.map(({ key }) => [key, (Array.isArray(parsedEngagements?.[key]) ? parsedEngagements[key] : [])
+      .filter((item: unknown): item is EditableEngagement => Boolean(item) && typeof item === "object" && typeof (item as EditableEngagement).id === "string" && typeof (item as EditableEngagement).title === "string" && typeof (item as EditableEngagement).description === "string")
+      .map((item: EditableEngagement) => ({ id: item.id.slice(0, 180), title: item.title.trim().slice(0, 180), description: item.description.trim().slice(0, 2000) }))
+      .filter((item: EditableEngagement) => item.id && item.title)]));
+  } catch { submittedEngagements = {}; }
   const assessment = JSON.stringify({
     scores: assessmentScores,
     overall: String(form.get("assessment_overall") ?? "").trim(),
     overallDescription: String(form.get("assessment_overall_description") ?? "").trim(),
     primaryDrivers: getPrimaryComplexityDrivers(assessmentScores),
-    likelyEngagement: form.getAll("assessment_likely").map(String).filter(Boolean),
+    likelyEngagement: Object.values(submittedEngagements).flat().map((item) => item.title),
     conducted: form.getAll("assessment_conducted").map(String).filter(Boolean),
-    notApplicable: form.getAll("assessment_not_applicable").map(String).filter(Boolean),
+    conductedEngagementIds: form.getAll("assessment_conducted_engagement_id").map(String).filter(Boolean),
+    notApplicable: [],
+    engagements: submittedEngagements,
     placement: assessmentPlacement,
   });
 

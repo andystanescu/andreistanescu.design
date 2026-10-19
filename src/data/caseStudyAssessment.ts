@@ -45,6 +45,8 @@ export const assessmentCriteria = {
 
 export type CriterionKey = keyof typeof assessmentCriteria;
 export type AssessmentScores = Partial<Record<CriterionKey, 1 | 2 | 3 | 4 | 5>>;
+export type EditableEngagement = { id: string; title: string; description: string };
+export type EngagementGroups = Partial<Record<CriterionKey, EditableEngagement[]>>;
 export type RecommendedActivity = { name: string; triggeredBy: Array<{ criterion: CriterionKey; score: number }> };
 export const assessmentCriteriaList = Object.entries(assessmentCriteria).map(([key, criterion]) => ({ key: key as CriterionKey, ...criterion }));
 export function getPrimaryComplexityDrivers(scores: AssessmentScores): CriterionKey[] {
@@ -71,10 +73,16 @@ export function generateActivityRecommendations(scores: AssessmentScores): Recom
   return [...activityMap.values()];
 }
 
-export type CaseStudyAssessment = { scores: AssessmentScores; likelyEngagement: string[]; conducted: string[]; notApplicable: string[]; overall: string; overallDescription: string; primaryDrivers: CriterionKey[]; placement: string };
+export type CaseStudyAssessment = { scores: AssessmentScores; likelyEngagement: string[]; conducted: string[]; conductedEngagementIds: string[]; notApplicable: string[]; engagements?: EngagementGroups; overall: string; overallDescription: string; primaryDrivers: CriterionKey[]; placement: string };
 export function parseCaseStudyAssessment(value: string | undefined): CaseStudyAssessment {
-  try { const parsed = JSON.parse(value || "{}"); return { scores: parsed?.scores && typeof parsed.scores === "object" ? parsed.scores : {}, likelyEngagement: Array.isArray(parsed?.likelyEngagement) ? parsed.likelyEngagement : [], conducted: Array.isArray(parsed?.conducted) ? parsed.conducted : [], notApplicable: Array.isArray(parsed?.notApplicable) ? parsed.notApplicable : [], overall: typeof parsed?.overall === "string" ? parsed.overall : "", overallDescription: typeof parsed?.overallDescription === "string" ? parsed.overallDescription : "", primaryDrivers: Array.isArray(parsed?.primaryDrivers) ? parsed.primaryDrivers : [], placement: typeof parsed?.placement === "string" ? parsed.placement : "start" }; }
-  catch { return { scores: {}, likelyEngagement: [], conducted: [], notApplicable: [], overall: "", overallDescription: "", primaryDrivers: [], placement: "start" }; }
+  try {
+    const parsed = JSON.parse(value || "{}");
+    const engagements: EngagementGroups | undefined = parsed?.engagements && typeof parsed.engagements === "object"
+      ? Object.fromEntries(assessmentCriteriaList.map(({ key }) => [key, Array.isArray(parsed.engagements[key]) ? parsed.engagements[key].filter((item: unknown): item is EditableEngagement => Boolean(item) && typeof item === "object" && typeof (item as EditableEngagement).id === "string" && typeof (item as EditableEngagement).title === "string" && typeof (item as EditableEngagement).description === "string") : []]))
+      : undefined;
+    return { scores: parsed?.scores && typeof parsed.scores === "object" ? parsed.scores : {}, likelyEngagement: Array.isArray(parsed?.likelyEngagement) ? parsed.likelyEngagement : [], conducted: Array.isArray(parsed?.conducted) ? parsed.conducted : [], conductedEngagementIds: Array.isArray(parsed?.conductedEngagementIds) ? parsed.conductedEngagementIds.filter((id: unknown): id is string => typeof id === "string") : [], notApplicable: Array.isArray(parsed?.notApplicable) ? parsed.notApplicable : [], engagements, overall: typeof parsed?.overall === "string" ? parsed.overall : "", overallDescription: typeof parsed?.overallDescription === "string" ? parsed.overallDescription : "", primaryDrivers: Array.isArray(parsed?.primaryDrivers) ? parsed.primaryDrivers : [], placement: typeof parsed?.placement === "string" ? parsed.placement : "start" };
+  }
+  catch { return { scores: {}, likelyEngagement: [], conducted: [], conductedEngagementIds: [], notApplicable: [], overall: "", overallDescription: "", primaryDrivers: [], placement: "start" }; }
 }
 
 export function getActivityDescription(name: string) {

@@ -40,6 +40,8 @@ export default async function EditCaseStudyPage({
     primaryDrivers: [...storedAssessment.primaryDrivers],
     likelyEngagement: [...storedAssessment.likelyEngagement],
     conducted: [...storedAssessment.conducted],
+    conductedEngagementIds: [...storedAssessment.conductedEngagementIds],
+    engagements: storedAssessment.engagements ? Object.fromEntries(Object.entries(storedAssessment.engagements).map(([key, items]) => [key, items?.map((item) => ({ ...item })) ?? []])) : undefined,
   };
   let passwordEntries: Array<{ name: string; masked: string }> = [];
   try {

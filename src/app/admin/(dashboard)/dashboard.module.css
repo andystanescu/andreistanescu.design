@@ -69,6 +69,10 @@
   width: 28px;
 }
 
+.sidebarCollapsed .brandLogo > span > :last-child {
+  display: none;
+}
+
 .sidebarCollapsed .brandLabel {
   display: none;
 }
@@ -201,6 +205,19 @@
   padding: max(var(--space-600), var(--safe-area-top)) max(var(--space-600), var(--safe-area-right)) max(var(--space-600), var(--safe-area-bottom)) var(--space-600);
   overflow-x: hidden;
   scrollbar-width: none;
+}
+
+.content :global(select) {
+  appearance: none;
+  padding-right: calc(1rem + var(--space-100));
+  background-image:
+    linear-gradient(45deg, transparent 48%, var(--text-secondary) 49%, var(--text-secondary) 63%, transparent 64%),
+    linear-gradient(-45deg, transparent 48%, var(--text-secondary) 49%, var(--text-secondary) 63%, transparent 64%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 14px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
 }
 
 /* Shared shell regions for all non-editor Admin pages. The page viewport is

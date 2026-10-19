@@ -6,7 +6,7 @@ import { AdminNav } from "@/components/admin/AdminNav/AdminNav";
 import { ViewSiteLink } from "@/components/admin/ViewSiteLink/ViewSiteLink";
 import styles from "@/app/admin/(dashboard)/dashboard.module.css";
 
-export function AdminSidebar() {
+export function AdminSidebar({ logoIdentity }: { logoIdentity: "business" | "personal" }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -36,7 +36,7 @@ export function AdminSidebar() {
       >
       <div className={styles.sidebarTop}>
         <div className={styles.brand}>
-          <div className={styles.brandLogo}><Logo variant="compact" /></div>
+          <div className={styles.brandLogo}><Logo variant="compact" identity={logoIdentity} /></div>
           <p className={`${styles.brandLabel} label-eyebrow`} style={{ color: "var(--text-accent)" }}>
             admin
           </p>

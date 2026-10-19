@@ -1,19 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { getActivityDescription } from "@/data/caseStudyAssessment";
+import type { EditableEngagement } from "@/data/caseStudyAssessment";
 import styles from "./case-study.module.css";
 
 type Props = {
-  visibleActivities: string[];
-  additionalActivities: string[];
+  visibleActivities: EditableEngagement[];
+  additionalActivities: EditableEngagement[];
   conductedActivities: string[];
+  conductedEngagementIds: string[];
 };
 
 export function EngagementActivities({
   visibleActivities,
   additionalActivities,
   conductedActivities,
+  conductedEngagementIds,
 }: Props) {
   const [expanded, setExpanded] = useState(false);
   const activities = expanded
@@ -25,16 +27,16 @@ export function EngagementActivities({
     <>
       <div className={styles.activityCards} id="additional-engagement-activities">
         {activities.map((item) => {
-          const completed = conductedActivities.includes(item);
+          const completed = conductedEngagementIds.includes(item.id) || conductedActivities.includes(item.title);
           return (
-            <article className={styles.activityCard} key={item}>
+            <article className={styles.activityCard} key={item.id}>
               <div className={styles.activityCardHeader}>
-                <h4>{item}</h4>
+                <h4>{item.title}</h4>
                 <span className={completed ? styles.statusComplete : styles.statusIncomplete}>
                   {completed ? "Complete" : "Not completed"}
                 </span>
               </div>
-              <p>{getActivityDescription(item)}</p>
+              <p>{item.description}</p>
             </article>
           );
         })}

@@ -72,6 +72,33 @@
 .authorAvatar{display:inline-flex;align-items:center;gap:8px;color:var(--text-primary);font:600 16px/1.3 var(--font-family-body)}
 .authorAvatar img{width:32px;height:32px;flex:0 0 32px;border-radius:50%;object-fit:cover}
 
+.editableEngagementList{display:flex;flex-direction:column;gap:var(--space-300)}
+.editableEngagement{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:var(--space-300);padding-block:var(--space-300);border-bottom:1px solid var(--border-default)}
+.editableEngagementFields{display:grid;grid-template-columns:minmax(180px,1fr) minmax(240px,2fr);gap:var(--space-300);min-width:0}
+.editableEngagementFields textarea{min-height:88px;resize:vertical}
+.editableEngagementActions{display:flex;align-items:center;gap:var(--space-200);padding-bottom:2px}
+.engagementConducted{display:inline-flex;align-items:center;gap:var(--space-100);color:var(--text-secondary);font:500 12px/1.3 var(--font-family-body);white-space:nowrap;cursor:pointer}
+.engagementConducted input{width:18px;height:18px;accent-color:var(--accent-foundation)}
+.removeEngagementButton,.addEngagementButton{min-height:40px;padding-inline:var(--space-200);border:1px solid var(--border-default);border-radius:var(--radius-md);background:transparent;color:var(--text-secondary);font:600 13px/1 var(--font-family-body);cursor:pointer}
+.removeEngagementButton:hover,.removeEngagementButton:focus-visible{border-color:var(--border-error);color:var(--border-error)}
+.addEngagementButton{align-self:flex-start;margin-top:var(--space-200);border-color:var(--accent-foundation);color:var(--text-accent)}
+.addEngagementButton:hover,.addEngagementButton:focus-visible{background:var(--accent-foundation);color:var(--action-primary-hover-text)}
+.engagementEmpty{margin:0;padding-block:var(--space-200);color:var(--text-tertiary);font:13px/1.4 var(--font-family-body)}
+@media(max-width:760px){.editableEngagement{grid-template-columns:1fr;align-items:stretch}.editableEngagementFields{grid-template-columns:1fr}.editableEngagementActions{justify-content:space-between}.removeEngagementButton{min-width:88px}}
+
+/* Editable activities retain the assessment's existing card treatment. */
+.editableEngagement.activityCard{position:relative;grid-template-columns:minmax(0,1fr);align-items:stretch;gap:var(--space-200);padding:var(--space-200);border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--bg-surface);box-shadow:var(--shadow-level-1)}
+.editableEngagementFields{grid-template-columns:minmax(0,1fr);gap:var(--space-200)}
+.editableEngagementFields input,.editableEngagementFields textarea{width:100%;box-sizing:border-box}
+.engagementConductedRow{display:flex;align-items:center;gap:var(--space-150);min-height:24px}
+.engagementConductedText{color:var(--text-secondary);font:500 12px/1.3 var(--font-family-body)}
+.editableEngagementActions{justify-content:flex-start;padding:var(--space-250) 0 0;border-top:1px solid var(--border-default)}
+.removeEngagementButton{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:36px;min-width:36px;height:36px;padding:0;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-canvas);color:var(--text-secondary);cursor:pointer}
+.removeEngagementButton svg{width:17px;height:17px}
+.removeEngagementButton:hover,.removeEngagementButton:focus-visible{border-color:var(--border-error);color:var(--border-error)}
+.removeEngagementButton:focus-visible{outline:2px solid var(--accent-foundation);outline-offset:2px}
+@media(max-width:760px){.editableEngagement.activityCard{padding:var(--space-200)}.editableEngagementActions{justify-content:flex-start}}
+
 /* Keep the editor chrome attached to the viewport while the scroll region
    moves underneath it. The layout reserves the same vertical space below. */
 .editorHeader{position:sticky!important;top:0!important;right:auto;left:auto;width:100%;margin:0;padding:var(--space-600) var(--space-600) var(--space-300);box-sizing:border-box;background:var(--bg-canvas);transform:none!important}
@@ -164,3 +191,13 @@
     padding: 0 var(--space-300) var(--space-400);
   }
 }
+
+.inlineEngagementField{min-width:0}
+.inlineEngagementTitle,.inlineEngagementDescription{display:block;width:100%;min-height:24px;padding:0;border:0;background:transparent;box-sizing:border-box;text-align:left;cursor:text}
+.editableEngagementFields>div:first-child .inlineEngagementTitle,.editableEngagementFields>div:first-child .inlineEngagementInput{padding-right:42px}
+.inlineEngagementTitle{color:var(--text-primary);font:600 16px/1.3 var(--font-family-heading)}
+.inlineEngagementDescription{color:var(--text-secondary);font:14px/1.5 var(--font-family-body);white-space:pre-wrap}
+.inlineEngagementPlaceholder{color:var(--text-tertiary)}
+.inlineEngagementInput,.inlineEngagementTextarea{width:100%;box-sizing:border-box}
+.editableEngagementFields .inlineEngagementTextarea{display:block;width:100%;max-width:none!important;min-height:120px;resize:vertical;box-sizing:border-box}
+.inlineEngagementTitle:focus-visible,.inlineEngagementDescription:focus-visible{outline:2px solid var(--accent-foundation);outline-offset:3px;border-radius:2px}

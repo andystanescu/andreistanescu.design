@@ -8,7 +8,7 @@ import { Footer } from "@/components/Footer/Footer";
 import { RichContent } from "@/components/RichContent/RichContent";
 import { ArticleCard } from "@/components/ArticleCard/ArticleCard";
 import { getCaseStudies, getCaseStudyBySlug, getCaseStudyMetrics, getCaseStudyAssessment } from "@/data/caseStudies";
-import { assessmentCriteriaList, generateActivityRecommendations, getPrimaryComplexityDrivers } from "@/data/caseStudyAssessment";
+import { assessmentCriteriaList, generateActivityRecommendations, getActivityDescription, getPrimaryComplexityDrivers } from "@/data/caseStudyAssessment";
 import { addHeadingIds } from "@/lib/tableOfContents";
 import { TableOfContents } from "@/components/TableOfContents/TableOfContents";
 import styles from "./case-study.module.css";
@@ -94,18 +94,23 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
   const hasAssessment = assessment.overall || assessment.likelyEngagement.length > 0 || Object.values(assessment.scores).some(Boolean);
   const activityRecommendations = generateActivityRecommendations(assessment.scores);
   const applicableEngagement = assessment.likelyEngagement.filter((item) => !assessment.notApplicable.includes(item));
-  const likelyRecommendations = applicableEngagement.map((item) => ({ item, recommendation: activityRecommendations.find((activity) => activity.name === item) }));
-  const likelyDisplayed = assessmentCriteriaList.flatMap((criterion) => likelyRecommendations
-    .filter(({ recommendation }) => recommendation?.triggeredBy[0]?.criterion === criterion.key)
-    .slice(0, 2)
-    .map(({ item }) => item));
-  const likelyAdditional = applicableEngagement.filter((item) => !likelyDisplayed.includes(item));
+  const engagementSections = assessmentCriteriaList.map((criterion) => ({
+    criterion,
+    activities: assessment.engagements
+      ? (assessment.engagements[criterion.key] ?? []).filter((item) => item.title.trim())
+      : applicableEngagement
+        .filter((name) => activityRecommendations.find((activity) => activity.name === name)?.triggeredBy[0]?.criterion === criterion.key)
+        .map((title) => ({ id: `${criterion.key}:${title}`, title, description: getActivityDescription(title) })),
+  }));
+  const likelyDisplayed = engagementSections.flatMap((group) => group.activities.slice(0, 2));
+  const likelyDisplayedIds = new Set(likelyDisplayed.map((item) => item.id));
+  const likelyAdditional = engagementSections.flatMap((group) => group.activities.filter((item) => !likelyDisplayedIds.has(item.id)));
   const primaryDrivers = getPrimaryComplexityDrivers(assessment.scores);
   const assessmentSplit = hasAssessment && assessment.placement !== "start" ? splitHtmlAfterHeading(bodyHtml, assessment.placement) : null;
   const assessmentPlacementIndex = assessmentSplit ? toc.findIndex((item) => item.id === assessment.placement) : -1;
   const pageToc = [...toc];
   if (hasAssessment) pageToc.splice(assessmentPlacementIndex >= 0 ? assessmentPlacementIndex + 1 : 0, 0, { id: "assessment-overview", text: "Assessment" });
-  const assessmentBlock = hasAssessment ? <AssessmentDisclosure overall={assessment.overall} interpretation={assessment.overallDescription} dimensions={assessmentCriteriaList.map((criterion) => ({ label: criterion.label, score: assessment.scores[criterion.key] || 0 }))}><section id="engagement-assessment" className={styles.assessment}><div className={styles.assessmentHeader}><div><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>ASSESSMENT</p><h2 className="heading-02">A clearer view of the work ahead.</h2><p className="body-default">A practical record of the complexity observed, the activities likely to help, and the work that was actually conducted.</p></div></div><div className={styles.assessmentGrid}><div className={styles.assessmentScores}><h3 id="complexity-profile" className="heading-03">Complexity profile</h3>{assessmentCriteriaList.map((criterion) => { const score=assessment.scores[criterion.key] || 0; return <div className={styles.assessmentScore} key={criterion.key}><ComplexityMetricIcon criterion={criterion.key} /><div className={styles.assessmentScoreMeta}><span>{criterion.label}</span><div className={styles.assessmentScoreValue}><strong>{score ? `${score} / 5` : "—"}</strong>{primaryDrivers.includes(criterion.key) && <em className={styles.primaryDriver}>Primary driver</em>}</div></div><div className={styles.scoreTrack}><i style={{ width: `${Math.min(100, score / 5 * 100)}%` }} /></div></div>; })}</div><div className={styles.assessmentAside}>{assessment.overall && <div className={styles.assessmentSummary}><span>OVERALL COMPLEXITY</span><strong>{assessment.overall}</strong><p>{assessment.overallDescription}</p></div>}<div className={styles.assessmentLists}><div><h3 id="likely-engagement" className="heading-03">Likely engagement</h3><EngagementActivities visibleActivities={likelyDisplayed} additionalActivities={likelyAdditional} conductedActivities={assessment.conducted} /></div></div></div></div></section></AssessmentDisclosure> : null;
+  const assessmentBlock = hasAssessment ? <AssessmentDisclosure overall={assessment.overall} interpretation={assessment.overallDescription} dimensions={assessmentCriteriaList.map((criterion) => ({ label: criterion.label, score: assessment.scores[criterion.key] || 0 }))}><section id="engagement-assessment" className={styles.assessment}><div className={styles.assessmentHeader}><div><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>ASSESSMENT</p><h2 className="heading-02">A clearer view of the work ahead.</h2><p className="body-default">A practical record of the complexity observed, the activities likely to help, and the work that was actually conducted.</p></div></div><div className={styles.assessmentGrid}><div className={styles.assessmentScores}><h3 id="complexity-profile" className="heading-03">Complexity profile</h3>{assessmentCriteriaList.map((criterion) => { const score=assessment.scores[criterion.key] || 0; return <div className={styles.assessmentScore} key={criterion.key}><ComplexityMetricIcon criterion={criterion.key} /><div className={styles.assessmentScoreMeta}><span>{criterion.label}</span><div className={styles.assessmentScoreValue}><strong>{score ? `${score} / 5` : "—"}</strong>{primaryDrivers.includes(criterion.key) && <em className={styles.primaryDriver}>Primary driver</em>}</div></div><div className={styles.scoreTrack}><i style={{ width: `${Math.min(100, score / 5 * 100)}%` }} /></div></div>; })}</div><div className={styles.assessmentAside}>{assessment.overall && <div className={styles.assessmentSummary}><span>OVERALL COMPLEXITY</span><strong>{assessment.overall}</strong><p>{assessment.overallDescription}</p></div>}<div className={styles.assessmentLists}><div><h3 id="likely-engagement" className="heading-03">Likely engagement</h3><EngagementActivities visibleActivities={likelyDisplayed} additionalActivities={likelyAdditional} conductedActivities={assessment.conducted} conductedEngagementIds={assessment.conductedEngagementIds} /></div></div></div></div></section></AssessmentDisclosure> : null;
 
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({

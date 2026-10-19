@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { ImageField } from "@/components/admin/ImageField/ImageField";
 import { RichTextEditor } from "@/components/admin/RichTextEditor/RichTextEditor";
 import type { CaseStudy, CaseStudyMetric } from "@/data/caseStudies";
-import type { CaseStudyAssessment } from "@/data/caseStudyAssessment";
+import type { CaseStudyAssessment, EditableEngagement, EngagementGroups, CriterionKey } from "@/data/caseStudyAssessment";
 import { assessmentCriteriaList, generateActivityRecommendations, getActivityDescription, getPrimaryComplexityDrivers } from "@/data/caseStudyAssessment";
 import styles from "./CaseStudyEditor.module.css";
 import adminStyles from "@/app/admin/(dashboard)/admin.module.css";
@@ -45,15 +45,75 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
   const overallLabel = overallOverride || suggestedOverall;
   const primaryDrivers = useMemo(() => getPrimaryComplexityDrivers(Object.fromEntries(Object.entries(scores).map(([key, value]) => [key, Number(value)]))), [scores]);
   const recommendations = useMemo(() => generateActivityRecommendations(Object.fromEntries(Object.entries(scores).map(([key, value]) => [key, Number(value)]))), [scores]);
-  const [notApplicable, setNotApplicable] = useState<string[]>(assessment.notApplicable);
+  const initialEngagements = useMemo<EngagementGroups>(() => {
+    if (assessment.engagements) {
+      return Object.fromEntries(assessmentCriteriaList.map(({ key }) => [key, (assessment.engagements?.[key] ?? []).map((item) => ({ ...item }))]));
+    }
+    return Object.fromEntries(assessmentCriteriaList.map((criterion) => [criterion.key, recommendations
+      .filter((activity) => activity.triggeredBy[0]?.criterion === criterion.key)
+      .filter((activity) => !assessment.notApplicable.includes(activity.name))
+      .map((activity) => ({ id: `${criterion.key}:${activity.name}`, title: activity.name, description: getActivityDescription(activity.name) }))]));
+  }, [assessment.engagements, assessment.notApplicable, recommendations]);
+  const [engagementOverrides, setEngagementOverrides] = useState<EngagementGroups | null>(() => assessment.engagements
+    ? Object.fromEntries(Object.entries(assessment.engagements).map(([key, items]) => [key, items?.map((item) => ({ ...item })) ?? []]))
+    : null);
+  const engagements = engagementOverrides ?? initialEngagements;
+  const defaultConductedEngagementIds = Object.values(engagements).flatMap((items) => items ?? [])
+    .filter((item) => assessment.conductedEngagementIds.includes(item.id) || assessment.conducted.includes(item.title))
+    .map((item) => item.id);
+  const [conductedEngagementOverrides, setConductedEngagementOverrides] = useState<string[] | null>(() => assessment.conductedEngagementIds.length ? [...assessment.conductedEngagementIds] : null);
+  const conductedEngagementIds = conductedEngagementOverrides ?? defaultConductedEngagementIds;
+  const [activeEngagementEdit, setActiveEngagementEdit] = useState<string | null>(null);
   const bodyHeadings = useMemo(() => addHeadingIds(bodyValue).toc, [bodyValue]);
   const placementExists = assessment.placement === "start" || bodyHeadings.some((heading) => heading.id === assessment.placement);
   const [assessmentPlacement, setAssessmentPlacement] = useState(placementExists ? assessment.placement : "start");
   const selectedAssessmentPlacement = assessmentPlacement === "start" || bodyHeadings.some((heading) => heading.id === assessmentPlacement) ? assessmentPlacement : "start";
-  const recommendationGroups = useMemo(() => assessmentCriteriaList.map((criterion) => ({
-    criterion,
-    activities: recommendations.filter((activity) => activity.triggeredBy[0]?.criterion === criterion.key),
-  })).filter((group) => group.activities.length > 0), [recommendations]);
+  const recommendationGroups = assessmentCriteriaList.map((criterion) => ({ criterion }));
+  const updateEngagement = (criterion: CriterionKey, id: string, changes: Partial<EditableEngagement>) => {
+    setEngagementOverrides((current) => {
+      const source = current ?? initialEngagements;
+      return { ...source, [criterion]: (source[criterion] ?? []).map((item) => item.id === id ? { ...item, ...changes } : item) };
+    });
+  };
+  const addEngagement = (criterion: CriterionKey) => {
+    const id = `custom:${crypto.randomUUID()}`;
+    setEngagementOverrides((current) => {
+      const source = current ?? initialEngagements;
+      return { ...source, [criterion]: [...(source[criterion] ?? []), { id, title: "", description: "" }] };
+    });
+  };
+  const removeEngagement = (criterion: CriterionKey, id: string) => {
+    setEngagementOverrides((current) => {
+      const source = current ?? initialEngagements;
+      return { ...source, [criterion]: (source[criterion] ?? []).filter((item) => item.id !== id) };
+    });
+    setConductedEngagementOverrides((current) => (current ?? conductedEngagementIds).filter((engagementId) => engagementId !== id));
+  };
+  const saveEngagementOnBlur = async (criterion: CriterionKey, id: string, field: "title" | "description", value: string) => {
+    const source = engagementOverrides ?? initialEngagements;
+    const nextGroups: EngagementGroups = {
+      ...source,
+      [criterion]: (source[criterion] ?? []).map((item) => item.id === id ? { ...item, [field]: value } : item),
+    };
+    setEngagementOverrides(nextGroups);
+    setActiveEngagementEdit(null);
+    if (!nextGroups[criterion]?.find((item) => item.id === id)?.title.trim()) return;
+    const form = formRef.current;
+    if (!form) return;
+    const formData = new FormData(form);
+    formData.set("intent", "save_assessment_engagements");
+    formData.set("assessment_engagements", JSON.stringify(nextGroups));
+    setSaveState("saving");
+    try {
+      const response = await fetch(form.action, { method: "POST", body: formData });
+      if (!response.ok) throw new Error("Engagement save failed");
+      setSaveState("saved");
+      if (saveStatusTimerRef.current) clearTimeout(saveStatusTimerRef.current);
+      saveStatusTimerRef.current = setTimeout(() => setSaveState("idle"), 5000);
+    } catch {
+      setSaveState("error");
+    }
+  };
   const saveDraft = async () => {
     const form = formRef.current;
     if (!form) return;
@@ -138,7 +198,49 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
           <div><h2 className="heading-03">Complexity scores</h2>{assessmentCriteriaList.map((criterion) => { const selectedScore = Number(scores[criterion.key]); const selectedLevel = selectedScore >= 1 && selectedScore <= 5 ? criterion.levels[selectedScore as 1 | 2 | 3 | 4 | 5] : undefined; return <div className={styles.scoreRow} key={criterion.key}><div><strong>{criterion.label}{primaryDrivers.includes(criterion.key) && <span className={styles.driverBadge}>Primary driver</span>}</strong><small>{criterion.question}</small><input type="hidden" name={`assessment_score_${criterion.key}`} value={scores[criterion.key]} /></div><div className={styles.scoreControl}><div className={styles.segmented} role="group" aria-label={`${criterion.label} score`}>{([1, 2, 3, 4, 5] as const).map((score) => <button key={score} type="button" className={scores[criterion.key] === String(score) ? styles.segmentActive : styles.segment} aria-pressed={scores[criterion.key] === String(score)} onClick={() => setScores((current) => ({ ...current, [criterion.key]: String(score) }))}><span>{score}</span><small>{criterion.levels[score].label}</small></button>)}</div>{selectedLevel && <p className={styles.scoreDescription}>{selectedLevel.description}</p>}</div></div>; })}</div>
           <div><h2 className="heading-03">Overall complexity</h2><input type="hidden" name="assessment_overall" value={overallLabel} /><p className="body-small">A default is selected from the completed scores. You can choose another label without changing the scores.</p><div className={styles.overallOptions} role="group" aria-label="Overall complexity">{overallOptions.map((label) => <button key={label} type="button" className={overallLabel === label ? styles.overallOptionActive : styles.overallOption} aria-pressed={overallLabel === label} onClick={() => setOverallOverride(label)}><strong>{label}</strong><small>{overallDescriptions[label]}</small></button>)}</div><Field label="Additional details"><textarea name="assessment_overall_description" defaultValue={assessment.overallDescription} placeholder="What makes this engagement complex?" className={adminStyles.textarea} /></Field></div>
         </div>
-        <div className={styles.engagement}><div className={styles.engagementHeader}><div><h2 className="heading-03">Engagement activities</h2><p className="body-small">Activities are grouped by their primary driving metric. Mark completed work as conducted, or exclude an activity when it did not apply.</p></div></div>{recommendations.length === 0 && <p className="body-small">Add one or more scores to generate recommendations.</p>}{recommendationGroups.map(({ criterion, activities }) => <section className={styles.activityGroup} key={criterion.key}><div className={styles.activityGroupHeader}><h3>{criterion.label}</h3><span>{scores[criterion.key] || "—"} / 5</span></div><div className={styles.activityGrid}>{[...activities].sort((left, right) => Number(notApplicable.includes(left.name)) - Number(notApplicable.includes(right.name))).map((activity) => { const excluded = notApplicable.includes(activity.name); return <article key={activity.name} className={`${styles.activityCard} ${excluded ? styles.activityCardExcluded : ""}`}><div className={styles.activityCardTop}><div className={styles.activityInfo}><strong>{activity.name}</strong><p className={styles.activityDescription}>{getActivityDescription(activity.name)}</p>{activity.triggeredBy.length > 1 && <small>Also driven by {activity.triggeredBy.slice(1).map((trigger) => assessmentCriteriaList.find((item) => item.key === trigger.criterion)?.label).filter(Boolean).join(" · ")}</small>}</div><label className={`${styles.conductedControl} ${styles.switch}`} title={excluded ? "Make this activity applicable before marking it conducted" : "Mark as conducted"}><input type="checkbox" name="assessment_conducted" value={activity.name} defaultChecked={assessment.conducted.includes(activity.name)} disabled={excluded} aria-label={`${activity.name}: conducted`} /><span aria-hidden="true" /></label></div>{!excluded && <input type="hidden" name="assessment_likely" value={activity.name} />}<footer className={styles.activityFooter}><label className={styles.activityChoice}><input type="checkbox" name="assessment_not_applicable" value={activity.name} checked={excluded} onChange={(event) => setNotApplicable((current) => event.target.checked ? [...current, activity.name] : current.filter((name) => name !== activity.name))} /><span>Not applicable</span></label></footer></article>; })}</div></section>)}</div>
+        <div className={styles.engagement}>
+          <div className={styles.engagementHeader}><div><h2 className="heading-03">Engagement activities</h2><p className="body-small">Edit the suggested engagements for each section. Add anything else you contributed, or remove activities that do not apply.</p></div></div>
+          <input type="hidden" name="assessment_engagements" value={JSON.stringify(engagements)} />
+          {recommendationGroups.map(({ criterion }) => {
+            const activities = engagements[criterion.key] ?? [];
+            return <section className={styles.activityGroup} key={criterion.key}>
+              <div className={styles.activityGroupHeader}><h3>{criterion.label}</h3><span>{scores[criterion.key] || "—"} / 5</span></div>
+              {activities.length === 0 && <p className={styles.engagementEmpty}>No engagements in this section yet.</p>}
+              <div className={styles.editableEngagementList}>{activities.map((activity) => {
+                const conducted = conductedEngagementIds.includes(activity.id);
+                return <article className={`${styles.editableEngagement} ${styles.activityCard}`} key={activity.id}>
+                  <button type="button" className={styles.removeEngagementButton} onClick={() => removeEngagement(criterion.key, activity.id)} aria-label={`Remove ${activity.title || "engagement"}`} title="Remove engagement">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 13h12l1-13M9 7V4h6v3" /></svg>
+                  </button>
+                  <div className={styles.editableEngagementFields}>
+                    <div className={styles.engagementConductedRow}>
+                      <label className={styles.switch}>
+                        <input type="checkbox" role="switch" aria-label={`Completed: ${activity.title || "engagement"}`} checked={conducted} onChange={(event) => setConductedEngagementOverrides((current) => { const source = current ?? conductedEngagementIds; return event.target.checked ? [...source, activity.id] : source.filter((id) => id !== activity.id); })} />
+                        <span aria-hidden="true" />
+                      </label>
+                      <span className={styles.engagementConductedText}>{conducted ? "Completed" : "Not completed"}</span>
+                    </div>
+                    <div className={styles.inlineEngagementField}>
+                      {activeEngagementEdit === `${activity.id}:title`
+                        ? <input autoFocus aria-label="Engagement title" value={activity.title} onChange={(event) => updateEngagement(criterion.key, activity.id, { title: event.target.value })} onBlur={(event) => void saveEngagementOnBlur(criterion.key, activity.id, "title", event.currentTarget.value)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setActiveEngagementEdit(null); }} placeholder="Engagement title" className={`${adminStyles.input} ${styles.inlineEngagementInput}`} />
+                        : <button type="button" className={styles.inlineEngagementTitle} onClick={() => setActiveEngagementEdit(`${activity.id}:title`)} aria-label={`Edit title: ${activity.title || "Engagement"}`}>{activity.title || <span className={styles.inlineEngagementPlaceholder}>Add engagement title</span>}</button>}
+                    </div>
+                    <div className={styles.inlineEngagementField}>
+                      {activeEngagementEdit === `${activity.id}:description`
+                        ? <textarea autoFocus aria-label="Engagement description" value={activity.description} onChange={(event) => updateEngagement(criterion.key, activity.id, { description: event.target.value })} onBlur={(event) => void saveEngagementOnBlur(criterion.key, activity.id, "description", event.currentTarget.value)} onKeyDown={(event) => { if (event.key === "Escape") setActiveEngagementEdit(null); }} placeholder="What this engagement involves" className={`${adminStyles.textarea} ${styles.inlineEngagementTextarea}`} />
+                        : <button type="button" className={styles.inlineEngagementDescription} onClick={() => setActiveEngagementEdit(`${activity.id}:description`)} aria-label={`Edit description for ${activity.title || "engagement"}`}>{activity.description || <span className={styles.inlineEngagementPlaceholder}>Add a description</span>}</button>}
+                    </div>
+                  </div>
+                  <div className={styles.editableEngagementActions}>
+                    {conducted && <><input type="hidden" name="assessment_conducted" value={activity.title} /><input type="hidden" name="assessment_conducted_engagement_id" value={activity.id} /></>}
+                    <input type="hidden" name="assessment_likely" value={activity.title} />
+                  </div>
+                </article>;
+              })}</div>
+              <button type="button" className={styles.addEngagementButton} onClick={() => addEngagement(criterion.key)}>+ Add engagement</button>
+            </section>;
+          })}
+        </div>
       </section>
 
       <section id="case-study-panel-content" role="tabpanel" aria-labelledby="case-study-tab-content" hidden={tab !== "content"} className={styles.panel} aria-label="Case study content">
