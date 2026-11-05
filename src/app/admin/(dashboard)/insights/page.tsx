@@ -3,30 +3,36 @@ import { db } from "@/lib/db";
 import type { Insight } from "@/data/insights";
 import { ReorderableList } from "@/components/admin/ReorderableList/ReorderableList";
 import { AdminTabs } from "@/components/admin/AdminTabs/AdminTabs";
+import { ContentStatusFilter } from "@/components/admin/ContentStatusFilter/ContentStatusFilter";
 import { INSIGHTS_TABS } from "../adminTabs";
 import styles from "../admin.module.css";
 import { ukDateTimeValue } from "@/lib/dateUtils";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminInsightsPage() {
+export default async function AdminInsightsPage({ searchParams }: { searchParams: Promise<{ status?: string | string[] }> }) {
+  const query = await searchParams;
+  const status = query.status === "draft" ? "draft" : "all";
   const now = ukDateTimeValue();
-  const insights = db
+  const allInsights = db
     .prepare("SELECT * FROM insights ORDER BY position ASC, id ASC")
     .all() as Insight[];
+  const drafts = allInsights.filter((insight) => !insight.published);
+  const insights = status === "draft" ? drafts : allInsights;
 
   return (
     <>
       <div className={styles.pageHeader}><h1 className="heading-01">Insights</h1><Link href="/admin/insights/new" className={styles.newLink}>New article</Link></div>
       <AdminTabs tabs={INSIGHTS_TABS} active="/admin/insights" />
+      <ContentStatusFilter baseHref="/admin/insights" current={status} total={allInsights.length} drafts={drafts.length} />
       <div className={styles.toolbar}>
-        <p className="heading-02">All articles</p>
+        <p className="heading-02">{status === "draft" ? "Draft articles" : "All articles"}</p>
       </div>
 
       {insights.length === 0 ? (
         <p className={`body-default ${styles.empty}`}>
-          No articles yet. The homepage&apos;s &ldquo;Latest Insights&rdquo;
-          section and /insights stay empty until you publish one.
+          {status === "draft" ? "No article drafts. All articles are published." : <>No articles yet. The homepage&apos;s &ldquo;Latest Insights&rdquo;
+          section and /insights stay empty until you publish one.</>}
         </p>
       ) : (
         <ReorderableList
@@ -47,13 +53,13 @@ export default function AdminInsightsPage() {
                   </p>
                 </div>
                 <div className={styles.listItemActions}>
-                  <form action={`/api/admin/insights/${insight.id}/move`} method="POST">
+                  {status === "all" && <form action={`/api/admin/insights/${insight.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="up" />
                     <button type="submit" disabled={index === 0} aria-label="Move up">
                       ↑
                     </button>
-                  </form>
-                  <form action={`/api/admin/insights/${insight.id}/move`} method="POST">
+                  </form>}
+                  {status === "all" && <form action={`/api/admin/insights/${insight.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="down" />
                     <button
                       type="submit"
@@ -62,7 +68,7 @@ export default function AdminInsightsPage() {
                     >
                       ↓
                     </button>
-                  </form>
+                  </form>}
                   <Link href={`/admin/insights/${insight.id}`} className={styles.editLink}>
                     <span aria-hidden="true">✎</span>
                     <span className={styles.srOnly}>Edit article</span>

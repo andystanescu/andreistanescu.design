@@ -17,7 +17,7 @@ export default function AdminSubmissionsPage() {
       ) : (
         <ul className={styles.list} style={{ maxWidth: 720 }}>
           {submissions.map((submission) => (
-            <li key={submission.id} className={styles.listItem}>
+            <li id={`submission-${submission.id}`} key={submission.id} className={styles.listItem}>
               <div className={styles.listItemMeta} style={{ width: "100%" }}>
                 <p className="body-default">
                   {submission.name} · {submission.email}

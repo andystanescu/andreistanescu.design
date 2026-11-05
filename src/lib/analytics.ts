@@ -137,42 +137,58 @@ export function recordEngagementBatch(sessionId: string, events: EngagementInput
 
 export type EngagementRange = "7d" | "30d" | "90d" | "all";
 function rangeSql(range: EngagementRange, column = "s.started_at") { return range === "all" ? { clause: "", params: [] as string[] } : { clause: ` AND ${column} >= datetime('now', ?)`, params: [`-${range.slice(0, -1)} days`] }; }
-const median = (values: number[]) => { if (!values.length) return null; const sorted = [...values].sort((a, b) => a - b); const mid = Math.floor(sorted.length / 2); return sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2); };
-
-export function getEngagementDashboardData(range: EngagementRange) {
-  // Apply the more inclusive evidence rule to previously recorded uncertain
-  // sessions too; otherwise only visits that send a future event would ever
-  // benefit from the classifier update.
-  db.prepare(`UPDATE engagement_sessions SET actor_class = 'likely_human'
-    WHERE actor_class = 'uncertain' AND (
-      interaction_count >= 1 OR active_seconds >= 20 OR
-      session_id IN (SELECT session_id FROM engagement_pages WHERE chapter_count > 0)
-    )`).run();
+export function getEngagementDashboardData(range: EngagementRange, options: { contentPage?: number; journeyPage?: number } = {}) {
   const filter = rangeSql(range);
-  const rows = db.prepare(`SELECT s.*, (SELECT COUNT(*) FROM engagement_pages p WHERE p.session_id=s.session_id) AS page_total FROM engagement_sessions s WHERE 1=1${filter.clause}`).all(...filter.params) as Array<{ session_id: string; actor_class: string; source: string; started_at: string; last_seen_at: string; page_count: number; interaction_count: number; active_seconds: number; duration_seconds: number; engagement_level: string; page_total: number }>;
-  const includedSessions = rows.filter((row) => row.actor_class === "likely_human" || row.actor_class === "uncertain");
-  const includedSessionIds = includedSessions.map((row) => row.session_id);
-  const portfolioGroups = includedSessionIds.length ? db.prepare(`SELECT p.session_id, COUNT(DISTINCT p.content_type) AS groups_seen FROM engagement_pages p JOIN engagement_sessions s USING(session_id) WHERE s.actor_class IN ('likely_human','uncertain')${filter.clause} GROUP BY p.session_id`).all(...filter.params) as Array<{ session_id: string; groups_seen: number }> : [];
-  const counts = { humans: includedSessions.length, explored: includedSessions.filter((row) => levelRank(row.engagement_level) >= 1).length, engaged: includedSessions.filter((row) => levelRank(row.engagement_level) >= 2).length, deep: includedSessions.filter((row) => levelRank(row.engagement_level) >= 3).length, portfolioExplorers: portfolioGroups.filter((row) => row.groups_seen >= 3).length, uncertain: rows.filter((row) => row.actor_class === "uncertain").length, likelyBot: rows.filter((row) => row.actor_class === "likely_bot").length, verifiedBot: rows.filter((row) => row.actor_class === "verified_bot").length };
-  const contentPages = includedSessionIds.length ? db.prepare(`SELECT p.*, s.engagement_level AS session_level FROM engagement_pages p JOIN engagement_sessions s USING(session_id) WHERE s.actor_class IN ('likely_human','uncertain')${filter.clause} ORDER BY p.last_seen_at DESC`).all(...filter.params) as Array<{ session_id: string; page_key: string; title: string; content_type: string; content_id: string; active_seconds: number; max_depth: number; chapter_count: number; engagement_level: string; session_level: string }> : [];
-  const contentMap = new Map<string, { key: string; type: string; id: string; title: string; humans: number; explored: number; engaged: number; deep: number; attention: number[]; maxDepth: number; reachedEnd: number; onward: number; evidenceOpened: number; depth25: number; depth50: number; depth75: number; depth90: number }>();
-  for (const page of contentPages) {
-    const key = `${page.content_type}:${page.content_id || page.page_key}`;
-    let item = contentMap.get(key);
-    if (!item) { item = { key, type: page.content_type, id: page.content_id, title: page.title || page.page_key, humans: 0, explored: 0, engaged: 0, deep: 0, attention: [], maxDepth: 0, reachedEnd: 0, onward: 0, evidenceOpened: 0, depth25: 0, depth50: 0, depth75: 0, depth90: 0 }; contentMap.set(key, item); }
-    item.humans += 1;
-    if (levelRank(page.engagement_level) >= 1) item.explored += 1;
-    if (levelRank(page.engagement_level) >= 2) item.engaged += 1;
-    if (levelRank(page.engagement_level) >= 3) item.deep += 1;
-    item.attention.push(page.active_seconds);
-    item.maxDepth = Math.max(item.maxDepth, page.max_depth);
-    if (page.max_depth >= 100) item.reachedEnd += 1;
-    if (page.max_depth >= 25) item.depth25 += 1;
-    if (page.max_depth >= 50) item.depth50 += 1;
-    if (page.max_depth >= 75) item.depth75 += 1;
-    if (page.max_depth >= 90) item.depth90 += 1;
-  }
-  const content = [...contentMap.values()].map((item) => ({ ...item, medianAttention: median(item.attention) })).sort((a, b) => b.humans - a.humans || a.title.localeCompare(b.title));
+  const includedFilter = rangeSql(range);
+  const summary = db.prepare(`SELECT
+    SUM(CASE WHEN actor_class IN ('likely_human','uncertain') THEN 1 ELSE 0 END) AS humans,
+    SUM(CASE WHEN actor_class IN ('likely_human','uncertain') AND engagement_level IN ('explored','engaged','deep') THEN 1 ELSE 0 END) AS explored,
+    SUM(CASE WHEN actor_class IN ('likely_human','uncertain') AND engagement_level IN ('engaged','deep') THEN 1 ELSE 0 END) AS engaged,
+    SUM(CASE WHEN actor_class IN ('likely_human','uncertain') AND engagement_level = 'deep' THEN 1 ELSE 0 END) AS deep,
+    SUM(CASE WHEN actor_class = 'uncertain' THEN 1 ELSE 0 END) AS uncertain,
+    SUM(CASE WHEN actor_class = 'likely_bot' THEN 1 ELSE 0 END) AS likelyBot,
+    SUM(CASE WHEN actor_class = 'verified_bot' THEN 1 ELSE 0 END) AS verifiedBot
+    FROM engagement_sessions s WHERE 1=1${filter.clause}`).get(...filter.params) as { humans: number; explored: number; engaged: number; deep: number; uncertain: number; likelyBot: number; verifiedBot: number };
+  const portfolioExplorers = (db.prepare(`SELECT COUNT(*) AS count FROM (
+    SELECT p.session_id FROM engagement_pages p JOIN engagement_sessions s USING(session_id)
+    WHERE s.actor_class IN ('likely_human','uncertain')${includedFilter.clause}
+    GROUP BY p.session_id HAVING COUNT(DISTINCT p.content_type) >= 3
+  )`).get(...includedFilter.params) as { count: number }).count;
+  const counts = { ...summary, humans: summary.humans || 0, explored: summary.explored || 0, engaged: summary.engaged || 0, deep: summary.deep || 0, uncertain: summary.uncertain || 0, likelyBot: summary.likelyBot || 0, verifiedBot: summary.verifiedBot || 0, portfolioExplorers };
+  const contentPageSize = 10;
+  const requestedContentPage = Math.max(1, Math.min(1_000_000, Math.floor(options.contentPage || 1)));
+  const contentTotal = (db.prepare(`SELECT COUNT(*) AS total FROM (
+    SELECT p.content_type, COALESCE(NULLIF(p.content_id,''), p.page_key) FROM engagement_pages p
+    JOIN engagement_sessions s USING(session_id) WHERE s.actor_class IN ('likely_human','uncertain')${filter.clause}
+    GROUP BY p.content_type, COALESCE(NULLIF(p.content_id,''), p.page_key)
+  )`).get(...filter.params) as { total: number }).total;
+  const contentPage = Math.min(requestedContentPage, Math.max(1, Math.ceil(contentTotal / contentPageSize)));
+  const contentOffset = (contentPage - 1) * contentPageSize;
+  const content = db.prepare(`WITH ranked AS (
+    SELECT p.session_id, p.page_key, p.title, p.content_type, p.content_id, p.active_seconds, p.max_depth, p.chapter_count, p.engagement_level, p.last_seen_at,
+      p.content_type || ':' || COALESCE(NULLIF(p.content_id,''), p.page_key) AS item_key,
+      ROW_NUMBER() OVER (PARTITION BY p.content_type, COALESCE(NULLIF(p.content_id,''), p.page_key) ORDER BY p.active_seconds) AS attention_rank,
+      COUNT(*) OVER (PARTITION BY p.content_type, COALESCE(NULLIF(p.content_id,''), p.page_key)) AS item_count,
+      ROW_NUMBER() OVER (PARTITION BY p.content_type, COALESCE(NULLIF(p.content_id,''), p.page_key) ORDER BY p.last_seen_at DESC, p.id DESC) AS newest_rank
+    FROM engagement_pages p JOIN engagement_sessions s USING(session_id)
+    WHERE s.actor_class IN ('likely_human','uncertain')${filter.clause}
+  ), aggregated AS (
+    SELECT item_key AS key, content_type AS type, MAX(content_id) AS id,
+      MAX(CASE WHEN newest_rank=1 THEN COALESCE(NULLIF(title,''), page_key) END) AS title,
+      COUNT(*) AS humans,
+      SUM(CASE WHEN engagement_level IN ('explored','engaged','deep') THEN 1 ELSE 0 END) AS explored,
+      SUM(CASE WHEN engagement_level IN ('engaged','deep') THEN 1 ELSE 0 END) AS engaged,
+      SUM(CASE WHEN engagement_level='deep' THEN 1 ELSE 0 END) AS deep,
+      MAX(max_depth) AS maxDepth,
+      SUM(CASE WHEN max_depth >= 100 THEN 1 ELSE 0 END) AS reachedEnd,
+      SUM(CASE WHEN max_depth >= 25 THEN 1 ELSE 0 END) AS depth25,
+      SUM(CASE WHEN max_depth >= 50 THEN 1 ELSE 0 END) AS depth50,
+      SUM(CASE WHEN max_depth >= 75 THEN 1 ELSE 0 END) AS depth75,
+      SUM(CASE WHEN max_depth >= 90 THEN 1 ELSE 0 END) AS depth90,
+      ROUND(AVG(CASE WHEN attention_rank IN (CAST((item_count+1)/2 AS INTEGER), CAST((item_count+2)/2 AS INTEGER)) THEN active_seconds END)) AS medianAttention
+    FROM ranked GROUP BY item_key, content_type, COALESCE(NULLIF(content_id,''), page_key)
+  ) SELECT * FROM aggregated ORDER BY humans DESC, title ASC LIMIT ? OFFSET ?`).all(...filter.params, contentPageSize, contentOffset) as Array<{ key: string; type: string; id: string; title: string; humans: number; explored: number; engaged: number; deep: number; maxDepth: number; reachedEnd: number; depth25: number; depth50: number; depth75: number; depth90: number; medianAttention: number | null; onward: number; evidenceOpened: number }>;
+  for (const item of content) { item.onward = 0; item.evidenceOpened = 0; }
   for (const item of content) {
     const separator = item.key.indexOf(":");
     const pageKey = item.id
@@ -186,10 +202,29 @@ export function getEngagementDashboardData(range: EngagementRange) {
       WHERE s.actor_class IN ('likely_human','uncertain')${filterClause} AND e.event_type='action' AND e.detail='evidence_open' AND e.page_key = ?`).get(...filter.params, `/services/${item.id}`) as { count: number }).count;
   }
   const chapterRows = db.prepare(`SELECT e.content_id, e.detail, COUNT(DISTINCT e.session_id) AS count FROM engagement_events e JOIN engagement_sessions s USING(session_id) WHERE e.event_type='chapter_view' AND s.actor_class IN ('likely_human','uncertain')${filter.clause} GROUP BY e.content_id,e.detail ORDER BY e.content_id,e.detail`).all(...filter.params) as Array<{ content_id: string; detail: string; count: number }>;
-  const journeySessions = includedSessions.filter((row) => row.page_total > 1 || row.engagement_level === "deep").sort((a, b) => b.started_at.localeCompare(a.started_at)).slice(0, 12);
-  const journeys = journeySessions.map((session) => ({ source: session.source, engagement: session.engagement_level, started: session.started_at, duration: session.duration_seconds, pages: db.prepare("SELECT page_key, title, content_type, active_seconds, max_depth, chapter_count FROM engagement_pages WHERE session_id = ? ORDER BY id").all(session.session_id) as Array<{ page_key: string; title: string; content_type: string; active_seconds: number; max_depth: number; chapter_count: number }>, actions: db.prepare("SELECT detail FROM engagement_events WHERE session_id = ? AND event_type='action' ORDER BY id").all(session.session_id) as Array<{ detail: string }> }));
+  const journeyPageSize = 10;
+  const requestedJourneyPage = Math.max(1, Math.min(1_000_000, Math.floor(options.journeyPage || 1)));
+  const journeyCondition = " AND ((SELECT COUNT(*) FROM engagement_pages p WHERE p.session_id=s.session_id) > 1 OR s.engagement_level='deep')";
+  const journeyTotal = (db.prepare(`SELECT COUNT(*) AS total FROM engagement_sessions s WHERE s.actor_class IN ('likely_human','uncertain')${filter.clause}${journeyCondition}`).get(...filter.params) as { total: number }).total;
+  const journeyPage = Math.min(requestedJourneyPage, Math.max(1, Math.ceil(journeyTotal / journeyPageSize)));
+  const journeyOffset = (journeyPage - 1) * journeyPageSize;
+  const journeySessions = db.prepare(`SELECT s.session_id, s.source, s.engagement_level, s.started_at, s.duration_seconds FROM engagement_sessions s WHERE s.actor_class IN ('likely_human','uncertain')${filter.clause}${journeyCondition} ORDER BY s.started_at DESC LIMIT ? OFFSET ?`).all(...filter.params, journeyPageSize, journeyOffset) as Array<{ session_id: string; source: string; engagement_level: string; started_at: string; duration_seconds: number }>;
+  const journeys = journeySessions.map((session) => {
+    const pageCount = (db.prepare("SELECT COUNT(*) AS count FROM engagement_pages WHERE session_id = ?").get(session.session_id) as { count: number }).count;
+    const actionCount = (db.prepare("SELECT COUNT(*) AS count FROM engagement_events WHERE session_id = ? AND event_type='action'").get(session.session_id) as { count: number }).count;
+    return {
+      source: session.source,
+      engagement: session.engagement_level,
+      started: session.started_at,
+      duration: session.duration_seconds,
+      pageCount,
+      actionCount,
+      pages: db.prepare("SELECT page_key, title, content_type, active_seconds, max_depth, chapter_count FROM engagement_pages WHERE session_id = ? ORDER BY id LIMIT 50").all(session.session_id) as Array<{ page_key: string; title: string; content_type: string; active_seconds: number; max_depth: number; chapter_count: number }>,
+      actions: db.prepare("SELECT detail FROM engagement_events WHERE session_id = ? AND event_type='action' ORDER BY id DESC LIMIT 30").all(session.session_id).reverse() as Array<{ detail: string }>,
+    };
+  });
   const trackingStart = db.prepare("SELECT MIN(started_at) AS started FROM engagement_sessions").get() as { started: string | null };
-  return { counts, content, chapters: chapterRows, journeys, trackingStart: trackingStart.started };
+  return { counts, content, contentPage, contentPageSize, contentTotal, chapters: chapterRows, journeys, journeyPage, journeyPageSize, journeyTotal, trackingStart: trackingStart.started };
 }
 
 export function recordAnalyticsEvent(eventType: "view" | "share" | "download", contentType: AnalyticsContentType, contentId = "", context?: VisitorContext) {

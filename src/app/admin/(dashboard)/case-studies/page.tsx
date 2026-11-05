@@ -3,28 +3,34 @@ import { db } from "@/lib/db";
 import type { CaseStudy } from "@/data/caseStudies";
 import { ReorderableList } from "@/components/admin/ReorderableList/ReorderableList";
 import { AdminTabs } from "@/components/admin/AdminTabs/AdminTabs";
+import { ContentStatusFilter } from "@/components/admin/ContentStatusFilter/ContentStatusFilter";
 import { CASE_STUDIES_TABS } from "../adminTabs";
 import styles from "../admin.module.css";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminCaseStudiesPage() {
-  const caseStudies = db
+export default async function AdminCaseStudiesPage({ searchParams }: { searchParams: Promise<{ status?: string | string[] }> }) {
+  const query = await searchParams;
+  const status = query.status === "draft" ? "draft" : "all";
+  const allCaseStudies = db
     .prepare("SELECT * FROM case_studies ORDER BY position ASC, id ASC")
     .all() as CaseStudy[];
+  const drafts = allCaseStudies.filter((study) => !study.published);
+  const caseStudies = status === "draft" ? drafts : allCaseStudies;
 
   return (
     <>
       <div className={styles.pageHeader}><h1 className="heading-01">Case studies</h1><Link href="/admin/case-studies/new" className={styles.newLink}>New case study</Link></div>
       <AdminTabs tabs={CASE_STUDIES_TABS} active="/admin/case-studies" />
+      <ContentStatusFilter baseHref="/admin/case-studies" current={status} total={allCaseStudies.length} drafts={drafts.length} />
       <div className={styles.toolbar}>
-        <p className="heading-02">Listed case studies</p>
+        <p className="heading-02">{status === "draft" ? "Draft case studies" : "Listed case studies"}</p>
       </div>
 
       {caseStudies.length === 0 ? (
         <p className={`body-default ${styles.empty}`}>
-          No case studies yet. The homepage&apos;s &ldquo;Selected Impact&rdquo;
-          section stays hidden until you add one.
+          {status === "draft" ? "No case-study drafts. All case studies are published." : <>No case studies yet. The homepage&apos;s &ldquo;Selected Impact&rdquo;
+          section stays hidden until you add one.</>}
         </p>
       ) : (
         <ReorderableList
@@ -48,13 +54,13 @@ export default function AdminCaseStudiesPage() {
                   </p>
                 </div>
                 <div className={styles.listItemActions}>
-                  <form action={`/api/admin/case-studies/${study.id}/move`} method="POST">
+                  {status === "all" && <form action={`/api/admin/case-studies/${study.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="up" />
                     <button type="submit" disabled={index === 0} aria-label="Move up">
                       ↑
                     </button>
-                  </form>
-                  <form action={`/api/admin/case-studies/${study.id}/move`} method="POST">
+                  </form>}
+                  {status === "all" && <form action={`/api/admin/case-studies/${study.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="down" />
                     <button
                       type="submit"
@@ -63,7 +69,7 @@ export default function AdminCaseStudiesPage() {
                     >
                       ↓
                     </button>
-                  </form>
+                  </form>}
                   <Link href={`/admin/case-studies/${study.id}`} className={styles.editLink}>
                     <span aria-hidden="true">✎</span>
                     <span className={styles.srOnly}>Edit case study</span>
