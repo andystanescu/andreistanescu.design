@@ -1,3 +1,23 @@
+.scrollSequence { position: relative; }
+
+.scrollPanel {
+  position: relative;
+  z-index: var(--stack-order, 0);
+  min-height: calc(100svh - var(--nav-height));
+  opacity: var(--scroll-fade, 1);
+  transform: perspective(1100px)
+    translate3d(0, calc(var(--scroll-push, 0) * -32px), calc(var(--scroll-push, 0) * -72px))
+    scale(calc(1 - var(--scroll-push, 0) * 0.08));
+  transform-origin: center top;
+  will-change: opacity, transform;
+}
+
+.scrollPanel[data-stackable="true"] { position: sticky; top: var(--nav-height); }
+.scrollPanel > section,
+.scrollPanel > .groupedContent { min-height: inherit; box-sizing: border-box; }
+.groupedPanel > .groupedContent { display: flex; flex-direction: column; }
+.footerPanel { min-height: 0; }
+
 .main {
   display: flex;
   flex-direction: column;
@@ -39,12 +59,12 @@
    a full-content-width index, a wide project chapter and a full editorial
    insights chapter. Shared section components keep their own internal
    structure while this page controls the outer composition. */
-.main > :global(#selected_impact) > :global(.container) {
+.main :global(#selected_impact) > :global(.container) {
   max-width: 1680px;
   gap: var(--space-400);
 }
 
-.main > :global(#latest_insights) > :global(.container) {
+.main :global(#latest_insights) > :global(.container) {
   max-width: 1920px;
 }
 
@@ -54,8 +74,13 @@
 }
 
 @media (max-width: 900px) {
+  .scrollPanel[data-stackable="true"] { top: 0; }
   .hero { padding-block: var(--space-600); }
   .servicesSection { padding-bottom: 128px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollPanel { opacity: 1; transform: none; will-change: auto; }
 }
 
 @media (max-width: 640px) {

@@ -1,6 +1,8 @@
 import type { ComponentType } from "react";
+import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import { Nav } from "@/components/Nav/Nav";
+import { ScrollStack } from "@/components/home/ScrollStack/ScrollStack";
 import { Footer } from "@/components/Footer/Footer";
 import { AboutHero } from "@/components/about/AboutHero/AboutHero";
 import { AboutDrivesMe } from "@/components/about/AboutDrivesMe/AboutDrivesMe";
@@ -39,17 +41,29 @@ export default function AboutPage() {
   return (
     <>
       <Nav />
-      <div className={styles.page}>
-        <AboutHero />
-        <main>
-          {order.map((key) => {
-            const Section = SECTION_COMPONENTS[key];
-            return Section ? <Section key={key} /> : null;
-          })}
-          <AboutHowIWork />
-        </main>
-      </div>
-      <Footer />
+      <ScrollStack className={styles.scrollSequence}>
+        <div className={styles.page}>
+          <div className={`${styles.scrollPanel} ${styles.heroPanel}`} data-scroll-panel style={{ "--stack-order": 1 } as CSSProperties}>
+            <AboutHero />
+          </div>
+          <main>
+            {order.map((key, index) => {
+              const Section = SECTION_COMPONENTS[key];
+              return Section ? (
+                <div key={key} className={styles.scrollPanel} data-scroll-panel style={{ "--stack-order": index + 2 } as CSSProperties}>
+                  <Section />
+                </div>
+              ) : null;
+            })}
+          </main>
+        </div>
+        <div className={`${styles.scrollPanel} ${styles.groupedPanel}`} data-scroll-panel data-scroll-mode="flow" style={{ "--stack-order": order.length + 2 } as CSSProperties}>
+          <div className={styles.groupedContent}>
+            <AboutHowIWork />
+            <Footer />
+          </div>
+        </div>
+      </ScrollStack>
     </>
   );
 }

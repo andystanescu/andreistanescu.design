@@ -1,6 +1,68 @@
+.scrollSequence {
+  position: relative;
+}
+
+.scrollPanel {
+  position: relative;
+  z-index: var(--stack-order, 0);
+  min-height: calc(100svh - var(--nav-height));
+  opacity: var(--scroll-fade, 1);
+  transform: perspective(1100px)
+    translate3d(0, calc(var(--scroll-push, 0) * -32px), calc(var(--scroll-push, 0) * -72px))
+    scale(calc(1 - var(--scroll-push, 0) * 0.08));
+  transform-origin: center top;
+  will-change: opacity, transform;
+}
+
+.scrollPanel[data-stackable="true"] {
+  position: sticky;
+  top: var(--nav-height);
+}
+
+.scrollPanel > section,
+.scrollPanel > .groupedContent {
+  min-height: inherit;
+  box-sizing: border-box;
+}
+
+.groupedPanel > .groupedContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.heroPanel {
+  display: flex;
+  align-items: center;
+  min-height: calc(100svh - var(--nav-height));
+}
+
+.heroPanel > section {
+  min-height: 0;
+}
+
+.page {
+  position: relative;
+}
+
 @media (min-width: 641px) and (max-width: 900px) {
   .page {
     --layout-gutter-narrative: clamp(64px, 8vw, 72px);
     --layout-gutter-visual: clamp(48px, 6vw, 56px);
+  }
+}
+
+@media (max-width: 900px) {
+  .scrollPanel[data-stackable="true"] {
+    position: relative;
+    top: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollPanel {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
   }
 }
