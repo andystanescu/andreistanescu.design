@@ -1,6 +1,6 @@
 .hero{
   display:grid;
-  grid-template-columns:minmax(0,7fr) minmax(280px,3fr);
+  grid-template-columns:minmax(0,3fr) minmax(280px,2fr);
   align-items:start;
   gap:clamp(var(--space-600),7vw,var(--space-1200));
   padding-block:clamp(80px,7vw,var(--layout-section-space)) clamp(var(--space-600),4vw,var(--space-800));
@@ -10,7 +10,7 @@
 .copy{
   display:flex;
   width:100%;
-  max-width:900px;
+  max-width:none;
   min-width:0;
   flex-direction:column;
   align-items:flex-start;
@@ -18,10 +18,11 @@
 }
 
 .headline{width:100%;max-width:none;color:var(--text-primary)}
+.copy>:global(.body-large){max-width:65ch}
 
 .personalMark{
   display:grid;
-  width:min(100%,400px);
+  width:min(100%,640px);
   aspect-ratio:4/5;
   justify-self:end;
   place-items:center;
