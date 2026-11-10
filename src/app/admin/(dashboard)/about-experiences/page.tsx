@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { getAllExperiencesAdmin, getSection } from "@/lib/about";
 import { AboutAdminHeader } from "@/components/admin/AboutAdminHeader/AboutAdminHeader";
 import styles from "../admin.module.css";
@@ -43,9 +44,9 @@ export default function AdminAboutExperiencesPage() {
                 <p className="body-small">{item.start_date} — {item.end_date || "Present"}</p>
               </div>
               <div className={styles.listItemActions}>
-                <Link href={`/admin/about-experiences/${item.id}`} className={styles.editLink} aria-label="Edit experience" title="Edit experience"><span aria-hidden="true">✎</span></Link>
+                <Link href={`/admin/about-experiences/${item.id}`} className={styles.editLink} aria-label="Edit experience" title="Edit experience"><AdminIcon name="action-edit" /></Link>
                 <form action={`/api/admin/about-experiences/${item.id}/delete`} method="POST" className={styles.deleteForm}>
-                  <button type="submit" className={styles.deleteButton} aria-label="Delete experience" title="Delete experience"><span aria-hidden="true">×</span></button>
+                  <button type="submit" className={styles.deleteButton} aria-label="Delete experience" title="Delete experience"><AdminIcon name="action-delete" /></button>
                 </form>
               </div>
             </li>

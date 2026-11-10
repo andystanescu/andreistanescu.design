@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import type { ReactNode } from "react";
 import { useEditor, useEditorState, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -1067,7 +1068,7 @@ export function RichTextEditor({
               <p className={styles.comparisonWidgetEyebrow}>COMPARISON</p>
               <p className={styles.comparisonWidgetTitle}>Add a before and after frame</p>
             </div>
-            <button type="button" className={styles.comparisonClose} onClick={closeComparison} aria-label="Close comparison setup">×</button>
+            <button type="button" className={styles.comparisonClose} onClick={closeComparison} aria-label="Close comparison setup"><AdminIcon name="action-close" /></button>
           </div>
           <p className={styles.comparisonWidgetHint}>Upload each image into its named position so the slider uses the correct order.</p>
           <div className={styles.comparisonSlots}>
@@ -1111,7 +1112,7 @@ export function RichTextEditor({
         >
           <div className={styles.comparisonWidgetHeader}>
             <div><p className={styles.comparisonWidgetEyebrow}>GALLERY</p><p className={styles.comparisonWidgetTitle}>Add images one at a time</p></div>
-            <button type="button" className={styles.comparisonClose} onClick={closeGallery} aria-label="Close gallery setup">×</button>
+            <button type="button" className={styles.comparisonClose} onClick={closeGallery} aria-label="Close gallery setup"><AdminIcon name="action-close" /></button>
           </div>
           <p className={styles.comparisonWidgetHint}>Add as many images as needed. Their original aspect ratios will be preserved.</p>
           <div className={styles.galleryComposerList}>
@@ -1123,7 +1124,7 @@ export function RichTextEditor({
                 <input type="text" value={image.alt} placeholder="Alternative text" aria-label={`Alternative text for image ${index + 1}`} onChange={(event) => setGalleryImages((items) => items.map((item) => item.id === image.id ? { ...item, alt: event.target.value } : item))} />
                 <input type="text" value={image.caption} placeholder="Optional lightbox caption" aria-label={`Caption for image ${index + 1}`} onChange={(event) => setGalleryImages((items) => items.map((item) => item.id === image.id ? { ...item, caption: event.target.value } : item))} />
               </div>
-              <button type="button" onClick={() => { URL.revokeObjectURL(image.preview); setGalleryImages((items) => items.filter((item) => item.id !== image.id)); }} aria-label={`Remove image ${index + 1}`}>×</button>
+              <button type="button" onClick={() => { URL.revokeObjectURL(image.preview); setGalleryImages((items) => items.filter((item) => item.id !== image.id)); }} aria-label={`Remove image ${index + 1}`}><AdminIcon name="action-close" /></button>
             </div>)}
           </div>
           <button type="button" className={styles.galleryAddButton} onClick={() => galleryInputRef.current?.click()}>+ Add image</button>
@@ -1140,7 +1141,7 @@ export function RichTextEditor({
           onPointerDown={(event) => event.stopPropagation()}
           onMouseDown={(event) => event.stopPropagation()}
         >
-          <div className={styles.comparisonWidgetHeader}><div><p className={styles.comparisonWidgetEyebrow}>RELATED READING</p><p className={styles.comparisonWidgetTitle}>Link an article or case study to this section</p></div><button type="button" className={styles.comparisonClose} onClick={closeRelatedReading} aria-label="Close related reading picker">×</button></div>
+          <div className={styles.comparisonWidgetHeader}><div><p className={styles.comparisonWidgetEyebrow}>RELATED READING</p><p className={styles.comparisonWidgetTitle}>Link an article or case study to this section</p></div><button type="button" className={styles.comparisonClose} onClick={closeRelatedReading} aria-label="Close related reading picker"><AdminIcon name="action-close" /></button></div>
           <p className={styles.comparisonWidgetHint}>The card will stay synchronized with the selected content&apos;s title, thumbnail, and reading time.</p>
           <select
             className={styles.relatedInsightSelect}

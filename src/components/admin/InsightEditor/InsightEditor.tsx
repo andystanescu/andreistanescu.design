@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { RichTextEditor } from "@/components/admin/RichTextEditor/RichTextEditor";
 import { ImageField } from "@/components/admin/ImageField/ImageField";
 import { MetadataFields } from "@/components/admin/MetadataFields/MetadataFields";
@@ -97,7 +98,7 @@ function TagEditor({ initialValue }: { initialValue: string }) {
       <button type="button" className={tagStyles.addTagButton} onClick={addTags}>Add tags</button>
     </div>
     <div className={tagStyles.tagList} aria-label="Added tags">
-      {tags.map((tag) => <span className={tagStyles.tag} key={tag}>{tag}<button type="button" aria-label={`Remove ${tag}`} onClick={() => removeTag(tag)}>×</button></span>)}
+      {tags.map((tag) => <span className={tagStyles.tag} key={tag}>{tag}<button type="button" aria-label={`Remove ${tag}`} onClick={() => removeTag(tag)}><AdminIcon name="action-close" /></button></span>)}
     </div>
     <small className={tagStyles.tagHint}>Only tags shown here are published. Separate multiple tags with commas.</small>
   </div>;

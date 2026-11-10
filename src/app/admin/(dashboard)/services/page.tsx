@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { getAllServiceItemsAdmin } from "@/lib/serviceItems";
 import { ReorderableList } from "@/components/admin/ReorderableList/ReorderableList";
 import { AdminTabs } from "@/components/admin/AdminTabs/AdminTabs";
@@ -60,9 +61,7 @@ export default function AdminServicesPage() {
                 <div className={styles.listItemActions}>
                   <form action={`/api/admin/services/${service.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="up" />
-                    <button type="submit" disabled={index === 0} aria-label="Move up">
-                      ↑
-                    </button>
+                    <button type="submit" disabled={index === 0} aria-label="Move up"><AdminIcon name="direction-arrow-up" /></button>
                   </form>
                   <form action={`/api/admin/services/${service.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="down" />
@@ -70,12 +69,10 @@ export default function AdminServicesPage() {
                       type="submit"
                       disabled={index === services.length - 1}
                       aria-label="Move down"
-                    >
-                      ↓
-                    </button>
+                    ><AdminIcon name="direction-arrow-down" /></button>
                   </form>
                   <Link href={`/admin/services/${service.id}`} className={styles.editLink}>
-                    <span aria-hidden="true">✎</span><span className={styles.srOnly}>Edit service</span>
+                    <AdminIcon name="action-edit" /><span className={styles.srOnly}>Edit service</span>
                   </Link>
                   <form
                     action={`/api/admin/services/${service.id}/delete`}
@@ -83,7 +80,7 @@ export default function AdminServicesPage() {
                     className={styles.deleteForm}
                   >
                     <button type="submit" className={styles.deleteButton} aria-label="Delete service" title="Delete service">
-                      <span aria-hidden="true">×</span>
+                      <AdminIcon name="action-delete" />
                     </button>
                   </form>
                 </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { getAllHighlightItemsAdmin } from "@/lib/about";
 import { ReorderableList } from "@/components/admin/ReorderableList/ReorderableList";
 import { AboutAdminHeader } from "@/components/admin/AboutAdminHeader/AboutAdminHeader";
@@ -43,9 +44,7 @@ export default function AdminAboutHighlightsPage() {
                 <div className={styles.listItemActions}>
                   <form action={`/api/admin/about-highlights/${item.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="up" />
-                    <button type="submit" disabled={index === 0} aria-label="Move up">
-                      ↑
-                    </button>
+                    <button type="submit" disabled={index === 0} aria-label="Move up"><AdminIcon name="direction-arrow-up" /></button>
                   </form>
                   <form action={`/api/admin/about-highlights/${item.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="down" />
@@ -53,12 +52,10 @@ export default function AdminAboutHighlightsPage() {
                       type="submit"
                       disabled={index === items.length - 1}
                       aria-label="Move down"
-                    >
-                      ↓
-                    </button>
+                    ><AdminIcon name="direction-arrow-down" /></button>
                   </form>
                   <Link href={`/admin/about-highlights/${item.id}`} className={styles.editLink}>
-                    <span aria-hidden="true">✎</span><span className={styles.srOnly}>Edit highlight</span>
+                    <AdminIcon name="action-edit" /><span className={styles.srOnly}>Edit highlight</span>
                   </Link>
                   <form
                     action={`/api/admin/about-highlights/${item.id}/delete`}
@@ -66,7 +63,7 @@ export default function AdminAboutHighlightsPage() {
                     className={styles.deleteForm}
                   >
                     <button type="submit" className={styles.deleteButton} aria-label="Delete highlight" title="Delete highlight">
-                      <span aria-hidden="true">×</span>
+                      <AdminIcon name="action-delete" />
                     </button>
                   </form>
                 </div>

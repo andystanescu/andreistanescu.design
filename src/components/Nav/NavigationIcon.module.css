@@ -1,0 +1,6 @@
+.customIcon { display: block; flex: 0 0 auto; }
+
+:global(html[data-theme="light"]) .customIcon { filter: brightness(.35); }
+@media (prefers-color-scheme: light) {
+  :global(html:not([data-theme="dark"])) .customIcon { filter: brightness(.35); }
+}

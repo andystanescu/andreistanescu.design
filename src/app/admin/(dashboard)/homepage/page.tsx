@@ -1,4 +1,5 @@
 import { getAllSections, getSection } from "@/lib/homepage";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { getSettings } from "@/lib/settings";
 import { Hero } from "@/components/home/Hero/Hero";
 import { Services } from "@/components/home/Services/Services";
@@ -63,11 +64,11 @@ export default async function AdminHomepagePage({
                 node: <InlineSectionCard section={section} label={LABELS[section.key] ?? section.key} parent="homepage" preview={previews[section.key]} reorder={<>
                   <form action={`/api/admin/homepage/${section.key}/move`} method="POST">
                     <input type="hidden" name="direction" value="up" />
-                    <button type="submit" disabled={index === 0} aria-label="Move up">↑</button>
+                    <button type="submit" disabled={index === 0} aria-label="Move up"><AdminIcon name="direction-arrow-up" /></button>
                   </form>
                   <form action={`/api/admin/homepage/${section.key}/move`} method="POST">
                     <input type="hidden" name="direction" value="down" />
-                    <button type="submit" disabled={index === reorderable.length - 1} aria-label="Move down">↓</button>
+                    <button type="submit" disabled={index === reorderable.length - 1} aria-label="Move down"><AdminIcon name="direction-arrow-down" /></button>
                   </form>
                 </>} />,
               }))}

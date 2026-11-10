@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { getAllApproachStepsAdmin } from "@/lib/approachSteps";
 import { ReorderableList } from "@/components/admin/ReorderableList/ReorderableList";
 import { AdminTabs } from "@/components/admin/AdminTabs/AdminTabs";
@@ -55,9 +56,7 @@ export default function AdminApproachStepsPage() {
                 <div className={styles.listItemActions}>
                   <form action={`/api/admin/approach-steps/${step.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="up" />
-                    <button type="submit" disabled={index === 0} aria-label="Move up">
-                      ↑
-                    </button>
+                    <button type="submit" disabled={index === 0} aria-label="Move up"><AdminIcon name="direction-arrow-up" /></button>
                   </form>
                   <form action={`/api/admin/approach-steps/${step.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="down" />
@@ -65,12 +64,10 @@ export default function AdminApproachStepsPage() {
                       type="submit"
                       disabled={index === steps.length - 1}
                       aria-label="Move down"
-                    >
-                      ↓
-                    </button>
+                    ><AdminIcon name="direction-arrow-down" /></button>
                   </form>
                   <Link href={`/admin/approach-steps/${step.id}`} className={styles.editLink}>
-                    <span aria-hidden="true">✎</span><span className={styles.srOnly}>Edit approach step</span>
+                    <AdminIcon name="action-edit" /><span className={styles.srOnly}>Edit approach step</span>
                   </Link>
                   <form
                     action={`/api/admin/approach-steps/${step.id}/delete`}
@@ -78,7 +75,7 @@ export default function AdminApproachStepsPage() {
                     className={styles.deleteForm}
                   >
                     <button type="submit" className={styles.deleteButton} aria-label="Delete approach step" title="Delete approach step">
-                      <span aria-hidden="true">×</span>
+                      <AdminIcon name="action-delete" />
                     </button>
                   </form>
                 </div>

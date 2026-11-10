@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { getGenericPages, getMainNavPages, getNavLinks, getPublishedPage, RELOCATED_PAGE_SLUGS } from "@/lib/pages";
 import { NavigationPreview } from "@/components/admin/NavigationPreview/NavigationPreview";
 import { FooterEditor } from "@/components/admin/FooterEditor/FooterEditor";
@@ -46,7 +47,7 @@ export default async function AdminPagesPage({ searchParams }: { searchParams: P
                 </div>
                 <div className={styles.listItemActions}>
                   <Link href={editHref(page.slug)} className={styles.editLink}>
-                    <span aria-hidden="true">✎</span><span className={styles.srOnly}>Edit page</span>
+                    <AdminIcon name="action-edit" /><span className={styles.srOnly}>Edit page</span>
                   </Link>
                 </div>
               </li>

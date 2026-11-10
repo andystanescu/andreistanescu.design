@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { db } from "@/lib/db";
 import type { CaseStudy } from "@/data/caseStudies";
 import { ReorderableList } from "@/components/admin/ReorderableList/ReorderableList";
@@ -59,9 +60,7 @@ export default async function AdminCaseStudiesPage({ searchParams }: { searchPar
                 <div className={styles.listItemActions}>
                   {status === "published" && <form action={`/api/admin/case-studies/${study.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="up" />
-                    <button type="submit" disabled={index === 0} aria-label="Move up">
-                      ↑
-                    </button>
+                    <button type="submit" disabled={index === 0} aria-label="Move up"><AdminIcon name="direction-arrow-up" /></button>
                   </form>}
                   {status === "published" && <form action={`/api/admin/case-studies/${study.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="down" />
@@ -69,12 +68,10 @@ export default async function AdminCaseStudiesPage({ searchParams }: { searchPar
                       type="submit"
                       disabled={index === caseStudies.length - 1}
                       aria-label="Move down"
-                    >
-                      ↓
-                    </button>
+                    ><AdminIcon name="direction-arrow-down" /></button>
                   </form>}
                   <Link href={`/admin/case-studies/${study.id}`} className={styles.editLink}>
-                    <span aria-hidden="true">✎</span>
+                    <AdminIcon name="action-edit" />
                     <span className={styles.srOnly}>Edit case study</span>
                   </Link>
                   <form
@@ -83,7 +80,7 @@ export default async function AdminCaseStudiesPage({ searchParams }: { searchPar
                     className={styles.deleteForm}
                   >
                     <button type="submit" className={styles.deleteButton} aria-label="Delete case study" title="Delete case study">
-                      <span aria-hidden="true">×</span>
+                      <AdminIcon name="action-delete" />
                     </button>
                   </form>
                   <form action={`/api/admin/case-studies/${study.id}/toggle`} method="POST">

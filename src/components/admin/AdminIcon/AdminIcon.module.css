@@ -1,0 +1,9 @@
+.icon {
+  display: inline-block;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  -webkit-mask: var(--admin-icon-image) center / contain no-repeat;
+  mask: var(--admin-icon-image) center / contain no-repeat;
+}

@@ -8,7 +8,7 @@ export function AboutAdminHeader({ active, action }: { active: string; action?: 
     <div className={`${styles.pageHeader} ${styles.pageHeaderStacked}`} data-admin-about-header>
       <div className={styles.pageHeaderTop}>
         <div>
-          <h1 className="heading-01">About</h1>
+          <h1 className="heading-01">About me</h1>
         </div>
         {action}
       </div>

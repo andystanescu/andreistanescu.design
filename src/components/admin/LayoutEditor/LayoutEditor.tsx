@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import type { LayoutPage, LayoutSection } from "@/lib/layoutDraft";
 import styles from "./LayoutEditor.module.css";
 
@@ -83,8 +84,8 @@ export function LayoutEditor({ page, initial, previewOnly = false }: { page: Lay
           <strong>{section.label}</strong>
           {section.fixed ? <span className={styles.note}>Fixed position</span> : <div className={styles.rowControls}>
             <label><input type="checkbox" role="switch" checked={section.visible} onChange={(event) => { setDraft(draft.map((item) => item.key === section.key ? { ...item, visible: event.target.checked } : item)); setMessage(""); }} /> Visible</label>
-            <button type="button" disabled={index === 0 || draft[index - 1].fixed} aria-label={`Move ${section.label} up`} onClick={() => move(section.key, index - 1)}>↑</button>
-            <button type="button" disabled={index === draft.length - 1 || draft[index + 1].fixed} aria-label={`Move ${section.label} down`} onClick={() => move(section.key, index + 1)}>↓</button>
+            <button type="button" disabled={index === 0 || draft[index - 1].fixed} aria-label={`Move ${section.label} up`} onClick={() => move(section.key, index - 1)}><AdminIcon name="direction-arrow-up" /></button>
+            <button type="button" disabled={index === draft.length - 1 || draft[index + 1].fixed} aria-label={`Move ${section.label} down`} onClick={() => move(section.key, index + 1)}><AdminIcon name="direction-arrow-down" /></button>
           </div>}
         </li>)}</ol>
         {page === "about" && <p className={styles.note}>How I work · fixed closing section</p>}

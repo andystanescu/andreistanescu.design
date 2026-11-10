@@ -132,17 +132,26 @@
   right: 0;
   bottom: calc(var(--nav-height) + var(--safe-area-bottom));
   z-index: 100;
-  display: none;
+  display: flex;
   flex-direction: column;
   justify-content: center;
   gap: var(--space-800);
   padding: max(var(--space-800), var(--safe-area-top)) max(var(--space-800), var(--safe-area-right)) max(var(--space-800), var(--safe-area-bottom)) max(var(--space-800), var(--safe-area-left));
   background: var(--bg-canvas);
   overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(16px);
+  transition: opacity .22s ease, transform .28s ease, visibility 0s linear .28s;
 }
 
 .overlayOpen {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
 }
 
 .overlayLinks {
@@ -226,7 +235,7 @@
 .mastheadLinks a.mastheadActive{border-bottom-color:var(--accent-foundation);color:var(--text-primary)}
 @media(min-width:901px){.masthead[data-masthead-collapsed="true"] .mastheadBrandRow{display:none}}
 @media(max-width:900px){
-  .masthead{position:fixed;inset:auto 0 0;display:flex;flex-direction:column-reverse;border-bottom:0;border-top:1px solid var(--border-default);padding-top:0;padding-bottom:var(--safe-area-bottom)}
+  .masthead{position:fixed;inset:auto 0 0;display:flex;flex-direction:column-reverse;border-bottom:0;border-top:1px solid var(--border-default);padding-top:0;padding-bottom:var(--safe-area-bottom);transition:transform .2s ease}
   .mastheadBrandRow{grid-template-columns:minmax(0,1fr) auto auto;gap:var(--space-100);padding:var(--space-100) var(--space-200)}
   .mastheadLogo{grid-column:1;grid-row:1;justify-self:start}.mastheadTheme{grid-column:2;grid-row:1}.mastheadAction{grid-column:3;grid-row:1}
   .mastheadLogo > span{gap:var(--space-100)}
@@ -236,7 +245,8 @@
   .mastheadLinks{justify-content:safe center;border-top:0;border-bottom:1px solid var(--border-default)}
   .mastheadLinks a{flex:1 0 max-content;min-height:48px;padding:var(--space-100);border-bottom:0;border-top:2px solid transparent;font-size:14px}
   .mastheadLinks a.mastheadActive{border-top-color:var(--accent-foundation)}
-  :global(body.chapter-navigator-open) .masthead{transform:translateY(calc(100% + var(--safe-area-bottom)));pointer-events:none}
+  .mastheadReadingHidden,:global(body.chapter-navigator-open) .masthead{transform:translateY(calc(100% + var(--safe-area-bottom)))}
+  :global(body.chapter-navigator-open) .masthead{pointer-events:none}
 }
 .islands{position:sticky;top:0;z-index:50;width:100%;padding-top:var(--safe-area-top);pointer-events:none}
 .islandsInner{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:var(--space-200);width:100%;max-width:var(--layout-content-width);margin-inline:auto;padding:var(--space-200) var(--layout-gutter-narrative)}
@@ -269,11 +279,12 @@
 .menuFirstToggle{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-100);min-height:44px;padding:var(--space-100) var(--space-200);border:1px solid var(--border-field);border-radius:var(--radius-md);color:var(--text-primary)}
 .menuFirstToggle span{font-size:20px;line-height:1}
 .menuFirstToggle:focus-visible,.menuFirstLinks a:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
-.menuFirstPanel{position:absolute;top:100%;left:0;right:0;background:var(--bg-surface);border-bottom:1px solid var(--border-default);box-shadow:0 2px 6px rgb(0 0 0 / .12)}
+.menuFirstPanel{position:absolute;top:100%;left:0;right:0;background:var(--bg-surface);border-bottom:1px solid var(--border-default);box-shadow:0 2px 6px rgb(0 0 0 / .12);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-12px);transition:opacity .22s ease,transform .28s ease,visibility 0s linear .28s}
+.menuFirstPanelOpen{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0);transition-delay:0s}
 .menuFirstLinks{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-200);max-width:var(--layout-content-width);margin-inline:auto;padding:var(--space-300) var(--layout-gutter-narrative) var(--space-400)}
 .menuFirstLinks a{display:flex;flex-direction:column;gap:var(--space-100);min-width:0;padding-top:var(--space-100);border-top:1px solid var(--border-default);color:var(--text-secondary)}
 .menuFirstLinks a[aria-current="page"]{border-top-color:var(--accent-foundation);color:var(--text-primary)}
-.menuFirstLinks a:hover{color:var(--text-primary)}
+.menuFirstLinks a:hover,.menuFirstLinks a:focus-visible{border-top-color:var(--accent-foundation);color:var(--text-primary)}
 .menuFirstLinks a span{font:500 12px/1.4 var(--font-family-body);color:var(--text-tertiary)}
 .menuFirstLinks a[aria-current="page"] span{color:var(--text-accent)}
 .menuFirstLinks a strong{font:600 clamp(24px,2.4vw,40px)/1.15 var(--font-family-heading);overflow-wrap:anywhere}
@@ -283,7 +294,8 @@
  .menuFirstLayout{display:flex;flex-direction:column-reverse}
  .menuFirstBar{width:100%;padding:var(--space-100) var(--layout-gutter-narrative);border-top:1px solid var(--border-default);border-bottom:0}
  .menuFirstDesktopTheme,.menuFirstDesktopAction{display:none}
- .menuFirstPanel{position:static;max-height:calc(100dvh - 80px - var(--safe-area-bottom));overflow-y:auto;border-bottom:0;border-top:1px solid var(--border-default)}
+ .menuFirstPanel{top:auto;bottom:100%;max-height:calc(100dvh - 80px - var(--safe-area-bottom));overflow-y:auto;border-bottom:0;border-top:1px solid var(--border-default);transform:translateY(12px)}
+ .menuFirstPanelOpen{transform:translateY(0)}
  .menuFirstLinks{grid-template-columns:1fr;gap:0;padding:var(--space-200) var(--layout-gutter-narrative) 0}
  .menuFirstLinks a{flex-direction:row;align-items:center;gap:var(--space-200);padding:var(--space-100) 0}
  .menuFirstLinks a strong{font-size:24px}
@@ -299,8 +311,8 @@
 .railLinks a{position:relative;display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex-shrink:0;border-radius:var(--radius-md);color:var(--text-secondary)}
 .railLinks a[aria-current="page"],.railLinks a:hover,.railLinks a:focus-visible{background:var(--bg-subtle);color:var(--text-primary)}
 .railLinks a[aria-current="page"]::before{content:"";position:absolute;left:0;top:50%;width:2px;height:20px;transform:translateY(-50%);background:var(--accent-foundation)}
-.railLinks a span{display:none;position:fixed;left:84px;padding:var(--space-100) var(--space-150);border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface);color:var(--text-primary);white-space:nowrap}
-.railLinks a:hover span,.railLinks a:focus-visible span{display:block}
+.railLinks a span{display:block;position:fixed;left:84px;padding:var(--space-100) var(--space-150);border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface);color:var(--text-primary);white-space:nowrap;opacity:0;visibility:hidden;pointer-events:none;transform:translateX(-6px);transition:opacity .18s ease,transform .18s ease,visibility 0s linear .18s}
+.railLinks a:hover span,.railLinks a:focus-visible span{opacity:1;visibility:visible;transform:translateX(0);transition-delay:0s}
 .railLinks a:focus-visible,.railBrand:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px}
 .railTheme{display:grid;place-items:center;width:60px;min-height:88px;padding:var(--space-100)}
 .railMobileTheme{display:none}
@@ -310,10 +322,12 @@
  .railLinks{flex:1;min-width:0;flex-direction:row;align-items:center;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
  .railLinks a{height:42px;width:42px;gap:var(--space-100);padding:0 var(--space-100)}
  .railLinks a[aria-current="page"]{width:auto}
- .railLinks a span,.railLinks a:hover span,.railLinks a:focus-visible span{display:none;position:static;padding:0;border:0;background:transparent}
- .railLinks a[aria-current="page"] span{display:inline}
+ .railLinks a span,.railLinks a:hover span,.railLinks a:focus-visible span{display:none;position:static;padding:0;border:0;background:transparent;transition:none;transform:none}
+ .railLinks a[aria-current="page"] span{display:inline;opacity:1;visibility:visible}
  .railTheme{width:52px;min-height:52px;flex:0 0 52px;padding:0}
  .railDesktopTheme{display:none}.railMobileTheme{display:block}
  .floatingRailHidden,:global(body.chapter-navigator-open) .floatingRail{transform:translateY(calc(100% + var(--space-200) + var(--safe-area-bottom)))}
 }
 @media(prefers-reduced-motion:reduce){.floatingRail{transition:none}}
+@media(prefers-reduced-motion:reduce){.overlay,.menuFirstPanel,.railLinks a span{transition:none;transform:none}}
+@media(prefers-reduced-motion:reduce){.masthead{transition:none}}

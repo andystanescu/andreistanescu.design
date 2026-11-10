@@ -43,6 +43,8 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
   useEffect(() => {
     const isReadingPage = /^\/(work|insights)\/[^/]+\/?$/.test(pathname);
     let frame = 0;
+    let direction = 0;
+    let directionStartY = window.scrollY;
     const update = () => {
       frame = 0;
       const currentY = window.scrollY;
@@ -51,10 +53,17 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
 
       if (!isReadingPage || window.innerWidth > 900 || currentY < 160) {
         setReadingNavHidden(false);
-      } else if (delta > 10) {
-        setReadingNavHidden(true);
-      } else if (delta < -10) {
-        setReadingNavHidden(false);
+        direction = 0;
+        directionStartY = currentY;
+      } else if (delta !== 0) {
+        const nextDirection = Math.sign(delta);
+        if (nextDirection !== direction) {
+          direction = nextDirection;
+          directionStartY = lastScrollY.current;
+        }
+        if (Math.abs(currentY - directionStartY) > 10) {
+          setReadingNavHidden(direction > 0);
+        }
       }
 
       lastScrollY.current = currentY;
@@ -123,7 +132,7 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
   if (navigationStyle === "floating-rail") {
     return <header data-navigation-style="floating-rail" className={`${styles.floatingRail} ${readingNavHidden ? styles.floatingRailHidden : ""}`}>
       <Link className={styles.railBrand} href="/" aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`}><LogoIcon identity={logoIdentity} imageUrl={logoIconImage} /></Link>
-      <nav className={styles.railLinks} aria-label="Primary">{links.map((link) => <Link key={link.href} href={link.href} aria-label={link.label} aria-current={isActive(link.href) ? "page" : undefined}><NavigationIcon page={link.href} /><span>{link.label}</span></Link>)}</nav>
+      <nav className={styles.railLinks} aria-label="Primary">{links.map((link) => <Link key={link.href} href={link.href} aria-label={link.label} aria-current={isActive(link.href) ? "page" : undefined}><NavigationIcon page={link.href} custom /><span>{link.label}</span></Link>)}</nav>
       <div className={styles.railTheme}><span className={styles.railDesktopTheme}><ThemeSwitch /></span><span className={styles.railMobileTheme}><ThemeSwitch compact /></span></div>
     </header>;
   }
@@ -139,10 +148,10 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
             {!isContactPage && <div className={styles.menuFirstDesktopAction}><Button href="/contact" onClick={closeMenu} icon={<ArrowIcon size={16} />}>Let&apos;s talk</Button></div>}
           </div>
         </div>
-        {menuOpen && <div id="menu-first-panel" className={styles.menuFirstPanel}>
+        <div id="menu-first-panel" className={`${styles.menuFirstPanel} ${menuOpen ? styles.menuFirstPanelOpen : ""}`} aria-hidden={!menuOpen} inert={!menuOpen}>
           <nav className={styles.menuFirstLinks} aria-label="Primary">{links.map((link, index) => <Link key={link.href} href={link.href} onClick={closeMenu} aria-current={isActive(link.href) ? "page" : undefined}><span>{String(index + 1).padStart(2, "0")}</span><strong>{link.label}</strong></Link>)}</nav>
           <div className={styles.menuFirstMobileActions}>{!isContactPage && <Button href="/contact" onClick={closeMenu} icon={<ArrowIcon size={16} />}>Let&apos;s talk</Button>}<ThemeSwitch horizontal /></div>
-        </div>}
+        </div>
       </div>
     </header>;
   }
@@ -152,7 +161,7 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
       <div className={styles.islandsInner}>
         <Link className={styles.islandsBrand} href="/" aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`}><Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} /></Link>
         <div className={`${styles.islandsDock} ${readingNavHidden ? styles.islandsDockHidden : ""}`}>
-          <nav className={styles.islandsLinks} aria-label="Primary">{links.map((link) => <Link key={link.href} href={link.href} aria-label={link.label} aria-current={isActive(link.href) ? "page" : undefined} className={isActive(link.href) ? styles.islandsActive : undefined}><span className={styles.islandsIcon}><NavigationIcon page={link.href} /></span><span className={styles.islandsLabel}>{link.label}</span></Link>)}</nav>
+          <nav className={styles.islandsLinks} aria-label="Primary">{links.map((link) => <Link key={link.href} href={link.href} aria-label={link.label} aria-current={isActive(link.href) ? "page" : undefined} className={isActive(link.href) ? styles.islandsActive : undefined}><span className={styles.islandsIcon}><NavigationIcon page={link.href} custom /></span><span className={styles.islandsLabel}>{link.label}</span></Link>)}</nav>
           {!isContactPage && <div className={styles.islandsMobileAction}><Button href="/contact">Let&apos;s talk</Button></div>}
         </div>
         <div className={styles.islandsActions}>{!isContactPage && <Button href="/contact" icon={<ArrowIcon size={16} />}>Let&apos;s talk</Button>}<ThemeSwitch horizontal /></div>
@@ -161,7 +170,7 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
   }
 
   if (navigationStyle === "masthead") {
-    return <header data-navigation-style="masthead" data-masthead-collapsed={scrolled || undefined} className={styles.masthead}>
+    return <header data-navigation-style="masthead" data-masthead-collapsed={scrolled || undefined} className={`${styles.masthead} ${readingNavHidden ? styles.mastheadReadingHidden : ""}`}>
       <div className={styles.mastheadBrandRow}>
         <div className={styles.mastheadTheme}><ThemeSwitch horizontal /></div>
         <Link className={styles.mastheadLogo} href="/" aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`}><Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} /></Link>
@@ -177,7 +186,9 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
       id="mobile-menu"
       className={`${styles.overlay} ${menuOpen ? styles.overlayOpen : ""}`}
       role="dialog"
-      aria-modal="true"
+      aria-modal={menuOpen ? true : undefined}
+      aria-hidden={!menuOpen}
+      inert={!menuOpen}
       aria-label="Menu"
     >
       <nav className={styles.overlayLinks} aria-label="Primary">

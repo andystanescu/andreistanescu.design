@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { createPortal } from "react-dom";
 import styles from "./InlineSectionCard.module.css";
 import heroStyles from "@/components/about/AboutHero/AboutHero.module.css";
@@ -155,7 +156,22 @@ export function SectionLivePreview({ sectionKey, page, preview, children, photoI
     <div className={styles.livePreview} aria-label="Live section preview">
       <p className={styles.previewLabel}>{inlineReady ? "Live preview · Select text to edit. In headings, wrap words in # to add an accent colour." : "Live preview"}</p>
       {inlineError && <p role="alert" className={styles.previewError}>{inlineError}</p>}
-      <div ref={previewRef} className={styles.previewContent} onClick={(event) => { if ((event.target as Element).closest("a,button")) event.preventDefault(); }} onFocus={(event) => {
+      <div ref={previewRef} className={styles.previewContent} onClickCapture={(event) => {
+        if (!(event.target instanceof Element)) return;
+        const link = event.target.closest("a");
+        const button = event.target.closest("button");
+        if (link) {
+          // Next.js links handle clicks before a bubbling preview handler runs.
+          // Cancel navigation during capture, while keeping inline labels editable.
+          event.preventDefault();
+          event.target.closest<HTMLElement>('[data-edit-field]')?.focus();
+        } else if (button) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }} onAuxClickCapture={(event) => {
+        if (event.target instanceof Element && event.target.closest("a")) event.preventDefault();
+      }} onFocus={(event) => {
         const node = event.target;
         if (!(node instanceof HTMLElement) || !node.hasAttribute("data-edit-field")) return;
         const input = field(node.getAttribute("data-edit-field")!);
@@ -174,7 +190,7 @@ export function SectionLivePreview({ sectionKey, page, preview, children, photoI
         if (event.key === "Enter" && node.getAttribute("data-edit-field") !== "description") { event.preventDefault(); node.blur(); }
       }}>
         {preview}
-        {photoTarget && createPortal(<label className={styles.photoUpload} title="Upload About photo"><input type="file" name="about_hero_image" form={`section-${page}-${sectionKey}`} accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml" aria-label="Upload About photo" aria-describedby="about-photo-help" /><span className={styles.photoUploadIcon} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4m-4 4 4-4 4 4" /><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" /></svg></span></label>, photoTarget)}
+        {photoTarget && createPortal(<label className={styles.photoUpload} title="Upload About photo"><input type="file" name="about_hero_image" form={`section-${page}-${sectionKey}`} accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml" aria-label="Upload About photo" aria-describedby="about-photo-help" /><span className={styles.photoUploadIcon} aria-hidden="true"><AdminIcon name="action-upload" /></span></label>, photoTarget)}
       </div>
       {photoTarget && <p id="about-photo-help" className={styles.previewLabel}>Select the photo to upload a JPEG, PNG, WebP, GIF or SVG, up to 8 MB.</p>}
     </div>

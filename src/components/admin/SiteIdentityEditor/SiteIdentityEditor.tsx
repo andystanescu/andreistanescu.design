@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import Image from "next/image";
 import { Logo } from "@/components/Logo/Logo";
 import { PersonalLogoMark } from "@/components/Logo/PersonalLogoMark";
@@ -25,7 +26,7 @@ const ROLES: Array<{ key: Role; palette: keyof PaletteAnchors; label: string; us
 ];
 
 function UploadIcon() {
-  return <span className={styles.uploadIcon} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4m-4 4 4-4 4 4" /><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" /></svg></span>;
+  return <span className={styles.uploadIcon} aria-hidden="true"><AdminIcon name="action-upload" /></span>;
 }
 
 function resolveAnchors(colors: ThemeColors): PaletteAnchors {

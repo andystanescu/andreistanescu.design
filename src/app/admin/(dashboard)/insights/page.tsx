@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { db } from "@/lib/db";
 import type { Insight } from "@/data/insights";
 import { ReorderableList } from "@/components/admin/ReorderableList/ReorderableList";
@@ -58,9 +59,7 @@ export default async function AdminInsightsPage({ searchParams }: { searchParams
                 <div className={styles.listItemActions}>
                   {status === "published" && <form action={`/api/admin/insights/${insight.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="up" />
-                    <button type="submit" disabled={index === 0} aria-label="Move up">
-                      ↑
-                    </button>
+                    <button type="submit" disabled={index === 0} aria-label="Move up"><AdminIcon name="direction-arrow-up" /></button>
                   </form>}
                   {status === "published" && <form action={`/api/admin/insights/${insight.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="down" />
@@ -68,12 +67,10 @@ export default async function AdminInsightsPage({ searchParams }: { searchParams
                       type="submit"
                       disabled={index === insights.length - 1}
                       aria-label="Move down"
-                    >
-                      ↓
-                    </button>
+                    ><AdminIcon name="direction-arrow-down" /></button>
                   </form>}
                   <Link href={`/admin/insights/${insight.id}`} className={styles.editLink}>
-                    <span aria-hidden="true">✎</span>
+                    <AdminIcon name="action-edit" />
                     <span className={styles.srOnly}>Edit article</span>
                   </Link>
                   <form
@@ -82,7 +79,7 @@ export default async function AdminInsightsPage({ searchParams }: { searchParams
                     className={styles.deleteForm}
                   >
                     <button type="submit" className={styles.deleteButton} aria-label="Delete article" title="Delete article">
-                      <span aria-hidden="true">×</span>
+                      <AdminIcon name="action-delete" />
                     </button>
                   </form>
                   <form action={`/api/admin/insights/${insight.id}/toggle`} method="POST">

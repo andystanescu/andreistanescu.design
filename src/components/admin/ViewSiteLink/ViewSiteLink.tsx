@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import styles from "@/app/admin/(dashboard)/dashboard.module.css";
 
 export function ViewSiteLink() {
@@ -23,9 +24,7 @@ export function ViewSiteLink() {
 
   return (
     <a href={href} className={styles.viewSiteLink} aria-label="View site" title="View site">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M14 5h5v5M19 5l-8 8M19 13v6H5V5h6" />
-      </svg>
+      <AdminIcon name="direction-external" />
       <span>View site</span>
     </a>
   );

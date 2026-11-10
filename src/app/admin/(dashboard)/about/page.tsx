@@ -1,4 +1,5 @@
 import { getAllSections } from "@/lib/about";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { LayoutEditor } from "@/components/admin/LayoutEditor/LayoutEditor";
 import { getLayoutConfiguration } from "@/lib/layoutConfiguration";
 import { AdminContentTabs } from "@/components/admin/AdminContentTabs/AdminContentTabs";
@@ -58,9 +59,7 @@ export default function AdminAboutPage() {
               <InlineSectionCard section={section} label={LABELS[section.key] ?? section.key} parent="about" preview={previews[section.key]} reorder={<>
                 <form action={`/api/admin/about/${section.key}/move`} method="POST">
                   <input type="hidden" name="direction" value="up" />
-                  <button type="submit" disabled={index === 0} aria-label="Move up">
-                    ↑
-                  </button>
+                  <button type="submit" disabled={index === 0} aria-label="Move up"><AdminIcon name="direction-arrow-up" /></button>
                 </form>
                 <form action={`/api/admin/about/${section.key}/move`} method="POST">
                   <input type="hidden" name="direction" value="down" />
@@ -68,9 +67,7 @@ export default function AdminAboutPage() {
                     type="submit"
                     disabled={index === reorderable.length - 1}
                     aria-label="Move down"
-                  >
-                    ↓
-                  </button>
+                  ><AdminIcon name="direction-arrow-down" /></button>
                 </form>
               </>}/>
             </>

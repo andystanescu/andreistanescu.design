@@ -1,7 +1,6 @@
 import { Logo } from "@/components/Logo/Logo";
 import { Button } from "@/components/Button/Button";
 import { ArrowIcon } from "@/components/Icon/ArrowIcon";
-import { AdminBar } from "@/components/AdminBar/AdminBar";
 import { FooterLink } from "./FooterLink";
 import { getServiceItems } from "@/lib/serviceItems";
 import { getSettings } from "@/lib/settings";
@@ -46,7 +45,6 @@ export function Footer({
         <footer className={`${styles.footer} ${styles.compactFooter} section-dark`}>
           {compactContent}
         </footer>
-        <AdminBar />
       </>
     );
   }
@@ -120,7 +118,6 @@ export function Footer({
         </div>
         <div className={styles.mobileCompact}>{compactContent}</div>
       </footer>
-      <AdminBar />
     </>
   );
 }

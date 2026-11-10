@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { Logo } from "@/components/Logo/Logo";
 import { AdminNav } from "@/components/admin/AdminNav/AdminNav";
 import { ViewSiteLink } from "@/components/admin/ViewSiteLink/ViewSiteLink";
@@ -101,7 +102,7 @@ export function AdminSidebar({ logoIdentity }: { logoIdentity: "business" | "per
         aria-expanded={mobileOpen}
         aria-controls="admin-navigation-drawer"
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+        <AdminIcon name="action-menu" />
         <span>Menu</span>
       </button>
       {mobileOpen && <button type="button" className={styles.mobileNavBackdrop} aria-label="Close admin navigation" onClick={() => closeDrawer()} />}
@@ -131,12 +132,10 @@ export function AdminSidebar({ logoIdentity }: { logoIdentity: "business" | "per
           title={collapsed ? "Expand navigation" : undefined}
           aria-expanded={!collapsed}
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d={collapsed ? "m9 5 7 7-7 7" : "m15 5-7 7 7 7"} />
-          </svg>
+          <AdminIcon name={collapsed ? "direction-chevron-right" : "direction-chevron-left"} />
           <span>{collapsed ? "Expand navigation" : "Collapse navigation"}</span>
         </button>
-        <button ref={closeButtonRef} type="button" className={styles.mobileNavClose} onClick={() => closeDrawer()} aria-label="Close admin navigation">×</button>
+        <button ref={closeButtonRef} type="button" className={styles.mobileNavClose} onClick={() => closeDrawer()} aria-label="Close admin navigation"><AdminIcon name="action-close" /></button>
       </div>
       <ViewSiteLink />
       <div className={styles.navWrap} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) closeDrawer(false); }}>
@@ -144,9 +143,7 @@ export function AdminSidebar({ logoIdentity }: { logoIdentity: "business" | "per
       </div>
       <form action="/api/admin/logout" method="POST">
         <button type="submit" className={styles.logout} aria-label="Sign out" title={collapsed && !mobileOpen ? "Sign out" : undefined}>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10" />
-          </svg>
+          <AdminIcon name="admin-sign-out" />
           <span>Sign out</span>
         </button>
       </form>

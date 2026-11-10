@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import type { ReactNode } from "react";
 import { ImageField } from "@/components/admin/ImageField/ImageField";
 import { RichTextEditor } from "@/components/admin/RichTextEditor/RichTextEditor";
@@ -210,7 +211,7 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
                 const conducted = conductedEngagementIds.includes(activity.id);
                 return <article className={`${styles.editableEngagement} ${styles.activityCard}`} key={activity.id}>
                   <button type="button" className={styles.removeEngagementButton} onClick={() => removeEngagement(criterion.key, activity.id)} aria-label={`Remove ${activity.title || "engagement"}`} title="Remove engagement">
-                    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 13h12l1-13M9 7V4h6v3" /></svg>
+                    <AdminIcon name="action-delete" />
                   </button>
                   <div className={styles.editableEngagementFields}>
                     <div className={styles.engagementConductedRow}>
@@ -303,7 +304,7 @@ function TagEditor({ initialValue, onCommit }: { initialValue: string; onCommit:
     onCommit();
   };
   const removeTag = (tagToRemove: string) => { setTags((current) => current.filter((tag) => tag !== tagToRemove)); onCommit(); };
-  return <div className={adminStyles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Tags</span><input type="hidden" name="tags" value={tags.join(" · ")} /><div className={styles.tagComposer}><input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addTags(); } }} placeholder="Add one tag or paste several separated by commas" className={adminStyles.input} /><button type="button" className={styles.addTagButton} onClick={addTags}>Add tags</button></div><div className={styles.tagList} aria-label="Added tags">{tags.map((tag) => <span className={styles.tag} key={tag}>{tag}<button type="button" aria-label={`Remove ${tag}`} onClick={() => removeTag(tag)}>×</button></span>)}</div><small className={styles.tagHint}>Only tags shown here are published. Separate multiple tags with commas, semicolons, or new lines.</small></div>;
+  return <div className={adminStyles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Tags</span><input type="hidden" name="tags" value={tags.join(" · ")} /><div className={styles.tagComposer}><input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addTags(); } }} placeholder="Add one tag or paste several separated by commas" className={adminStyles.input} /><button type="button" className={styles.addTagButton} onClick={addTags}>Add tags</button></div><div className={styles.tagList} aria-label="Added tags">{tags.map((tag) => <span className={styles.tag} key={tag}>{tag}<button type="button" aria-label={`Remove ${tag}`} onClick={() => removeTag(tag)}><AdminIcon name="action-close" /></button></span>)}</div><small className={styles.tagHint}>Only tags shown here are published. Separate multiple tags with commas, semicolons, or new lines.</small></div>;
 }
 
 function PasswordManager({ passwordEntries, onCommit }: { passwordEntries: PasswordEntry[]; onCommit: () => void }) {
