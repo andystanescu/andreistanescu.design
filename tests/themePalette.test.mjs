@@ -130,3 +130,19 @@ test("rolls back a failed theme write without replacing the last published confi
 test("rejects invalid 500 anchors before a theme can be published", () => {
   assert.throws(() => createPublishedTheme({ ...DEFAULT_PALETTE_ANCHORS, primary: "not-a-color" }));
 });
+
+test("persists independent overrides and keeps them fixed when the palette changes", () => {
+  const overrides = { light: { "--bg-canvas": "#FFFFFF" }, dark: {} };
+  const theme = createPublishedTheme(DEFAULT_PALETTE_ANCHORS, "2026-11-10T12:00:00.000Z", overrides);
+  assert.deepEqual(parsePublishedTheme(JSON.stringify(theme)).overrides, overrides);
+  assert.equal(theme.semantic.light["--bg-canvas"], "#FFFFFF");
+  assert.equal(resolveTheme({ ...DEFAULT_PALETTE_ANCHORS, neutral: "#4567A9" }, overrides).semantic.light["--bg-canvas"], "#FFFFFF");
+  assert.equal(theme.semantic.dark["--bg-canvas"], resolveTheme(DEFAULT_PALETTE_ANCHORS).semantic.dark["--bg-canvas"]);
+});
+
+test("blocks unsafe or invalid overrides before publishing", () => {
+  const unsafe = { light: { "--text-primary": "#FFFFFF" }, dark: {} };
+  assert.ok(resolveTheme(DEFAULT_PALETTE_ANCHORS, unsafe).issues.length);
+  assert.throws(() => createPublishedTheme(DEFAULT_PALETTE_ANCHORS, undefined, unsafe));
+  assert.throws(() => resolveTheme(DEFAULT_PALETTE_ANCHORS, { light: { "--not-a-role": "#FFFFFF" }, dark: {} }));
+});

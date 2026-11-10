@@ -19,6 +19,7 @@ export default async function AdminSiteIdentityPage({ searchParams }: { searchPa
       logoImage={settings.logo_image}
       logoIconImage={settings.logo_icon_image}
       logoIdentity={settings.logo_identity}
+      overrides={publishedTheme?.overrides}
       colors={{
         theme_primary_500: anchors?.primary ?? settings.theme_primary_500,
         theme_secondary_500: anchors?.secondary ?? settings.theme_secondary_500,

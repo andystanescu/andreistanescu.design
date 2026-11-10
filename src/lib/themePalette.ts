@@ -5,6 +5,29 @@ export type PaletteRole = "primary" | "secondary" | "accent" | "neutral";
 export type PaletteAnchors = Record<PaletteRole, string>;
 export type ThemePalettes = Record<PaletteRole, ThemePalette>;
 export type ThemeModeTokens = Record<string, string>;
+export type ThemeOverrides = { light: Record<string, string>; dark: Record<string, string> };
+export const EDITABLE_THEME_GROUPS = [
+  { label: "Surfaces", roles: [["--bg-canvas", "Page background"], ["--bg-surface", "Panel background"], ["--bg-field", "Field background"]] },
+  { label: "Text and links", roles: [["--text-primary", "Primary text"], ["--text-secondary", "Secondary text"], ["--text-accent", "Accent text"], ["--action-link-text", "Link"], ["--action-link-hover", "Link hover"], ["--action-link-pressed", "Link pressed"]] },
+  { label: "Borders and focus", roles: [["--border-default", "Panel border"], ["--border-field", "Field border"], ["--border-focus", "Focus indicator"]] },
+  { label: "Primary button", roles: [["--action-primary-bg", "Background"], ["--action-primary-text", "Text"], ["--action-primary-hover", "Hover background"], ["--action-primary-hover-text", "Hover text"], ["--action-primary-pressed", "Pressed background"], ["--action-primary-pressed-text", "Pressed text"]] },
+  { label: "Secondary button", roles: [["--action-secondary-bg", "Background"], ["--action-secondary-text", "Text"], ["--action-secondary-border", "Border"], ["--action-secondary-hover", "Hover background"], ["--action-secondary-hover-text", "Hover text"], ["--action-secondary-hover-border", "Hover border"], ["--action-secondary-pressed", "Pressed background"], ["--action-secondary-pressed-text", "Pressed text"], ["--action-secondary-pressed-border", "Pressed border"]] },
+] as const;
+const EDITABLE_TOKENS = new Set<string>(EDITABLE_THEME_GROUPS.flatMap((group) => group.roles.map(([token]) => token)));
+
+export function parseThemeOverrides(value: unknown): ThemeOverrides {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Invalid theme overrides.");
+  const result: ThemeOverrides = { light: {}, dark: {} };
+  for (const mode of ["light", "dark"] as const) {
+    const entries = (value as Record<string, unknown>)[mode];
+    if (!entries || typeof entries !== "object" || Array.isArray(entries)) throw new Error("Invalid theme overrides.");
+    for (const [token, color] of Object.entries(entries)) {
+      if (!EDITABLE_TOKENS.has(token) || typeof color !== "string" || !isHexColor(color)) throw new Error(`Invalid ${mode} theme colour for ${token}.`);
+      result[mode][token] = color.toUpperCase();
+    }
+  }
+  return result;
+}
 
 export type ContrastCheck = {
   mode: "light" | "dark";
@@ -30,6 +53,7 @@ export type PublishedTheme = {
   semantic: ThemeResolution["semantic"];
   checks: ContrastCheck[];
   publishedAt: string;
+  overrides?: ThemeOverrides;
 };
 
 const LIGHT_STEPS = { 400: 0.12, 300: 0.27, 200: 0.46, 100: 0.68, 50: 0.88 } as const;
@@ -331,7 +355,7 @@ function buildModeTokens(mode: "light" | "dark", palettes: ThemePalettes, checks
   return tokens;
 }
 
-export function resolveTheme(anchors: PaletteAnchors): ThemeResolution {
+export function resolveTheme(anchors: PaletteAnchors, overrides?: ThemeOverrides): ThemeResolution {
   for (const role of ["primary", "secondary", "accent", "neutral"] as const) {
     if (!isHexColor(anchors[role])) throw new Error(`${role} must be a six-digit hex color.`);
   }
@@ -343,19 +367,48 @@ export function resolveTheme(anchors: PaletteAnchors): ThemeResolution {
   };
   const checks: ContrastCheck[] = [];
   const issues: string[] = [];
+  const semantic = {
+    light: buildModeTokens("light", palettes, checks, issues),
+    dark: buildModeTokens("dark", palettes, checks, issues),
+  };
+  if (overrides) {
+    const validated = parseThemeOverrides(overrides);
+    for (const mode of ["light", "dark"] as const) {
+      Object.assign(semantic[mode], validated[mode]);
+      const t = semantic[mode];
+      const pairs: Array<[string, string, string, number]> = [];
+      for (const surface of ["--bg-canvas", "--bg-surface", "--bg-subtle"]) {
+        for (const foreground of ["--text-primary", "--text-secondary", "--text-tertiary", "--text-accent", "--action-link-text", "--action-link-hover"]) pairs.push([foreground, foreground, surface, 4.5]);
+        if (surface !== "--bg-subtle") pairs.push(["pressed link", "--action-link-pressed", surface, 4.5]);
+      }
+      pairs.push(["field text", "--text-primary", "--bg-field", 4.5], ["field border", "--border-field", "--bg-field", 3]);
+      for (const surface of ["--bg-canvas", "--bg-surface", "--bg-field"]) pairs.push(["focus indicator", "--border-focus", surface, 3]);
+      for (const state of ["", "-hover", "-pressed"]) {
+        const primaryBg = state ? `--action-primary${state}` : "--action-primary-bg";
+        const secondaryBg = state ? `--action-secondary${state}` : "--action-secondary-bg";
+        pairs.push([`primary button${state} text`, `--action-primary${state}-text`, primaryBg, 4.5], [`primary button${state}`, primaryBg, "--bg-surface", 3]);
+        pairs.push([`secondary button${state} text`, `--action-secondary${state}-text`, secondaryBg, 4.5]);
+        const border = `--action-secondary${state}-border`;
+        const boundary = contrastRatio(t[border], t["--bg-surface"]) >= contrastRatio(t[secondaryBg], t["--bg-surface"]) ? border : secondaryBg;
+        pairs.push([`secondary button${state} boundary`, boundary, "--bg-surface", 3]);
+      }
+      for (const [role, foreground, background, required] of pairs) {
+        const ratio = contrastRatio(t[foreground], t[background]);
+        checks.push({ mode, role, foreground: t[foreground], background: t[background], ratio: Number(ratio.toFixed(2)), required });
+        if (ratio < required) issues.push(`${mode}: ${role} on ${background.replace("--bg-", "")} is ${ratio.toFixed(2)}:1; ${required}:1 is required.`);
+      }
+    }
+  }
   return {
     palettes,
-    semantic: {
-      light: buildModeTokens("light", palettes, checks, issues),
-      dark: buildModeTokens("dark", palettes, checks, issues),
-    },
+    semantic,
     checks,
     issues: [...new Set(issues)],
   };
 }
 
-export function createPublishedTheme(anchors: PaletteAnchors, publishedAt = new Date().toISOString()): PublishedTheme {
-  const resolution = resolveTheme(anchors);
+export function createPublishedTheme(anchors: PaletteAnchors, publishedAt = new Date().toISOString(), overrides?: ThemeOverrides): PublishedTheme {
+  const resolution = resolveTheme(anchors, overrides);
   if (resolution.issues.length) throw new Error(resolution.issues.join(" "));
   return {
     schemaVersion: 1,
@@ -365,6 +418,7 @@ export function createPublishedTheme(anchors: PaletteAnchors, publishedAt = new 
     semantic: resolution.semantic,
     checks: resolution.checks,
     publishedAt,
+    ...(overrides ? { overrides: parseThemeOverrides(overrides) } : {}),
   };
 }
 
@@ -382,6 +436,7 @@ export function parsePublishedTheme(value: string): PublishedTheme | null {
         if (!/^--[a-z-]+$/.test(token) || !isHexColor(color)) return null;
       }
     }
+    if (parsed.overrides) parsed.overrides = parseThemeOverrides(parsed.overrides);
     return parsed;
   } catch {
     return null;

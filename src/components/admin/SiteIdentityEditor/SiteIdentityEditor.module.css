@@ -44,6 +44,9 @@
 .previewModes{display:grid;gap:var(--space-200)}
 .previewMode{display:grid;gap:var(--space-100);min-width:0;padding:var(--space-300);border:1px solid var(--border-default);border-radius:var(--radius-md)}
 .previewDark{border-color:#3e4650}
+.previewSelected{outline:2px solid var(--border-focus);outline-offset:2px}
+.modeSelect{display:flex;align-items:center;justify-content:space-between;gap:var(--space-100);padding:0;border:0;background:transparent;color:inherit;cursor:pointer;font:600 12px/1.4 var(--font-family-body);text-align:left}
+.modeSelect:focus-visible{outline:2px solid var(--border-focus);outline-offset:4px}
 .modeLabel{display:block;font:600 11px/1.3 var(--font-family-body);letter-spacing:.06em;text-transform:uppercase}
 .previewCard{display:grid;gap:var(--space-200);padding:var(--space-300);border:1px solid;border-radius:var(--radius-sm)}
 .previewCard>p{margin:0;font:14px/1.45 var(--font-family-body)}
@@ -59,10 +62,32 @@
 .previewCard>input{width:100%;min-height:42px;box-sizing:border-box;padding:0 var(--space-150);border:1px solid;border-radius:var(--radius-sm);font:14px/1.4 var(--font-family-body)}
 .previewNav{display:flex;align-items:center;justify-content:space-between;gap:var(--space-100);padding-top:var(--space-150);border-top:1px solid;font:12px/1.3 var(--font-family-body)}
 .previewNav span+span{padding:var(--space-50) var(--space-100);border-left:2px solid;font-weight:600}
+.fineTuning,.tokenGroup{border-top:1px solid var(--border-default);padding-top:var(--space-200)}
+.fineTuningHeader{display:flex;align-items:center;justify-content:space-between;gap:var(--space-200)}
+.fineTuningHeader h3{margin:0;font:600 16px/1.4 var(--font-family-body)}
+.fineTuning>summary,.tokenGroup>summary{cursor:pointer;color:var(--text-primary);font:600 16px/1.4 var(--font-family-body)}
+.tokenGroup>summary{display:flex;align-items:center;justify-content:space-between;gap:var(--space-200);list-style:none}
+.tokenGroup>summary::-webkit-details-marker{display:none}
+.tokenGroup>summary::after{content:"+";font-size:24px;line-height:1;font-weight:400}
+.tokenGroup[open]>summary::after{content:"−"}
+.fineTuning>p{color:var(--text-secondary)}
+.modeControl{display:grid;gap:var(--space-100);margin-bottom:var(--space-200);font:600 14px/1.4 var(--font-family-body)}
+.tokenList{display:grid;gap:var(--space-200);padding:var(--space-200) 0}
+.tokenRow{display:grid;gap:var(--space-100);padding-bottom:var(--space-200);border-bottom:1px solid var(--border-default)}
+.tokenName{display:grid;gap:var(--space-50);font:600 14px/1.4 var(--font-family-body)}
+.tokenName code{color:var(--text-secondary);font:12px/1.4 var(--font-family-mono);overflow-wrap:anywhere}
+.tokenValue{display:flex;align-items:center;gap:var(--space-100);font:14px/1.4 var(--font-family-mono)}
+.tokenValue i{width:var(--space-300);height:var(--space-300);border:1px solid var(--border-strong);border-radius:var(--radius-sm)}
+.tokenValue i{flex:none}.tokenValue select{min-width:0;flex:1}
+.resetToken{justify-self:start;padding:0;border:0;background:transparent;color:var(--text-accent);cursor:pointer;font:600 12px/1.4 var(--font-family-body);text-decoration:underline}
+.tokenInputs{display:grid;grid-template-columns:var(--space-600) minmax(0,1fr);gap:var(--space-100)}
+.tokenInputs input[type=color]{width:var(--space-600);height:var(--space-600);padding:var(--space-50);border:1px solid var(--border-field);background:var(--bg-field)}
+.tokenInputs select{grid-column:1/-1}
 .statusSuccess,.statusError{width:100%;box-sizing:border-box;margin:0;padding:var(--space-150) var(--space-200);border-left:3px solid var(--border-success);background:var(--bg-success);color:var(--text-primary);font:14px/1.4 var(--font-family-body)}
 .statusError{border-color:var(--border-error);background:var(--bg-error)}
 .identityLayout :global(button:disabled){cursor:not-allowed;opacity:.5}
 @media(max-width:1240px){.identityLayout{grid-template-columns:1fr}.previewPanel{position:static}.previewModes{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1240px){.previewModesExpanded{grid-template-columns:1fr}}
 @media(min-width:768px) and (max-width:1023px){.colorRoles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:920px){.previewModes{grid-template-columns:1fr}}
 @media(max-width:767px){.identityLayout,.controlsColumn{gap:var(--space-300)}.sectionHeading{flex-direction:column;gap:var(--space-200)}.brandingGrid,.colorRoles{grid-template-columns:1fr;gap:var(--space-300)}.colorRole,.previewMode,.previewCard{gap:var(--space-150);padding:var(--space-200)}.previewActions{flex-direction:column;gap:var(--space-150)}.previewActions button{width:100%;min-height:var(--space-600);flex:auto}}

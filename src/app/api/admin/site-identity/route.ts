@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { relativeRedirect } from "@/lib/relativeRedirect";
 import { getSettings, publishThemeConfiguration, resetThemeConfiguration, updateSettings } from "@/lib/settings";
-import { createPublishedTheme, DEFAULT_PALETTE_ANCHORS, isHexColor, type PaletteAnchors } from "@/lib/themePalette";
+import { createPublishedTheme, DEFAULT_PALETTE_ANCHORS, isHexColor, parseThemeOverrides, type PaletteAnchors } from "@/lib/themePalette";
 import { saveUploadedImage, UploadError } from "@/lib/uploads";
 
 const LOGO_TYPES = new Set(["image/svg+xml", "image/png"]);
@@ -55,7 +55,8 @@ export async function POST(request: NextRequest) {
   if (invalidRole) return redirectError(`${invalidRole[0].toUpperCase()}${invalidRole.slice(1)} must use a six-digit hex code.`);
 
   try {
-    const theme = createPublishedTheme(anchors);
+    const overrides = parseThemeOverrides(JSON.parse(String(form.get("theme_overrides") ?? '{"light":{},"dark":{}}')));
+    const theme = createPublishedTheme(anchors, undefined, overrides);
     publishThemeConfiguration(JSON.stringify(theme), anchors);
   } catch (error) {
     const message = error instanceof Error ? error.message : "This theme could not be resolved safely.";

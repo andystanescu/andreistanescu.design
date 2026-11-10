@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent, type CSSProperties } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
 import Image from "next/image";
 import { Logo } from "@/components/Logo/Logo";
 import { PersonalLogoMark } from "@/components/Logo/PersonalLogoMark";
-import { DEFAULT_PALETTE_ANCHORS, generateThemePalette, isHexColor, resolveTheme, THEME_TONES, type PaletteAnchors, type ThemeTone } from "@/lib/themePalette";
+import { DEFAULT_PALETTE_ANCHORS, EDITABLE_THEME_GROUPS, generateThemePalette, isHexColor, resolveTheme, THEME_TONES, type PaletteAnchors, type ThemeOverrides, type ThemeTone } from "@/lib/themePalette";
 import adminStyles from "@/app/admin/(dashboard)/admin.module.css";
 import styles from "./SiteIdentityEditor.module.css";
 
@@ -42,6 +42,7 @@ export function SiteIdentityEditor({
   logoIconImage,
   logoIdentity,
   colors: initialColors,
+  overrides: initialOverrides,
   saved,
   error,
 }: {
@@ -49,10 +50,15 @@ export function SiteIdentityEditor({
   logoIconImage: string;
   logoIdentity: "business" | "personal";
   colors: ThemeColors;
+  overrides?: ThemeOverrides;
   saved: string;
   error?: string;
 }) {
   const [colors, setColors] = useState(initialColors);
+  const [overrides, setOverrides] = useState<ThemeOverrides>(initialOverrides ?? { light: {}, dark: {} });
+  const [editMode, setEditMode] = useState<"light" | "dark">("light");
+  const [editorOpen, setEditorOpen] = useState(false);
+  const lastValidColors = useRef(initialColors);
   const [logoPreview, setLogoPreview] = useState(logoImage);
   const [iconPreview, setIconPreview] = useState(logoIconImage);
   const [logoObjectUrl, setLogoObjectUrl] = useState("");
@@ -60,7 +66,17 @@ export function SiteIdentityEditor({
   const [removeLogo, setRemoveLogo] = useState(false);
   const [removeIcon, setRemoveIcon] = useState(false);
   const colorsValid = ROLES.every(({ key }) => isHexColor(colors[key]));
-  const resolution = useMemo(() => colorsValid ? resolveTheme(resolveAnchors(colors)) : null, [colors, colorsValid]);
+  const overridesValid = Object.values(overrides).every((mode) => Object.values(mode).every(isHexColor));
+  const resolution = useMemo(() => colorsValid && overridesValid ? resolveTheme(resolveAnchors(colors), overrides) : null, [colors, colorsValid, overrides, overridesValid]);
+  const automatic = useMemo(() => colorsValid ? resolveTheme(resolveAnchors(colors)) : null, [colors, colorsValid]);
+
+  function updateOverride(token: string, value?: string) {
+    setOverrides((current) => {
+      const next = { ...current[editMode] };
+      if (value === undefined) delete next[token]; else next[token] = value;
+      return { ...current, [editMode]: next };
+    });
+  }
 
   useEffect(() => () => {
     if (logoObjectUrl) URL.revokeObjectURL(logoObjectUrl);
@@ -96,6 +112,19 @@ export function SiteIdentityEditor({
   }
 
   function updateColor(key: Role, value: string) {
+    if (isHexColor(value) && isHexColor(lastValidColors.current[key])) {
+      const before = generateThemePalette(lastValidColors.current[key]);
+      const after = generateThemePalette(value);
+      setOverrides((current) => {
+        const remap = (entries: Record<string, string>) => Object.fromEntries(Object.entries(entries).map(([token, color]) => {
+          if (color.toUpperCase() === "#FFFFFF" || color.toUpperCase() === "#000000") return [token, color];
+          const tone = THEME_TONES.find((step) => before[step] === color.toUpperCase());
+          return [token, tone === undefined ? color : after[tone]];
+        }));
+        return { light: remap(current.light), dark: remap(current.dark) };
+      });
+      lastValidColors.current = { ...lastValidColors.current, [key]: value };
+    }
     setColors((current) => ({ ...current, [key]: value }));
   }
 
@@ -142,6 +171,7 @@ export function SiteIdentityEditor({
 
         <form action="/api/admin/site-identity" method="POST">
           <input type="hidden" name="form_type" value="theme" />
+          <input type="hidden" name="theme_overrides" value={JSON.stringify(overrides)} />
           <section className={`${adminStyles.panel} ${styles.themePanel}`} aria-labelledby="identity-theme">
             <div className={styles.sectionHeading}>
               <div><p className="label-eyebrow">THEME</p><h2 id="identity-theme" className="heading-03">Brand colour palettes</h2></div>
@@ -173,7 +203,8 @@ export function SiteIdentityEditor({
             </section>}
 
             <div className={adminStyles.formActions}>
-              <button type="button" className={adminStyles.tertiaryButton} onClick={() => setColors(initialColors)}>Discard draft</button>
+              {!overridesValid && <p className={styles.colorError} role="alert">Use a six-digit hex code for each custom colour.</p>}
+              <button type="button" className={adminStyles.tertiaryButton} onClick={() => { setColors(initialColors); lastValidColors.current = initialColors; setOverrides(initialOverrides ?? { light: {}, dark: {} }); }}>Discard draft</button>
               <button type="submit" name="theme_action" value="reset" formNoValidate className={adminStyles.tertiaryButton} onClick={(event) => { if (!window.confirm("Restore the original site theme? This will replace the currently published colors.")) event.preventDefault(); }}>Restore original site theme</button>
               <button type="submit" name="theme_action" value="publish" className={adminStyles.submit} disabled={!resolution || resolution.issues.length > 0}><span className="label-button">Publish theme</span></button>
             </div>
@@ -181,11 +212,11 @@ export function SiteIdentityEditor({
         </form>
       </div>
 
-      {resolution && <aside className={`${adminStyles.panel} ${styles.previewPanel}`} aria-labelledby="theme-preview-title">
-        <div className={styles.previewHeading}><h2 id="theme-preview-title" className="heading-03">Draft interface preview</h2><p className="body-small">Hover over either button to see its interactive state. This preview is local to this page; the public theme changes only when a valid theme is published.</p></div>
-        <div className={styles.previewModes}>
+      {automatic && <aside className={`${adminStyles.panel} ${styles.previewPanel}`} aria-labelledby="theme-preview-title">
+        <div className={styles.previewHeading}><h2 id="theme-preview-title" className="heading-03">Draft interface preview</h2><p className="body-small">Select a preview to fine-tune its colours. Hover over the buttons to see their interactive states. Changes stay in this draft until published.</p></div>
+        <div className={`${styles.previewModes} ${editorOpen ? styles.previewModesExpanded : ""}`}>
           {(["light", "dark"] as const).map((mode) => {
-            const tokens = resolution.semantic[mode];
+            const tokens = (resolution ?? automatic).semantic[mode];
             const style = { backgroundColor: tokens["--bg-canvas"], color: tokens["--text-primary"] } as CSSProperties;
             const primaryStyle = {
               "--preview-bg": tokens["--action-primary-bg"],
@@ -206,12 +237,12 @@ export function SiteIdentityEditor({
               "--preview-hover-border": tokens["--action-secondary-hover-border"],
               "--preview-pressed-border": tokens["--action-secondary-pressed-border"],
             } as CSSProperties;
-            return <div className={`${styles.previewMode} ${mode === "dark" ? styles.previewDark : ""}`} key={mode} style={style}>
-              <span className={styles.modeLabel}>{mode} theme</span>
+            return <Fragment key={mode}><div className={`${styles.previewMode} ${mode === "dark" ? styles.previewDark : ""} ${editorOpen && editMode === mode ? styles.previewSelected : ""}`} style={style} onClick={() => { setEditMode(mode); setEditorOpen(true); }}>
+              <button type="button" className={styles.modeSelect} aria-pressed={editorOpen && editMode === mode} onClick={() => { setEditMode(mode); setEditorOpen(true); }}><span className={styles.modeLabel}>{mode} theme</span><span>{editorOpen && editMode === mode ? "Editing" : "Edit colours"}</span></button>
               <div className={styles.previewCard} style={{ backgroundColor: tokens["--bg-surface"], borderColor: tokens["--border-default"] }}>
                 <strong style={{ color: tokens["--text-primary"] }}>A representative content panel</strong>
                 <p style={{ color: tokens["--text-secondary"] }}>Primary and secondary text sit on the same surface.</p>
-                <a href="#theme-preview-title" style={{ color: tokens["--text-accent"] }}>Text link</a>
+                <a href="#theme-preview-title" style={{ color: tokens["--action-link-text"] }}>Text link</a>
                 <div className={styles.previewActions}>
                   <button type="button" className={styles.previewPrimaryButton} style={primaryStyle}>Primary action</button>
                   <button type="button" className={styles.previewSecondaryButton} style={secondaryStyle}>Secondary</button>
@@ -219,7 +250,26 @@ export function SiteIdentityEditor({
                 <input aria-label={`${mode} theme field preview`} value="Focused input field" readOnly style={{ backgroundColor: tokens["--bg-field"], color: tokens["--text-primary"], borderColor: tokens["--border-field"], outline: `2px solid ${tokens["--border-focus"]}`, outlineOffset: 1 }} />
                 <div className={styles.previewNav} style={{ borderColor: tokens["--border-default"] }}><span>Navigation</span><span style={{ color: tokens["--text-accent"], borderColor: tokens["--border-focus"] }}>Selected item</span></div>
               </div>
-            </div>;
+            </div>
+        {editorOpen && editMode === mode && <section className={styles.fineTuning} aria-label={`${mode} theme colour controls`}>
+          <div className={styles.fineTuningHeader}><h3>Fine-tune interface colours</h3><button type="button" className={styles.resetToken} onClick={() => setEditorOpen(false)}>Close</button></div>
+          <p className="body-small">Editing the {editMode} theme. Select colours from the generated palettes; select the other preview to edit that theme.</p>
+          <button type="button" className={adminStyles.tertiaryButton} onClick={() => setOverrides((current) => ({ ...current, [editMode]: {} }))}>Reset {editMode} colours to automatic</button>
+          {EDITABLE_THEME_GROUPS.map((group) => <details className={styles.tokenGroup} key={group.label}>
+            <summary>{group.label}</summary>
+            <div className={styles.tokenList}>{group.roles.map(([token, label]) => {
+              const selected = overrides[editMode][token];
+              const autoValue = automatic.semantic[editMode][token];
+              const value = selected ?? autoValue;
+              const inPalette = value === "#FFFFFF" || value === "#000000" || ROLES.some((role) => THEME_TONES.some((tone) => automatic.palettes[role.palette][tone] === value));
+              return <div className={styles.tokenRow} key={token}>
+                <div className={styles.tokenName}><span>{label}</span><code>{token}</code></div>
+                <div className={styles.tokenValue}><i style={{ background: value }} /><select aria-label={`${editMode} ${group.label} ${label} palette shade`} className={adminStyles.input} value={value} onChange={(event) => updateOverride(token, event.target.value)}>{!inPalette && <option value={value}>Previously saved · {value}</option>}{ROLES.map((role) => <optgroup key={role.palette} label={role.label}>{role.palette === "neutral" && <><option value="#FFFFFF">White · #FFFFFF</option><option value="#000000">Black · #000000</option></>}{THEME_TONES.map((tone) => <option key={tone} value={automatic.palettes[role.palette][tone]}>{role.label} {tone} · {automatic.palettes[role.palette][tone]}</option>)}</optgroup>)}</select></div>
+                {selected !== undefined && <button type="button" className={styles.resetToken} onClick={() => updateOverride(token)}>Reset to suggested colour</button>}
+              </div>;
+            })}</div>
+          </details>)}
+        </section>}</Fragment>;
           })}
         </div>
       </aside>}
