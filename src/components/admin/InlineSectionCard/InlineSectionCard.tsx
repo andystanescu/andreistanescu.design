@@ -41,6 +41,11 @@ export function InlineSectionCard({ section, label, parent, fixed = false, reord
           </div>}
           <label className={adminStyles.field} data-section-copy="headline"><span className="label-small">Headline (wrap a word in #like this# for orange)</span><input name="headline" defaultValue={section.headline} required className={adminStyles.input} /></label>
           <label className={adminStyles.field} data-section-copy="description"><span className="label-small">Description</span><textarea name="description" defaultValue={section.description} className={adminStyles.textarea} /></label>
+          {parent === "homepage" && section.key === "hero" && <>
+            <p className="body-small">Edit button labels in the preview and set their destinations here. Leave a destination empty to hide that button.</p>
+            <label className={adminStyles.field}><span className="label-small">Primary button destination</span><input name="cta_primary_href" defaultValue={(section as HomepageSection).cta_primary_href} className={adminStyles.input} /></label>
+            <label className={adminStyles.field}><span className="label-small">Secondary button destination</span><input name="cta_secondary_href" defaultValue={(section as HomepageSection).cta_secondary_href} className={adminStyles.input} /></label>
+          </>}
           <label className={adminStyles.checkboxField}><input type="checkbox" name="visible" defaultChecked={!!section.visible} /><span className={adminStyles.switch} /><span className="body-default">Visible on site</span></label>
           <div className={adminStyles.formActions}><a href="" className={adminStyles.tertiaryButton}>Cancel</a><button type="submit" className={adminStyles.submit}><span className="label-button">Save section</span></button></div>
         </form>

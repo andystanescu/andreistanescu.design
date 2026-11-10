@@ -1,4 +1,4 @@
-import { getAllSections, getSection } from "@/lib/homepage";
+import { getAllSections } from "@/lib/homepage";
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { getSettings } from "@/lib/settings";
 import { Hero } from "@/components/home/Hero/Hero";
@@ -31,11 +31,10 @@ export default async function AdminHomepagePage({
 }) {
   const { tab } = await searchParams;
   const sections = getAllSections().filter((section) => Object.hasOwn(LABELS, section.key));
-  const hero = getSection("hero");
   const settings = getSettings();
   const fixedSections = sections.filter((s) => s.fixed);
   const reorderable = sections.filter((s) => !s.fixed);
-  const previews: Record<string, React.ReactNode> = { hero: <Hero />, services: <Services />, approach: <Approach />, selected_impact: <SelectedImpact />, latest_insights: <LatestInsights /> };
+  const previews: Record<string, React.ReactNode> = { hero: <Hero preview />, services: <Services />, approach: <Approach />, selected_impact: <SelectedImpact />, latest_insights: <LatestInsights /> };
 
   return (
     <>
@@ -47,7 +46,7 @@ export default async function AdminHomepagePage({
           Hero stays at the top; the footer stays at the bottom.
         </p>
         <p className={`body-small ${styles.helper}`}>Services and Approach appear together as one scrolling group at the position of whichever comes first in the list. Their order within that group follows the list. Selected Impact and Latest Insights each form a separate scrolling panel.</p>
-      </div>} initialTab={tab === "ctas" || tab === "metadata" || tab === "layout" ? tab : "sections"} tabs={[
+      </div>} initialTab={tab === "metadata" || tab === "layout" ? tab : "sections"} tabs={[
         { id: "layout", label: "Layout preview", content: <LayoutEditor page="homepage" initial={getLayoutConfiguration("homepage")} previewOnly /> },
         {
           id: "sections",
@@ -74,23 +73,6 @@ export default async function AdminHomepagePage({
               }))}
             />
           </>,
-        },
-        {
-          id: "ctas",
-          label: "Hero buttons",
-          content: <section className={styles.panel}>
-            <div className={styles.panelHeader}><h2 className="heading-03">Homepage hero buttons</h2><p className="body-small">These labels and destinations control the buttons visitors see on the homepage.</p></div>
-            <form className={styles.form} action="/api/admin/homepage-settings" method="POST">
-              <input type="hidden" name="return_tab" value="ctas" />
-              {hero && <>
-                <label className={styles.field}><span className="label-small">Primary button label</span><input name="cta_primary_label" defaultValue={hero.cta_primary_label} className={styles.input} /></label>
-                <label className={styles.field}><span className="label-small">Primary button link</span><input name="cta_primary_href" defaultValue={hero.cta_primary_href} className={styles.input} /></label>
-                <label className={styles.field}><span className="label-small">Secondary button label</span><input name="cta_secondary_label" defaultValue={hero.cta_secondary_label} className={styles.input} /></label>
-                <label className={styles.field}><span className="label-small">Secondary button link</span><input name="cta_secondary_href" defaultValue={hero.cta_secondary_href} className={styles.input} /></label>
-              </>}
-              <div className={styles.formActions}><a href="/admin/homepage" className={styles.tertiaryButton}>Cancel</a><button type="submit" className={styles.submit}><span className="label-button">Save hero buttons</span></button></div>
-            </form>
-          </section>,
         },
         {
           id: "metadata",

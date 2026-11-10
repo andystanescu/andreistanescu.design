@@ -60,7 +60,16 @@ export function SectionLivePreview({ sectionKey, page, preview, children, photoI
     if (sectionKey === "hero") {
       const links = container.querySelectorAll("a");
       markLinkLabel(links[0] ?? null, page === "about" ? "cta_label" : "cta_primary_label", page === "about" ? "CV button label" : "Primary button label");
-      if (page === "homepage") markLinkLabel(links[1] ?? null, "cta_secondary_label", "Secondary button label");
+      if (page === "homepage") {
+        markLinkLabel(links[1] ?? null, "cta_secondary_label", "Secondary button label");
+        ["cta_primary_href", "cta_secondary_href"].forEach((name, index) => {
+          const link = links[index];
+          if (!link) return;
+          link.dataset.previewDestination = name;
+          const input = rootRef.current?.querySelector<HTMLInputElement>(`form [name="${name}"]`);
+          link.style.display = input?.value.trim() ? "" : "none";
+        });
+      }
     } else if (sectionKey === "latest_insights") {
       markLinkLabel(container.querySelector("a"), page === "about" ? "cta_label" : "cta_primary_label", "Insights link label");
     }
@@ -97,6 +106,10 @@ export function SectionLivePreview({ sectionKey, page, preview, children, photoI
     const form = event.target.form;
     const heading = previewRef.current.querySelector<HTMLElement>(sectionKey === "hero" ? "h1" : "header h2");
     if (!form || !heading) return;
+    if (page === "homepage" && sectionKey === "hero" && ["cta_primary_href", "cta_secondary_href"].includes(event.target.name)) {
+      const link = previewRef.current.querySelector<HTMLElement>(`[data-preview-destination="${event.target.name}"]`);
+      if (link) link.style.display = event.target.value.trim() ? "" : "none";
+    }
     if (page === "about" && sectionKey === "hero" && event.target instanceof HTMLInputElement && event.target.name === "about_hero_image" && event.target.files?.[0]) {
       const imageContainer = previewRef.current.querySelector<HTMLElement>(`.${heroStyles.personalMark}`);
       if (imageContainer) {

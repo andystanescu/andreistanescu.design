@@ -21,9 +21,9 @@ export async function POST(request: NextRequest) {
         headline: hero.headline,
         description: hero.description,
         ctaPrimaryLabel: formText(form, "cta_primary_label") || "See my work",
-        ctaPrimaryHref: formText(form, "cta_primary_href") || "/work",
+        ctaPrimaryHref: formText(form, "cta_primary_href"),
         ctaSecondaryLabel: formText(form, "cta_secondary_label") || "Read articles",
-        ctaSecondaryHref: formText(form, "cta_secondary_href") || "/insights",
+        ctaSecondaryHref: formText(form, "cta_secondary_href"),
         visible: !!hero.visible,
       });
     }

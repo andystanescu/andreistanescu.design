@@ -8,13 +8,13 @@ import { DiagramLayout } from "./DiagramLayout";
 import { HeroCollage } from "./HeroCollage";
 import styles from "./Hero.module.css";
 
-export function Hero() {
+export function Hero({ preview = false }: { preview?: boolean } = {}) {
   const section = getVisibleSection("hero")!;
   const [firstSectionKey] = getSectionOrder();
   const primaryLabel = section.cta_primary_label || "See my work";
-  const primaryHref = section.cta_primary_href || "/work";
+  const primaryHref = section.cta_primary_href.trim();
   const secondaryLabel = section.cta_secondary_label || "Read articles";
-  const secondaryHref = section.cta_secondary_href || "/insights";
+  const secondaryHref = section.cta_secondary_href.trim();
 
   return (
     <section className={styles.hero}>
@@ -32,18 +32,18 @@ export function Hero() {
           <p className="body-large" style={{ color: "var(--text-secondary)" }}>
             {section.description}
           </p>
-          <div className={styles.actions}>
-            <Button href={primaryHref} icon={<ArrowIcon size={20} />}>
+          {(preview || primaryHref || secondaryHref) && <div className={styles.actions}>
+            {(preview || primaryHref) && <Button href={primaryHref || "#"} icon={<ArrowIcon size={20} />}>
               {primaryLabel}
-            </Button>
-            <Button
+            </Button>}
+            {(preview || secondaryHref) && <Button
               variant="link"
-              href={secondaryHref}
+              href={secondaryHref || "#"}
               icon={<ArrowIcon size={20} />}
             >
               {secondaryLabel}
-            </Button>
-          </div>
+            </Button>}
+          </div>}
         </div>
 
         <DiagramLayout
