@@ -53,11 +53,11 @@
 }
 
 .constrained {
-  max-width: 960px;
+  max-width: none;
 }
 
 .wide {
-  max-width: 1500px;
+  max-width: none;
 }
 
 .full {

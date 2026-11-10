@@ -1,7 +1,7 @@
 .hero{
   display:grid;
   grid-template-columns:minmax(0,3fr) minmax(280px,2fr);
-  align-items:start;
+  align-items:center;
   gap:clamp(var(--space-600),7vw,var(--space-1200));
   padding-block:clamp(80px,7vw,var(--layout-section-space)) clamp(var(--space-600),4vw,var(--space-800));
   background:var(--bg-canvas);
@@ -18,7 +18,6 @@
 }
 
 .headline{width:100%;max-width:none;color:var(--text-primary)}
-.copy>:global(.body-large){max-width:65ch}
 
 .personalMark{
   display:grid;
@@ -40,7 +39,7 @@
   min-width:0;
   max-height:500px;
   justify-content:flex-end;
-  align-self:start;
+  align-self:center;
 }
 
 .lattice>div{width:min(100%,500px)}
@@ -58,6 +57,7 @@
   .hero{
     display:flex;
     flex-direction:column;
+    align-items:stretch;
     gap:var(--space-600);
     padding-block:56px var(--hero-space-after);
   }

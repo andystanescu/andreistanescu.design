@@ -34,3 +34,7 @@
   .stages p { margin-top:var(--space-50); font-size:13px; }
   .feedback { align-items:flex-start; margin-top:var(--space-200); font-size:12px; }
 }
+@media (min-width: 1600px) {
+  .phases, .feedback { max-width: 1920px; }
+  .stages p { max-width: 42ch; }
+}

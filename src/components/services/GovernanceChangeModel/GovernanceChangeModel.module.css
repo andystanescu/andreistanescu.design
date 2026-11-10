@@ -225,3 +225,6 @@
   .outcomes p { margin-top:var(--space-100); }
   .feedback { align-items:flex-start; margin-top:var(--space-200); font-size:12px; }
 }
+@media (min-width: 1600px) {
+  .model { max-width: 1920px; }
+}

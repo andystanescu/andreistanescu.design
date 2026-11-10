@@ -273,3 +273,7 @@
     font-size: 12px;
   }
 }
+@media (min-width: 1600px) {
+  .discovery, .decision, .learning, .feedback { max-width: 1920px; }
+  .discovery p, .responsibilities p, .learning p { max-width: 42ch; }
+}

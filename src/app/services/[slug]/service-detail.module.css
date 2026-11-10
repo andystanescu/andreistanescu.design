@@ -79,7 +79,7 @@
   .transformationCore strong { font-size:22px; }
 }
 .designSystemGraphic { width:100%; min-width:0; margin:0; }
-.designSystemGraphicDiagram { display:grid; width:100%; max-width:1280px; min-width:0; grid-template-columns:minmax(0,445fr) minmax(145px,159fr); align-items:center; margin-inline:auto; }
+.designSystemGraphicDiagram { display:grid; width:100%; max-width:1600px; min-width:0; grid-template-columns:minmax(0,445fr) minmax(145px,159fr); align-items:center; margin-inline:auto; }
 .designSystemLayerPlot { display:block; width:100%; height:auto; overflow:visible; }
 .designSystemLayerPlot polygon { stroke:color-mix(in srgb,var(--border-default) 60%,transparent); stroke-width:1; vector-effect:non-scaling-stroke; }
 .designSystemLayerGuidance { fill:color-mix(in srgb,var(--accent-foundation) 14%,transparent); }
@@ -117,7 +117,7 @@
 .designSystemEcosystemHeader h2 { max-width:780px; margin:0; }
 .designSystemEcosystemHeader > p:last-child { max-width:720px; margin:0; color:var(--text-secondary); font:16px/1.55 var(--font-family-body); }
 .designSystemEcosystemVisual { display:flex; width:100%; min-width:0; align-items:center; justify-content:center; margin-top:var(--space-400); }
-.designSystemEcosystemVisual .designSystemGraphic { max-width:1280px; }
+.designSystemEcosystemVisual .designSystemGraphic { max-width:1600px; }
 @media (max-width:1150px) {
   .heroArchitecture { grid-template-columns:minmax(0,1fr); row-gap:clamp(48px,6vw,80px); }
   .heroArchitecture .architectureGraphic { min-height:0; }
@@ -962,4 +962,26 @@
   .aiLoopBranches p { padding-block:var(--space-100); }
   .aiLoopBranches { margin-bottom:var(--space-150); }
   .aiLoopReturn { font-size:12px; }
+}
+/* Keep wide-screen relationships legible without shrinking the section canvas. */
+@media (min-width: 1600px) {
+  .designSystemDelivery { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
+  .designSystemDelivery .deliveryHeading { max-width: 30ch; }
+  .designSystemDelivery .deliverables { max-width: 960px; width: 100%; }
+  .designSystemApproachCycle, .architectureApproachStages, .architectureApproachReturn,
+  .transformationFlow, .collaborationModelCanvas, .collaborationApproachStages,
+  .collaborationApproachReturn, .aiOperationalLoopDesktop { max-width: 1920px; }
+  .architectureDelivery .architectureGraphic { max-width: 1440px; }
+  .benefit p, .architectureApproachSummary, .architectureApproachActivities p,
+  .collaborationPerspectives p, .collaborationDecisionFlow p { max-width: 42ch; }
+  .evidenceTitle { max-width: 36ch; }
+  .evidenceDescription { max-width: 65ch; }
+}
+@container evidence-section (min-width: 1400px) {
+  .evidenceGridSingle { grid-template-columns: minmax(0, 1fr); }
+  .evidenceGridSingle .evidenceContent { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: var(--space-800); align-items: start; }
+  .evidenceGridSingle .evidenceType { grid-column: 1 / -1; }
+  .evidenceGridSingle .evidenceTitle { grid-column: 1; }
+  .evidenceGridSingle .evidenceDescription { grid-column: 2; }
+  .evidenceGridSingle .evidenceFooter { grid-column: 1 / -1; }
 }
