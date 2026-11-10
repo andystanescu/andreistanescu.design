@@ -6,11 +6,12 @@
      inset while letting visual material use more of the viewport. */
   --layout-gutter-narrative: var(--space-800);
   --layout-gutter-visual: var(--space-800);
+  --layout-section-space: var(--space-1200);
 
   /* Hero rhythm. Page heroes share these values so their editorial elements
      keep the same relationship when they collapse to a single mobile column. */
-  --hero-space-eyebrow-title: var(--space-150);
-  --hero-space-title-copy: var(--space-300);
+  --hero-space-eyebrow-title: var(--space-200);
+  --hero-space-title-copy: var(--space-200);
   --hero-space-copy-actions: var(--space-400);
   --hero-space-after: var(--space-800);
 
@@ -152,15 +153,12 @@
   --font-family-mono: var(--font-mono), "IBM Plex Mono", monospace;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   :root {
-    --space-800: 24px;
-    --space-1200: 56px;
-    --space-1600: 32px;
-    --hero-space-eyebrow-title: 12px;
-    --hero-space-title-copy: 20px;
-    --hero-space-copy-actions: 28px;
-    --hero-space-after: 64px;
+    --hero-space-eyebrow-title: var(--space-100);
+    --hero-space-title-copy: var(--space-200);
+    --hero-space-copy-actions: var(--space-400);
+    --hero-space-after: var(--space-600);
   }
 
   :where(h1, h2, h3, h4, h5, h6, p, li, blockquote) {
@@ -419,7 +417,7 @@ html {
    that keeps expanding past that point. */
 .container {
   width: 100%;
-  max-width: 1920px;
+  max-width: 1312px;
   margin-inline: auto;
   padding-right: max(var(--layout-gutter-narrative), var(--safe-area-right));
   padding-left: max(var(--layout-gutter-narrative), var(--safe-area-left));
@@ -437,12 +435,17 @@ html {
   margin-inline: calc(50% - 50vw);
 }
 
-@media (max-width: 640px) {
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root { --layout-gutter-narrative: var(--space-600); --layout-gutter-visual: var(--space-600); --layout-section-space: var(--space-800); }
+}
+
+@media (max-width: 767px) {
   :root,
   [data-theme="light"],
   [data-theme="dark"] {
-    --layout-gutter-narrative: clamp(20px, calc(5.714vw - 0.571px), 24px);
-    --layout-gutter-visual: clamp(12px, calc(5.714vw - 8.571px), 16px);
+    --layout-gutter-narrative: var(--space-300);
+    --layout-gutter-visual: var(--space-300);
+    --layout-section-space: var(--space-600);
     --type-mobile-h1: clamp(42px, calc(5.714vw + 21.429px), 46px);
     --type-mobile-h2-prominent: clamp(32px, calc(2.857vw + 21.714px), 34px);
     --type-mobile-h2: clamp(30px, calc(2.857vw + 19.714px), 32px);

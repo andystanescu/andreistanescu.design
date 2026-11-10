@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-100);
-  padding: var(--space-200) var(--space-400);
+  padding: var(--space-150) var(--space-300);
   border-radius: var(--radius-md);
   white-space: nowrap;
   transition: background-color 0.15s ease, border-color 0.15s ease,
@@ -22,7 +22,12 @@
 }
 
 .compact {
-  padding: var(--space-150) var(--space-300);
+  padding: var(--space-100) var(--space-200);
+  gap: var(--space-50);
+}
+
+@media (max-width: 767px) {
+  .primary, .secondary { width: 100%; min-height: var(--space-600); }
 }
 
 /* Primary: neutral at rest, brand orange fill on hover/focus. White on

@@ -1,5 +1,5 @@
 .section {
-  padding-block: var(--space-800) var(--space-1200);
+  padding-block: var(--space-800) var(--layout-section-space);
 }
 
 .header {

@@ -1,6 +1,6 @@
 .impact {
   width: 100%;
-  padding-block: var(--space-1200);
+  padding-block: var(--layout-section-space);
   background: var(--bg-canvas);
 }
 

@@ -1,6 +1,6 @@
 .services {
   width: 100%;
-  padding-block: var(--space-1200);
+  padding-block: var(--layout-section-space);
   background: var(--bg-canvas);
   color: var(--text-primary);
 }
@@ -13,19 +13,19 @@
 }
 
 .grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-400);
   flex: 1 0 0;
-  min-width: 280px;
-  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .card {
   display: flex;
   flex-direction: column;
   gap: var(--space-200);
-  flex: 1 0 180px;
-  padding: 0 var(--space-300);
-  border-left: 1px solid var(--border-default);
+  padding: var(--space-300);
+  border-top: 1px solid var(--border-default);
   color: inherit;
   transition: opacity 0.15s ease;
 }
@@ -39,33 +39,22 @@
   opacity: 0.56;
 }
 
-.card:first-child {
-  border-left: none;
-  padding-left: 0;
-}
 
 /* Below the single-row breakpoint, cards stack: swap the side hairline for a
    top one so the divider still reads as "between items" rather than a
    dangling vertical rule. */
-@media (max-width: 900px) {
-  .card {
-    flex-basis: 100%;
-    padding: var(--space-300) 0 0;
-    border-left: none;
-    border-top: 1px solid var(--border-default);
-  }
-
-  .card:first-child {
-    padding-top: 0;
-    border-top: none;
-  }
+@media (max-width: 1023px) {
+  .services { padding-block: var(--space-800); }
+  .servicesInner { gap: var(--space-400); }
+  .grid { flex-basis: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-width: 640px) {
-  .servicesInner { gap: var(--space-600); }
+@media (max-width: 767px) {
+  .services { padding-block: var(--space-600); }
+  .servicesInner { gap: var(--space-400); }
   .grid { width: 100%; min-width: 0; flex-basis: 100%; }
-  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-300); }
-  .card { min-width: 0; }
+  .grid { grid-template-columns: 1fr; gap: var(--space-300); }
+  .card { min-width: 0; padding: var(--space-200); gap: var(--space-150); }
 }
 @media (max-width: 320px) { .grid { grid-template-columns: 1fr; } }
 

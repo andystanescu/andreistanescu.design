@@ -3,7 +3,7 @@
   grid-template-columns:minmax(0,7fr) minmax(280px,3fr);
   align-items:start;
   gap:clamp(var(--space-600),7vw,var(--space-1200));
-  padding-block:clamp(80px,7vw,var(--space-1200)) clamp(var(--space-600),4vw,var(--space-800));
+  padding-block:clamp(80px,7vw,var(--layout-section-space)) clamp(var(--space-600),4vw,var(--space-800));
   background:var(--bg-canvas);
 }
 

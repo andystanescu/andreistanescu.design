@@ -62,6 +62,8 @@
   flex-wrap: wrap;
 }
 
+.diagram > div:first-child { flex: 1 1 300px; min-width: 0; max-width: 100%; }
+
 /* On desktop, align the lattice/legend group to the container's right edge
    — matching the nav's right-aligned content (links/CTA) above it. */
 @media (min-width: 901px) {
@@ -170,7 +172,7 @@
 
 /* Foundations/System legend: only worth the space on tablet and up — on
    phones the diagram alone (plus the headline/copy) already says enough. */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .heroInner {
     gap: var(--space-600);
     padding-block: var(--space-600) var(--hero-space-after);
@@ -182,6 +184,9 @@
     width: 100%;
     max-width: none;
   }
+
+  .actions { width: 100%; flex-direction: column; align-items: stretch; gap: var(--space-150); }
+  .actions > a { width: 100%; min-height: var(--space-600); justify-content: center; }
 
   .copy {
     gap: 0;

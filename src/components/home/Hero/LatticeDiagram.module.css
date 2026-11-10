@@ -1,7 +1,7 @@
 .lattice {
   /* ~50% of viewport width, but also bounded by viewport height (it's ~square)
      so it can never force the hero taller than one screen. */
-  width: clamp(297px, min(54vw, 60.75vh), 756px);
+  width: min(100%, clamp(297px, min(54vw, 60.75vh), 756px));
   flex-shrink: 0;
   /* Keep vertical swipes available for page scrolling. The interaction code
      promotes only clearly horizontal touch gestures into a dot drag. */
@@ -10,7 +10,7 @@
 
 @media (max-width: 640px) {
   .lattice {
-    width: clamp(216px, min(74.25vw, 43.2vh), 378px);
+    width: min(100%, clamp(216px, min(74.25vw, 43.2vh), 378px));
   }
 }
 

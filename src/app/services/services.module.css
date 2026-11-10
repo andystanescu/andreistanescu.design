@@ -53,19 +53,19 @@
   line-height: 1.55;
 }
 
-.servicesSection { padding-bottom: 160px; }
+.servicesSection { padding-bottom: var(--layout-section-space); }
 
 /* Services deliberately alternates its section widths: a constrained hero,
    a full-content-width index, a wide project chapter and a full editorial
    insights chapter. Shared section components keep their own internal
    structure while this page controls the outer composition. */
 .main :global(#selected_impact) > :global(.container) {
-  max-width: 1680px;
+  max-width: 1312px;
   gap: var(--space-400);
 }
 
 .main :global(#latest_insights) > :global(.container) {
-  max-width: 1920px;
+  max-width: 1312px;
 }
 
 .list {
@@ -76,7 +76,7 @@
 @media (max-width: 900px) {
   .scrollPanel[data-stackable="true"] { top: 0; }
   .hero { padding-block: var(--space-600); }
-  .servicesSection { padding-bottom: 128px; }
+  .servicesSection { padding-bottom: var(--layout-section-space); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -100,5 +100,5 @@
     font-size: var(--type-mobile-body);
     overflow-wrap: break-word;
   }
-  .servicesSection { padding-bottom: 96px; }
+  .servicesSection { padding-bottom: var(--layout-section-space); }
 }

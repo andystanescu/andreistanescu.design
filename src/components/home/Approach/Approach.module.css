@@ -1,6 +1,6 @@
 .approach {
   width: 100%;
-  padding-block: var(--space-1200);
+  padding-block: var(--layout-section-space);
   background: var(--bg-canvas);
 }
 
@@ -12,9 +12,10 @@
 }
 
 .approachInner .approachHeader {
-  flex: 1 1 100%;
-  width: 100%;
+  flex: 0 0 300px;
 }
+
+.approachInner > ol { flex: 1 1 0; min-width: 0; width: auto; }
 
 .approachHeader h2 {
   max-width: none;
@@ -35,11 +36,16 @@
   flex: 1 0 160px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
+  .approach { padding-block: var(--space-800); }
+  .approachInner { gap: var(--space-400); }
+  .approachInner .approachHeader { flex-basis: 100%; }
+  .approachInner > ol { flex-basis: 100%; width: 100%; }
 }
 
-@media (max-width: 640px) {
-  .approachInner { gap: var(--space-600); }
+@media (max-width: 767px) {
+  .approach { padding-block: var(--space-600); }
+  .approachInner { gap: var(--space-400); }
   .steps { width: 100%; min-width: 0; flex-basis: 100%; }
   .steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .step { min-width: 0; }

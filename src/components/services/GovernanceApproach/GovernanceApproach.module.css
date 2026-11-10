@@ -1,4 +1,4 @@
-.section { padding-block:var(--space-1200); }
+.section { padding-block:var(--layout-section-space); }
 .header { max-width:1040px; }
 .header h2 { max-width:none; text-wrap:pretty; }
 .phases { display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr); gap:var(--space-800); margin-top:var(--space-800); }

@@ -1,6 +1,6 @@
 .footer {
   width: 100%;
-  padding-block: var(--space-800) var(--space-600);
+  padding-block: var(--space-800);
   background: var(--bg-canvas);
   color: var(--text-primary);
 }
@@ -88,7 +88,7 @@
 }
 
 .compactFooter {
-  padding-block: var(--space-800) max(var(--space-500), var(--safe-area-bottom));
+  padding-block: var(--space-800) calc(var(--space-800) + var(--safe-area-bottom));
 }
 
 .mobileCompact {
@@ -156,10 +156,10 @@
   .brand, .connect, .linksGroup { width: 100%; min-width: 0; }
   .linksGroup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-400); }
   .column { width: 100%; min-width: 0; }
-  .footer:not(.compactFooter) { padding-block: var(--space-600) max(var(--space-400), var(--safe-area-bottom)); }
+  .footer:not(.compactFooter) { padding-block: var(--space-600) calc(var(--space-600) + var(--safe-area-bottom)); }
   .footer:not(.compactFooter) > .footerInner { display: none; }
   .mobileCompact { display: block; }
-  .compactFooter { padding-block: var(--space-600) max(var(--space-400), var(--safe-area-bottom)); }
+  .compactFooter { padding-block: var(--space-600) calc(var(--space-600) + var(--safe-area-bottom)); }
   .compactInner { grid-template-columns: 1fr; align-items: start; gap: var(--space-400); }
   .compactLinks { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; gap: 0 var(--space-300); }
   .compactCopyright { grid-column: auto; }

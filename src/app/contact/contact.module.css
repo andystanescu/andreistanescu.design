@@ -34,7 +34,7 @@
 }
 
 .contactArea {
-  padding-block: var(--space-600) var(--space-1200);
+  padding-block: var(--space-600) var(--layout-section-space);
 }
 
 .contactComposition {
