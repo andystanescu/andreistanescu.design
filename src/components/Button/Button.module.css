@@ -46,11 +46,11 @@
 
 .primary:active {
   background: var(--action-primary-pressed);
-  color: var(--action-primary-hover-text);
+  color: var(--action-primary-pressed-text, var(--action-primary-hover-text));
 }
 
 .primary:active svg {
-  color: var(--action-primary-hover-text);
+  color: var(--action-primary-pressed-text, var(--action-primary-hover-text));
 }
 
 /* Secondary: outlined, hover adds orange to the border */
@@ -63,10 +63,14 @@
 .secondary:hover,
 .secondary:focus-visible {
   background: var(--action-secondary-hover);
+  color: var(--action-secondary-hover-text, var(--action-secondary-text));
+  border-color: var(--action-secondary-hover-border, var(--action-secondary-border));
 }
 
 .secondary:active {
   background: var(--action-secondary-pressed);
+  color: var(--action-secondary-pressed-text, var(--action-secondary-text));
+  border-color: var(--action-secondary-pressed-border, var(--action-secondary-border));
 }
 
 /* Tertiary: quiet filled control, boundary required, hover adds orange to

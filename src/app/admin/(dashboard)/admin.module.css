@@ -13,9 +13,22 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-300);
-  margin-bottom: var(--space-300);
   padding: 0 0 var(--space-300);
   background: var(--bg-canvas);
+  isolation: isolate;
+}
+
+.pageHeader::before, .pageHeaderGroup::before { content: ""; position: absolute; z-index: -1; inset: -100vh -100px 0; background: var(--bg-canvas); }
+.pageHeaderGroup { position: sticky; top: 0; z-index: 10; isolation: isolate; display:flex; flex-direction:column; gap:var(--space-300); background: var(--bg-canvas); }
+.pageHeaderGroup .pageHeader { position: static; margin-bottom: 0; }
+.pageHeaderGroup .pageHeader::before { display: none; }
+.pageHeader :global(h1.heading-01), .pageHeaderGroup > :global(h1.heading-01) { position: static !important; margin: 0 !important; padding: 0 !important; background: transparent !important; }
+.pageHeaderGroup :global([role="tablist"]) { margin-bottom: 0; }
+
+@media (max-width: 767px) {
+  .pageHeader, .pageHeaderGroup { position: static; }
+  .pageHeader::before, .pageHeaderGroup::before { display: none; }
+  .pageHeader .helper, .aboutTabContent > .helper { display: none; }
 }
 
 .pageHeader h1 {
@@ -26,8 +39,7 @@
 .pageHeaderStacked {
   flex-direction: column;
   align-items: stretch;
-  gap: 0;
-  margin-bottom: var(--space-600);
+  gap: var(--space-300);
   padding-bottom: 0;
 }
 
@@ -43,8 +55,13 @@
 }
 
 .aboutTabContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-400);
   min-width: 0;
 }
+.aboutTabContent > .helper { margin: 0; }
+@media (max-width: 767px) { .aboutTabContent { gap: var(--space-300); } }
 
 .contentTitleRow {
   display: flex;
@@ -125,6 +142,7 @@
   list-style: none;
   max-width: 720px;
 }
+.homepageSectionList { max-width: none; width: 100%; }
 
 .listItem {
   display: flex;
@@ -177,7 +195,7 @@
   align-items: center;
   padding: 0;
   border: 1px solid var(--border-field);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: var(--bg-subtle);
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
@@ -190,8 +208,8 @@
 .publishSwitchKnob {
   width: 16px;
   height: 16px;
-  margin-left: 2px;
-  border-radius: 50%;
+  margin-left: var(--space-50);
+  border-radius: var(--radius-full);
   background: var(--text-tertiary);
   transition: transform 0.15s ease, background-color 0.15s ease;
 }
@@ -209,7 +227,7 @@
 .listItemActions .publishSwitch {
   width: 38px !important;
   height: 22px !important;
-  border-radius: 999px !important;
+  border-radius: var(--radius-full) !important;
   color: inherit;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -267,7 +285,7 @@
   transition: color 0.15s ease;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 767px) {
   .list {
     width: 100%;
     max-width: none;
@@ -278,9 +296,9 @@
   .listItem {
     align-items: stretch;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-150);
     min-width: 0;
-    padding: 16px;
+    padding: var(--space-200);
   }
 
   .listItemMeta,
@@ -298,7 +316,8 @@
   .listItemActions {
     width: 100%;
     justify-content: flex-end;
-    gap: 6px;
+    flex-wrap: wrap;
+    gap: var(--space-300);
   }
 
   .listItemActions form:not(.deleteForm) button,
@@ -431,7 +450,7 @@
 .checkboxField {
   display: flex;
   align-items: center;
-  gap: var(--space-150);
+  gap: var(--space-100);
 }
 
 .checkboxField input {
@@ -449,7 +468,7 @@
   flex-shrink: 0;
   align-items: center;
   border: 1px solid var(--border-field);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: var(--bg-subtle);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
@@ -457,8 +476,8 @@
 .switch::after {
   width: 18px;
   height: 18px;
-  margin-left: 2px;
-  border-radius: 50%;
+  margin-left: var(--space-50);
+  border-radius: var(--radius-full);
   background: var(--text-tertiary);
   content: "";
   transition: transform 0.15s ease, background 0.15s ease;
@@ -483,14 +502,18 @@
   display: flex;
   align-items: center;
   gap: var(--space-300);
-  margin-top: var(--space-200);
+}
+
+@media (max-width: 767px) {
+  .formActions { width: 100%; flex-direction: column; align-items: stretch; gap: var(--space-150); }
+  .formActions > button, .formActions > a { width: 100%; min-height: var(--space-600); box-sizing: border-box; }
 }
 
 .submit {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-200) var(--space-400);
+  padding: var(--space-150) var(--space-300);
   border-radius: var(--radius-md);
   background: var(--action-primary-bg);
   color: var(--action-primary-text);
@@ -498,9 +521,9 @@
     transform 0.1s ease;
 }
 
-.transferPanel { display:flex; flex-direction:column; align-items:flex-start; gap:var(--space-300); width:100%; max-width:680px; margin-top:var(--space-500); }
+.transferPanel { display:flex; flex-direction:column; align-items:flex-start; gap:var(--space-300); width:100%; max-width:680px; margin-top:var(--space-600); }
 .transferActions { display:flex; align-items:center; gap:var(--space-300); }
-.secondaryButton { display:inline-flex; align-items:center; justify-content:center; padding:var(--space-200) var(--space-400); border:1px solid var(--action-secondary-border); border-radius:var(--radius-md); background:transparent; color:var(--action-secondary-text); font:500 14px/1 var(--font-family-body); cursor:pointer; transition:background-color .15s ease,color .15s ease,transform .1s ease; }
+.secondaryButton { display:inline-flex; align-items:center; justify-content:center; padding:var(--space-150) var(--space-300); border:1px solid var(--action-secondary-border); border-radius:var(--radius-md); background:transparent; color:var(--action-secondary-text); font:500 14px/1 var(--font-family-body); cursor:pointer; transition:background-color .15s ease,color .15s ease,transform .1s ease; }
 .secondaryButton:hover,.secondaryButton:focus-visible { background:var(--bg-subtle); color:var(--action-secondary-text); }
 .secondaryButton:active { transform:scale(.97); }
 .tertiaryButton { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:var(--space-150) var(--space-200); border:0; border-radius:var(--radius-md); background:transparent; color:var(--action-secondary-text); font:500 14px/1 var(--font-family-body); text-decoration:none; cursor:pointer; transition:background-color .15s ease,color .15s ease,transform .1s ease; }

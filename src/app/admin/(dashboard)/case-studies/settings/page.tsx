@@ -1,3 +1,4 @@
+import styles from "../../admin.module.css";
 import { notFound } from "next/navigation";
 import { getPage } from "@/lib/pages";
 import { AdminTabs } from "@/components/admin/AdminTabs/AdminTabs";
@@ -20,8 +21,10 @@ export default async function CaseStudiesPageSettingsPage({
 
   return (
     <>
+      <div className={styles.pageHeaderGroup}>
       <h1 className="heading-01">Case studies</h1>
-      <AdminTabs tabs={CASE_STUDIES_TABS} active="/admin/case-studies/settings" />
+      <AdminTabs embedded tabs={CASE_STUDIES_TABS} active="/admin/case-studies/settings" />
+      </div>
       <PageSettingsForm
         page={page}
         error={error}

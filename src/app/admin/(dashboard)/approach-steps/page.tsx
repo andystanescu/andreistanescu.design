@@ -12,8 +12,10 @@ export default function AdminApproachStepsPage() {
 
   return (
     <>
+      <div className={styles.pageHeaderGroup}>
       <div className={styles.pageHeader}><h1 className="heading-01">Approach steps</h1><Link href="/admin/approach-steps/new" className={styles.newLink}>New step</Link></div>
-      <AdminTabs tabs={APPROACH_TABS} active="/admin/approach-steps" />
+      <AdminTabs embedded tabs={APPROACH_TABS} active="/admin/approach-steps" />
+      </div>
       <div className={styles.toolbar}>
         <p className="heading-02">Listed steps</p>
       </div>

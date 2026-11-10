@@ -29,6 +29,7 @@ export const metadata: Metadata = {
   title: "ConScept — Design systems, product architecture, AI-enabled design operations",
   description:
     "ConScept helps growing technology companies build the systems behind their products: design system architecture, product architecture, and AI-enabled design operations.",
+  icons: { icon: "/api/site-icon" },
 };
 
 export const viewport: Viewport = {
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
       className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${inter.variable}`}
     >
+      <head><link rel="stylesheet" href="/api/site-theme" /></head>
       <body>
         <script dangerouslySetInnerHTML={{ __html: `try{const theme=localStorage.getItem("conscept-theme");if(theme==="light"||theme==="dark"){document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme}}catch{}` }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({

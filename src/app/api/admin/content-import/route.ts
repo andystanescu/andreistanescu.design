@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { mkdir, writeFile } from "fs/promises";
 import { basename, join } from "path";
 import { getUploadsDir } from "@/lib/uploads";
+import { createPublishedTheme, DEFAULT_PALETTE_ANCHORS, isHexColor, parsePublishedTheme, type PaletteAnchors } from "@/lib/themePalette";
 
 type ContentRecord = Record<string, unknown>;
 
@@ -60,6 +61,43 @@ export async function POST(request: NextRequest) {
     const experiences = Array.isArray(payload.experiences) ? payload.experiences : [];
     const analyticsEvents = Array.isArray(payload.analyticsEvents) ? payload.analyticsEvents : [];
     const configuration = payload.configuration ?? {};
+    const importedSettings = Array.isArray(configuration.settings) ? configuration.settings : [];
+    const importedSettingValues = new Map(importedSettings.map((record) => [text(record, "key"), text(record, "value")]));
+    const themeSettingKeys = ["theme_config", "theme_primary_500", "theme_secondary_500", "theme_accent_500", "theme_neutral_500", "theme_customized"];
+    const hasThemeSettings = themeSettingKeys.some((key) => importedSettingValues.has(key));
+    let importedTheme: { kind: "publish"; config: string; anchors: PaletteAnchors } | { kind: "reset" } | null = null;
+    const importedThemeConfig = importedSettingValues.get("theme_config") ?? "";
+    if (importedThemeConfig) {
+      const parsedTheme = parsePublishedTheme(importedThemeConfig);
+      if (!parsedTheme) return NextResponse.json({ error: "The export contains an invalid or unsupported theme configuration." }, { status: 400 });
+      try {
+        const migratedTheme = createPublishedTheme(parsedTheme.anchors, parsedTheme.publishedAt);
+        importedTheme = { kind: "publish", config: JSON.stringify(migratedTheme), anchors: migratedTheme.anchors };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "The exported theme cannot be resolved safely.";
+        return NextResponse.json({ error: message }, { status: 400 });
+      }
+    } else if (hasThemeSettings) {
+      const customized = importedSettingValues.get("theme_customized") === "1";
+      if (customized) {
+        const anchors = {
+          primary: importedSettingValues.get("theme_primary_500") ?? DEFAULT_PALETTE_ANCHORS.primary,
+          secondary: importedSettingValues.get("theme_secondary_500") ?? DEFAULT_PALETTE_ANCHORS.secondary,
+          accent: importedSettingValues.get("theme_accent_500") ?? DEFAULT_PALETTE_ANCHORS.accent,
+          neutral: importedSettingValues.get("theme_neutral_500") ?? DEFAULT_PALETTE_ANCHORS.neutral,
+        };
+        if (Object.values(anchors).some((color) => !isHexColor(color))) return NextResponse.json({ error: "The export contains an invalid 500 color anchor." }, { status: 400 });
+        try {
+          const migratedTheme = createPublishedTheme(anchors);
+          importedTheme = { kind: "publish", config: JSON.stringify(migratedTheme), anchors: migratedTheme.anchors };
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "The exported theme cannot be resolved safely.";
+          return NextResponse.json({ error: message }, { status: 400 });
+        }
+      } else {
+        importedTheme = { kind: "reset" };
+      }
+    }
 
     if (Array.isArray(payload.assets)) {
       const uploadsDir = getUploadsDir();
@@ -73,11 +111,25 @@ export async function POST(request: NextRequest) {
 
     db.exec("BEGIN");
     try {
-      const settings = Array.isArray(configuration.settings) ? configuration.settings : [];
       const saveSetting = db.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value");
-      for (const record of settings) {
+      for (const record of importedSettings) {
         const key = text(record, "key").trim();
-        if (key && key !== "admin_credentials") saveSetting.run(key, text(record, "value"));
+        if (key && key !== "admin_credentials" && key !== "session_secret" && !themeSettingKeys.includes(key)) saveSetting.run(key, text(record, "value"));
+      }
+      if (importedTheme?.kind === "publish") {
+        saveSetting.run("theme_config", importedTheme.config);
+        saveSetting.run("theme_primary_500", importedTheme.anchors.primary);
+        saveSetting.run("theme_secondary_500", importedTheme.anchors.secondary);
+        saveSetting.run("theme_accent_500", importedTheme.anchors.accent);
+        saveSetting.run("theme_neutral_500", importedTheme.anchors.neutral);
+        saveSetting.run("theme_customized", "1");
+      } else if (importedTheme?.kind === "reset") {
+        saveSetting.run("theme_config", "");
+        saveSetting.run("theme_primary_500", DEFAULT_PALETTE_ANCHORS.primary);
+        saveSetting.run("theme_secondary_500", DEFAULT_PALETTE_ANCHORS.secondary);
+        saveSetting.run("theme_accent_500", DEFAULT_PALETTE_ANCHORS.accent);
+        saveSetting.run("theme_neutral_500", DEFAULT_PALETTE_ANCHORS.neutral);
+        saveSetting.run("theme_customized", "0");
       }
 
       const homepageSections = Array.isArray(configuration.homepageSections) ? configuration.homepageSections : [];

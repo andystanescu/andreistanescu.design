@@ -5,6 +5,9 @@
   color: var(--text-primary);
 }
 
+.logoImage{display:block;width:auto;height:32px;max-width:180px;object-fit:contain}
+.primary .logoImage{height:48px;max-width:260px}
+
 .personal .wordmark {
   transition: color 0.15s ease;
 }

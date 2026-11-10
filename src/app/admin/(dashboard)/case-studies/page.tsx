@@ -11,25 +11,28 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminCaseStudiesPage({ searchParams }: { searchParams: Promise<{ status?: string | string[] }> }) {
   const query = await searchParams;
-  const status = query.status === "draft" ? "draft" : "all";
+  const status = query.status === "draft" ? "draft" : "published";
   const allCaseStudies = db
     .prepare("SELECT * FROM case_studies ORDER BY position ASC, id ASC")
     .all() as CaseStudy[];
   const drafts = allCaseStudies.filter((study) => !study.published);
-  const caseStudies = status === "draft" ? drafts : allCaseStudies;
+  const published = allCaseStudies.filter((study) => Boolean(study.published));
+  const caseStudies = status === "draft" ? drafts : published;
 
   return (
     <>
+      <div className={styles.pageHeaderGroup}>
       <div className={styles.pageHeader}><h1 className="heading-01">Case studies</h1><Link href="/admin/case-studies/new" className={styles.newLink}>New case study</Link></div>
-      <AdminTabs tabs={CASE_STUDIES_TABS} active="/admin/case-studies" />
-      <ContentStatusFilter baseHref="/admin/case-studies" current={status} total={allCaseStudies.length} drafts={drafts.length} />
+      <AdminTabs embedded tabs={CASE_STUDIES_TABS} active="/admin/case-studies" />
+      </div>
+      <ContentStatusFilter baseHref="/admin/case-studies" current={status} published={published.length} drafts={drafts.length} />
       <div className={styles.toolbar}>
-        <p className="heading-02">{status === "draft" ? "Draft case studies" : "Listed case studies"}</p>
+        <p className="heading-02">{status === "draft" ? "Draft case studies" : "Published case studies"}</p>
       </div>
 
       {caseStudies.length === 0 ? (
         <p className={`body-default ${styles.empty}`}>
-          {status === "draft" ? "No case-study drafts. All case studies are published." : <>No case studies yet. The homepage&apos;s &ldquo;Selected Impact&rdquo;
+          {status === "draft" ? "No case-study drafts." : <>No published case studies yet. The homepage&apos;s &ldquo;Selected Impact&rdquo;
           section stays hidden until you add one.</>}
         </p>
       ) : (
@@ -54,13 +57,13 @@ export default async function AdminCaseStudiesPage({ searchParams }: { searchPar
                   </p>
                 </div>
                 <div className={styles.listItemActions}>
-                  {status === "all" && <form action={`/api/admin/case-studies/${study.id}/move`} method="POST">
+                  {status === "published" && <form action={`/api/admin/case-studies/${study.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="up" />
                     <button type="submit" disabled={index === 0} aria-label="Move up">
                       ↑
                     </button>
                   </form>}
-                  {status === "all" && <form action={`/api/admin/case-studies/${study.id}/move`} method="POST">
+                  {status === "published" && <form action={`/api/admin/case-studies/${study.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="down" />
                     <button
                       type="submit"

@@ -8,5 +8,5 @@ import { NavClient } from "./NavClient";
 export function Nav() {
   const settings = getSettings();
   const links = getNavLinks();
-  return <NavClient links={links} logoIdentity={settings.logo_identity} />;
+  return <NavClient links={links} logoIdentity={settings.logo_identity} logoImage={settings.logo_image} />;
 }

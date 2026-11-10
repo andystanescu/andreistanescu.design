@@ -1,6 +1,13 @@
-.wrapper { width: 100%; }
-.tabs { position: sticky; top: 7rem; z-index: 4; display: flex; flex-wrap: wrap; gap: var(--space-300); width: 100%; margin-bottom: var(--space-400); border-bottom: 1px solid var(--border-default); background: var(--bg-canvas); }
-.tab, .active { position: relative; padding: 12px 8px 14px; border: 0; border-radius: 0; background: transparent; color: var(--text-secondary); font: 500 14px/1 var(--font-family-body); cursor: pointer; }
+.wrapper { display:flex; flex-direction:column; gap:var(--space-400); width: 100%; }
+.tabsContainer { display: contents; }
+.stickyHeader { position: sticky; top: 0; z-index: 10; isolation: isolate; display:flex; flex-direction:column; gap:var(--space-300); background: var(--bg-canvas); }
+.stickyHeader::before { content: ""; position: absolute; z-index: -1; top: -100vh; bottom: 0; left: -100px; right: -100px; background: var(--bg-canvas); }
+.stickyHeader > :first-child { position: static; margin:0; }
+.stickyHeader > :first-child::before { display: none; }
+.stickyHeader .headerTabs { position: static; margin:0; }
+.tabs { display: flex; flex-wrap: wrap; gap: var(--space-300); width: 100%; border-bottom: 1px solid var(--border-default); background: var(--bg-canvas); }
+@media (max-width: 767px) { .wrapper {gap:var(--space-300)} .stickyHeader { position: static; gap:var(--space-200); } .stickyHeader::before { display: none; } }
+.tab, .active { position: relative; padding: var(--space-150) var(--space-100) var(--space-150); border: 0; border-radius: 0; background: transparent; color: var(--text-secondary); font: 500 14px/1 var(--font-family-body); cursor: pointer; }
 .tab::after, .active::after { position: absolute; right: 8px; bottom: -1px; left: 8px; height: 2px; background: transparent; content: ""; }
 .tab:hover, .tab:focus-visible, .active { color: var(--text-primary); }
 .active::after { background: var(--accent-foundation); }

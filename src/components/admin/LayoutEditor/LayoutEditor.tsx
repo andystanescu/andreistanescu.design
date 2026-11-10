@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { LayoutPage, LayoutSection } from "@/lib/layoutDraft";
 import styles from "./LayoutEditor.module.css";
 
-export function LayoutEditor({ page, initial }: { page: LayoutPage; initial: { sections: LayoutSection[]; revision: string } }) {
+export function LayoutEditor({ page, initial, previewOnly = false }: { page: LayoutPage; initial: { sections: LayoutSection[]; revision: string }; previewOnly?: boolean }) {
   const [saved, setSaved] = useState(initial);
   const [draft, setDraft] = useState(initial.sections);
   const [saving, setSaving] = useState(false);
@@ -69,14 +69,14 @@ export function LayoutEditor({ page, initial }: { page: LayoutPage; initial: { s
     finally { setSaving(false); }
   }
   return <section className={styles.editor} aria-label="Layout preview editor">
-    <p>Drag sections or use the arrows. Changes appear in the preview and reach the website only when you save. Empty sections and sections for the other website mode may not render.</p>
-    <div className={styles.actions}>
+    <p>{previewOnly ? `Preview the saved ${page === "homepage" ? "homepage" : "About page"} at desktop and mobile sizes. Edit section order and visibility in the section content tab.` : "Drag sections or use the arrows. Changes appear in the preview and reach the website only when you save. Empty sections and sections for the other website mode may not render."}</p>
+    {!previewOnly && <div className={styles.actions}>
       <button type="button" className={styles.primary} disabled={!dirty || saving} onClick={save}>{saving ? "Saving…" : "Save layout"}</button>
       <button type="button" disabled={!dirty || saving} onClick={() => { setDraft(saved.sections); setMessage("Draft discarded."); }}>Discard changes</button>
       <span role="status">{message || (dirty ? "Unsaved changes" : "Saved layout")}</span>
-    </div>
-    <div className={styles.workspace}>
-      <fieldset className={styles.controls} disabled={saving}>
+    </div>}
+    <div className={`${styles.workspace} ${previewOnly ? styles.previewOnly : ""}`}>
+      {!previewOnly && <fieldset className={styles.controls} disabled={saving}>
         <legend>Page sections</legend>
         <p className={styles.note}>Navigation · fixed</p>
         <ol>{draft.map((section, index) => <li key={section.key} draggable={!section.fixed && !saving} onDragStart={() => setDragged(section.key)} onDragEnd={() => setDragged(null)} onDragOver={(event) => { if (!section.fixed) event.preventDefault(); }} onDrop={(event) => { event.preventDefault(); if (dragged) move(dragged, index); setDragged(null); }}>
@@ -89,7 +89,7 @@ export function LayoutEditor({ page, initial }: { page: LayoutPage; initial: { s
         </li>)}</ol>
         {page === "about" && <p className={styles.note}>How I work · fixed closing section</p>}
         <p className={styles.note}>Footer · fixed</p>
-      </fieldset>
+      </fieldset>}
       <div className={styles.preview}>
         <div className={styles.actions}><button type="button" aria-pressed={device === 1440} onClick={() => setDevice(1440)}>Desktop</button><button type="button" aria-pressed={device === 390} onClick={() => setDevice(390)}>Mobile</button><span>{device}px · {Math.round(scale * 100)}%</span></div>
         {!ready && <p role="status">Loading preview… If it does not load, check your admin session.</p>}

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:theme": "node --experimental-strip-types --experimental-sqlite --test tests/themePalette.test.mjs"
   },
   "dependencies": {
     "@stablelib/base64": "^1.0.1",

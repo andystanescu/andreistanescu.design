@@ -1,3 +1,4 @@
+import styles from "../../admin.module.css";
 import { notFound } from "next/navigation";
 import { getPage } from "@/lib/pages";
 import { AdminTabs } from "@/components/admin/AdminTabs/AdminTabs";
@@ -20,8 +21,10 @@ export default async function ApproachPageSettingsPage({
 
   return (
     <>
+      <div className={styles.pageHeaderGroup}>
       <h1 className="heading-01">Approach steps</h1>
-      <AdminTabs tabs={APPROACH_TABS} active="/admin/approach-steps/settings" />
+      <AdminTabs embedded tabs={APPROACH_TABS} active="/admin/approach-steps/settings" />
+      </div>
       <PageSettingsForm
         page={page}
         error={error}

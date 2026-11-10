@@ -16,10 +16,10 @@ export async function POST(
   const eyebrow = String(form.get("eyebrow") ?? "").trim();
   const headline = String(form.get("headline") ?? "").trim();
   const description = String(form.get("description") ?? "").trim();
-  const ctaPrimaryLabel = String(form.get("cta_primary_label") ?? "").trim();
-  const ctaPrimaryHref = String(form.get("cta_primary_href") ?? "").trim();
-  const ctaSecondaryLabel = String(form.get("cta_secondary_label") ?? "").trim();
-  const ctaSecondaryHref = String(form.get("cta_secondary_href") ?? "").trim();
+  const ctaPrimaryLabel = String(form.get("cta_primary_label") ?? getSection(key)?.cta_primary_label ?? "").trim();
+  const ctaPrimaryHref = String(form.get("cta_primary_href") ?? getSection(key)?.cta_primary_href ?? "").trim();
+  const ctaSecondaryLabel = String(form.get("cta_secondary_label") ?? getSection(key)?.cta_secondary_label ?? "").trim();
+  const ctaSecondaryHref = String(form.get("cta_secondary_href") ?? getSection(key)?.cta_secondary_href ?? "").trim();
   const visible = form.get("visible") === "on";
 
   if (!headline) {

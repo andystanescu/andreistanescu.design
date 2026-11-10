@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { persistDefaultTheme, persistPublishedTheme } from "@/lib/themePersistence";
 
 export type SettingsMap = {
   author_name: string;
@@ -29,13 +30,16 @@ export type SettingsMap = {
   confirmation_body: string;
   contact_email_to: string;
   logo_image: string;
+  logo_icon_image: string;
   logo_image_footer: string;
+  theme_primary_500: string;
+  theme_secondary_500: string;
+  theme_accent_500: string;
+  theme_neutral_500: string;
+  theme_customized: string;
+  theme_config: string;
   about_hero_image: string;
   about_cv: string;
-  homepage_cta_band_label: string;
-  homepage_case_study_link_label: string;
-  homepage_article_link_label: string;
-  homepage_insights_all_label: string;
   homepage_meta_title: string;
   homepage_meta_description: string;
   homepage_meta_title_business: string;
@@ -77,13 +81,16 @@ const KEYS: (keyof SettingsMap)[] = [
   "confirmation_body",
   "contact_email_to",
   "logo_image",
+  "logo_icon_image",
   "logo_image_footer",
+  "theme_primary_500",
+  "theme_secondary_500",
+  "theme_accent_500",
+  "theme_neutral_500",
+  "theme_customized",
+  "theme_config",
   "about_hero_image",
   "about_cv",
-  "homepage_cta_band_label",
-  "homepage_case_study_link_label",
-  "homepage_article_link_label",
-  "homepage_insights_all_label",
   "homepage_meta_title",
   "homepage_meta_description",
   "homepage_meta_title_business",
@@ -136,15 +143,18 @@ export function getSettings(): SettingsMap {
     confirmation_body: map.confirmation_body ?? "",
     contact_email_to: map.contact_email_to ?? "",
     logo_image: map.logo_image ?? "",
+    logo_icon_image: map.logo_icon_image ?? "",
+    theme_primary_500: map.theme_primary_500 ?? "#11161F",
+    theme_secondary_500: map.theme_secondary_500 ?? "#3E4650",
+    theme_accent_500: map.theme_accent_500 ?? "#E8441C",
+    theme_neutral_500: map.theme_neutral_500 ?? "#6B7280",
+    theme_customized: map.theme_customized ?? "0",
+    theme_config: map.theme_config ?? "",
     // Falls back to the header logo so existing single-logo setups don't
     // lose their footer logo the moment this field exists but is unset.
     logo_image_footer: map.logo_image_footer || map.logo_image || "",
     about_hero_image: map.about_hero_image ?? "",
     about_cv: map.about_cv ?? "",
-    homepage_cta_band_label: map.homepage_cta_band_label ?? "Start a conversation",
-    homepage_case_study_link_label: map.homepage_case_study_link_label ?? "View case study",
-    homepage_article_link_label: map.homepage_article_link_label ?? "Read article",
-    homepage_insights_all_label: map.homepage_insights_all_label ?? "See all insights",
     homepage_meta_title: logoIdentity === "personal" ? personalMetaTitle : businessMetaTitle,
     homepage_meta_description: logoIdentity === "personal" ? personalMetaDescription : businessMetaDescription,
     homepage_meta_title_business: businessMetaTitle,
@@ -167,4 +177,12 @@ export function updateSettings(update: Partial<SettingsMap>) {
       stmt.run(key, update[key]);
     }
   }
+}
+
+export function publishThemeConfiguration(config: string, anchors: { primary: string; secondary: string; accent: string; neutral: string }) {
+  persistPublishedTheme(db, config, anchors);
+}
+
+export function resetThemeConfiguration(defaults: { primary: string; secondary: string; accent: string; neutral: string }) {
+  persistDefaultTheme(db, defaults);
 }

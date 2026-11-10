@@ -21,6 +21,18 @@ export function AdminSidebar({ logoIdentity }: { logoIdentity: "business" | "per
   }
 
   useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const handleViewportChange = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        restoreFocusOnCloseRef.current = false;
+        setMobileOpen(false);
+      }
+    };
+    desktop.addEventListener("change", handleViewportChange);
+    return () => desktop.removeEventListener("change", handleViewportChange);
+  }, []);
+
+  useEffect(() => {
     if (!mobileOpen) {
       if (drawerWasOpenRef.current && restoreFocusOnCloseRef.current) openerRef.current?.focus();
       drawerWasOpenRef.current = false;
@@ -127,7 +139,7 @@ export function AdminSidebar({ logoIdentity }: { logoIdentity: "business" | "per
       </div>
       <ViewSiteLink />
       <div className={styles.navWrap} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) closeDrawer(false); }}>
-        <AdminNav collapsed={collapsed} />
+        <AdminNav collapsed={collapsed && !mobileOpen} />
       </div>
       <form action="/api/admin/logout" method="POST">
         <button type="submit" className={styles.logout} aria-label="Sign out">

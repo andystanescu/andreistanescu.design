@@ -24,14 +24,13 @@ export default async function EditPagePage({
 
   return (
     <>
-      <h1 className="heading-01">Edit page: {page.title}</h1>
       {error && <p style={{ color: "var(--border-error)" }}>{error}</p>}
       <form
         className={styles.form}
         action={`/api/admin/pages/${page.slug}`}
         method="POST"
       >
-        <AdminContentTabs tabs={[
+        <AdminContentTabs header={<div className={styles.pageHeader}><h1 className="heading-01">Edit page: {page.title}</h1></div>} tabs={[
           { id: "details", label: "Details", content: <div>
         <label className={styles.field}>
           <span className="label-small" style={{ color: "var(--text-secondary)" }}>

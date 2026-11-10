@@ -79,11 +79,13 @@ export default function ContentTransfer() {
 
   return (
     <>
+      <div className={`${styles.pageHeader} ${styles.pageHeaderStacked}`}>
       <p className="label-eyebrow">CONTENT TRANSFER</p>
       <h1 className="heading-01">Move your content</h1>
       <p className={`body-small ${styles.helper}`} style={{ maxWidth: 680 }}>
         Export content, configuration, image paths, and view metrics, then import the JSON into another ConScept deployment. Images remain on the persistent disk unless you explicitly create a full backup. Existing content is updated and analytics events are matched safely, so importing the same file twice does not duplicate the metrics. Visitor identifiers remain one-way hashes.
       </p>
+      </div>
       <div className={`${styles.transferPanel}`}>
         <div className={styles.transferActions}>
           <button className={styles.submit} type="button" onClick={() => exportContent(false)} disabled={busy}>

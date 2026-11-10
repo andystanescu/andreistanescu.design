@@ -3,16 +3,16 @@ import styles from "./ContentStatusFilter.module.css";
 
 type ContentStatusFilterProps = {
   baseHref: string;
-  current: "all" | "draft";
-  total: number;
+  current: "published" | "draft";
+  published: number;
   drafts: number;
 };
 
-export function ContentStatusFilter({ baseHref, current, total, drafts }: ContentStatusFilterProps) {
+export function ContentStatusFilter({ baseHref, current, published, drafts }: ContentStatusFilterProps) {
   return (
     <nav className={styles.filters} aria-label="Filter content by publishing status">
-      <Link href={baseHref} aria-current={current === "all" ? "page" : undefined} className={current === "all" ? styles.active : undefined}>
-        All content <span>{total}</span>
+      <Link href={`${baseHref}?status=published`} aria-current={current === "published" ? "page" : undefined} className={current === "published" ? styles.active : undefined}>
+        Published <span>{published}</span>
       </Link>
       <Link href={`${baseHref}?status=draft`} aria-current={current === "draft" ? "page" : undefined} className={current === "draft" ? styles.active : undefined}>
         Drafts <span>{drafts}</span>

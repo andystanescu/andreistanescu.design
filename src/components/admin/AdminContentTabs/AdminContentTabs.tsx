@@ -5,7 +5,7 @@ import styles from "./AdminContentTabs.module.css";
 
 export type AdminContentTab = { id: string; label: string; content: ReactNode };
 
-export function AdminContentTabs({ tabs, initialTab }: { tabs: AdminContentTab[]; initialTab?: string }) {
+export function AdminContentTabs({ tabs, initialTab, header }: { tabs: AdminContentTab[]; initialTab?: string; header?: ReactNode }) {
   const [active, setActive] = useState(initialTab || tabs[0]?.id || "");
   function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     let nextIndex: number;
@@ -24,12 +24,15 @@ export function AdminContentTabs({ tabs, initialTab }: { tabs: AdminContentTab[]
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.tabs} role="tablist" aria-label="Content editor sections">
+      <div className={header ? styles.stickyHeader : styles.tabsContainer}>
+      {header}
+      <div className={`${styles.tabs} ${header ? styles.headerTabs : ""}`} role="tablist" aria-label="Content editor sections">
         {tabs.map((tab) => (
           <button key={tab.id} type="button" role="tab" tabIndex={active === tab.id ? 0 : -1} aria-selected={active === tab.id} aria-controls={`admin-panel-${tab.id}`} className={active === tab.id ? styles.active : styles.tab} onKeyDown={(event) => handleTabKeyDown(event, tabs.indexOf(tab))} onClick={() => setActive(tab.id)}>
             {tab.label}
           </button>
         ))}
+      </div>
       </div>
       {tabs.map((tab) => <section key={tab.id} id={`admin-panel-${tab.id}`} role="tabpanel" hidden={active !== tab.id} aria-label={tab.label}>{tab.content}</section>)}
     </div>

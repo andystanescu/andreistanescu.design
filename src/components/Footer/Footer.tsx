@@ -64,7 +64,7 @@ export function Footer({
         <div className={`container ${styles.footerInner}`}>
         <div className={styles.top}>
           <div className={styles.brand}>
-            <Logo variant="primary" theme="inverted" identity={settings.logo_identity} />
+            <Logo variant="primary" theme="inverted" identity={settings.logo_identity} imageUrl={settings.logo_image} />
             <p className="body-small" style={{ color: "var(--text-secondary)" }}>
               Designing the foundations that exceptional products are built
               upon.

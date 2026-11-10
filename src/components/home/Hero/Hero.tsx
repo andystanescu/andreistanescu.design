@@ -6,17 +6,15 @@ import { LatticeDiagram } from "./LatticeDiagram";
 import { LatticeInteractive } from "./LatticeInteractive";
 import { DiagramLayout } from "./DiagramLayout";
 import { HeroCollage } from "./HeroCollage";
-import { getSettings } from "@/lib/settings";
 import styles from "./Hero.module.css";
 
 export function Hero() {
   const section = getVisibleSection("hero")!;
   const [firstSectionKey] = getSectionOrder();
-  const personal = getSettings().logo_identity === "personal";
-  const primaryLabel = personal ? "See my work" : section.cta_primary_label;
-  const primaryHref = personal ? "/work" : section.cta_primary_href;
-  const secondaryLabel = personal ? "Read articles" : section.cta_secondary_label;
-  const secondaryHref = personal ? "/insights" : section.cta_secondary_href;
+  const primaryLabel = section.cta_primary_label || "See my work";
+  const primaryHref = section.cta_primary_href || "/work";
+  const secondaryLabel = section.cta_secondary_label || "Read articles";
+  const secondaryHref = section.cta_secondary_href || "/insights";
 
   return (
     <section className={styles.hero}>

@@ -12,8 +12,10 @@ export default function AdminServicesPage() {
 
   return (
     <>
+      <div className={styles.pageHeaderGroup}>
       <div className={styles.pageHeader}><h1 className="heading-01">Services</h1><Link href="/admin/services/new" className={styles.newLink}>New service</Link></div>
-      <AdminTabs tabs={SERVICES_TABS} active="/admin/services" />
+      <AdminTabs embedded tabs={SERVICES_TABS} active="/admin/services" />
+      </div>
       <div className={styles.toolbar}>
         <p className="heading-02">Listed items</p>
       </div>

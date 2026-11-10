@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import styles from "./AdminNav.module.css";
 
 const GROUPS = [
-  { label: "", items: [{ label: "Dashboard", href: "/admin", icon: "dashboard" }] },
+  { label: "", items: [{ label: "Dashboard", href: "/admin", icon: "dashboard" }, { label: "Site identity", href: "/admin/site-identity", icon: "identity" }] },
   { label: "Pages", items: [{ label: "Homepage", href: "/admin/homepage", icon: "home" }, { label: "About page", href: "/admin/about", icon: "about" }, { label: "Pages", href: "/admin/pages", icon: "pages" }] },
   { label: "Content", items: [{ label: "Services", href: "/admin/services", icon: "services" }, { label: "Approach steps", href: "/admin/approach-steps", icon: "approach" }, { label: "Case studies", href: "/admin/case-studies", icon: "caseStudies" }, { label: "Insights", href: "/admin/insights", icon: "insights" }] },
   { label: "System", items: [{ label: "Content transfer", href: "/admin/content-transfer", icon: "transfer" }, { label: "Settings", href: "/admin/settings", icon: "settings" }, { label: "Submissions", href: "/admin/submissions", icon: "submissions" }] },
@@ -31,6 +31,7 @@ function AdminIcon({ name }: { name: string }) {
     insights: <><path d="M5 4h14v16H5z" /><path d="m8 16 3-3 2 2 3-4" /></>,
     transfer: <><path d="M7 7h10M7 17h10" /><path d="m14 4 3 3-3 3M10 14l-3 3 3 3" /></>,
     settings: <><circle cx="12" cy="12" r="3" /><path d="M19 15.5a2 2 0 0 0 .4 2.2l.1.1-1.5 1.5-.1-.1a2 2 0 0 0-2.2-.4 2 2 0 0 0-1.2 1.8v.2h-2.1v-.2a2 2 0 0 0-1.2-1.8 2 2 0 0 0-2.2.4l-.1.1-1.5-1.5.1-.1a2 2 0 0 0 .4-2.2A2 2 0 0 0 7.9 14h-.2v-2h.2a2 2 0 0 0 1.8-1.2 2 2 0 0 0-.4-2.2l-.1-.1 1.5-1.5.1.1" /></>,
+    identity: <><rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8" cy="8" r="1.4" /><path d="M5.5 17l4.5-4.5 3 3L16 12l2.5 2.5" /></>,
     submissions: <><path d="M4 5h16v14H4z" /><path d="m4 7 8 6 8-6" /></>,
   };
   return <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;

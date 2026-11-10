@@ -90,19 +90,6 @@ export default async function AdminSettingsPage() {
           />
         </label>
 
-        <label className={styles.field}>
-          <span className="label-small" style={{ color: "var(--text-secondary)" }}>
-            Site identity
-          </span>
-          <select name="logo_identity" defaultValue={settings.logo_identity} className={styles.input}>
-            <option value="business">Business — ConScept</option>
-            <option value="personal">Personal — AndreiStanescu</option>
-          </select>
-          <span className="body-small" style={{ color: "var(--text-tertiary)" }}>
-            Choose which identity is shown in the public header and footer. The uploaded logo remains the business logo when selected.
-          </span>
-        </label>
-
         <div className={styles.formActions}>
           <a href="/admin" className={styles.tertiaryButton}>Cancel</a>
           <button type="submit" className={styles.submit}>

@@ -1,14 +1,15 @@
 import { AccentText } from "@/components/AccentText/AccentText";
 import { LatticeDiagram } from "@/components/home/Hero/LatticeDiagram";
 import { LatticeInteractive } from "@/components/home/Hero/LatticeInteractive";
-import { getVisibleSection } from "@/lib/about";
+import { getSection, getVisibleSection } from "@/lib/about";
 import { getSettings } from "@/lib/settings";
 import { Button } from "@/components/Button/Button";
 import { PersonalLogoMark } from "@/components/Logo/PersonalLogoMark";
 import styles from "./AboutHero.module.css";
 
-export function AboutHero() {
-  const section = getVisibleSection("hero")!;
+export function AboutHero({ preview = false }: { preview?: boolean } = {}) {
+  const section = preview ? getSection("hero") : getVisibleSection("hero");
+  if (!section) return null;
   const settings = getSettings();
   const personal = settings.logo_identity === "personal";
   const heroImage = settings.about_hero_image;

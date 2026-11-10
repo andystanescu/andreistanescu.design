@@ -24,5 +24,14 @@ export function PreviewCanvas({ page, initial, slots, hero, closing, navigation,
     window.parent.postMessage({ type: "layout-ready" }, window.location.origin);
     return () => { window.removeEventListener("message", receive); document.removeEventListener("click", preventNavigation, true); document.removeEventListener("submit", preventNavigation, true); };
   }, [page, initial]);
-  return <>{navigation}{hero}<main>{draft.filter((section) => section.key !== "hero").map((section) => <div key={section.key} hidden={!section.visible} data-preview-section={section.key}>{slots.find((slot) => slot.key === section.key)?.content}</div>)}{closing}</main>{footer}</>;
+  const visible = draft.filter((section) => section.key !== "hero" && section.visible);
+  const grouped = new Set(["services", "approach"]);
+  const firstGroup = visible.findIndex((section) => grouped.has(section.key));
+  return <>{navigation}{hero}<main>{visible.map((section, index) => {
+    if (page === "homepage" && grouped.has(section.key)) {
+      if (index !== firstGroup) return null;
+      return <div key="services-approach-group" data-preview-group="services-approach">{visible.filter((item) => grouped.has(item.key)).map((item) => <div key={item.key} data-preview-section={item.key}>{slots.find((slot) => slot.key === item.key)?.content}</div>)}</div>;
+    }
+    return <div key={section.key} data-preview-section={section.key}>{slots.find((slot) => slot.key === section.key)?.content}</div>;
+  })}{closing}</main>{footer}</>;
 }

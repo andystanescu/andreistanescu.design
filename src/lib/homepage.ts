@@ -39,7 +39,7 @@ export function getSectionOrder(): string[] {
         "SELECT key FROM homepage_sections WHERE fixed = 0 AND visible = 1 ORDER BY position ASC"
       )
       .all() as { key: string }[]
-  ).map((r) => r.key);
+  ).map((r) => r.key).filter((key) => ["services", "approach", "selected_impact", "latest_insights"].includes(key));
 }
 
 export function updateSection(

@@ -1,19 +1,19 @@
 .nav {
   display: flex;
   flex-direction: column;
-  gap: var(--space-500);
+  gap: var(--space-600);
   flex: 1;
 }
 
 .group { display: flex; flex-direction: column; gap: var(--space-150); }
-.groupItems { display: flex; flex-direction: column; gap: var(--space-50); }
-.groupLabel { margin: 0 var(--space-150); color: var(--text-tertiary); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.groupItems { display: flex; flex-direction: column; gap: var(--space-150); }
+.groupLabel { padding-inline: var(--space-150); color: var(--text-tertiary); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 
 .navLink {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-150);
+  gap: var(--space-50);
   padding: var(--space-150) var(--space-150);
   border-left: 3px solid transparent;
   border-radius: var(--radius-md);
@@ -66,7 +66,7 @@
   z-index: 50;
   width: max-content;
   max-width: 220px;
-  padding: 8px 10px;
+  padding: var(--space-100) var(--space-100);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   background: var(--bg-surface);
@@ -82,4 +82,9 @@
 .navCollapsed .navLink:focus-visible .linkLabel {
   opacity: 1;
   transform: translate(0, -50%);
+}
+
+@media (max-width: 767px) {
+  .groupItems { gap: var(--space-150); }
+  .navLink { min-height: calc(var(--space-600) + var(--space-100)); padding: var(--space-200) var(--space-300); box-sizing: border-box; }
 }

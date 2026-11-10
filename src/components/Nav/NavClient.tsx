@@ -14,9 +14,10 @@ import styles from "./Nav.module.css";
 type NavClientProps = {
   links: NavLink[];
   logoIdentity: "business" | "personal";
+  logoImage: string;
 };
 
-export function NavClient({ links, logoIdentity }: NavClientProps) {
+export function NavClient({ links, logoIdentity, logoImage }: NavClientProps) {
   const pathname = usePathname();
   const isContactPage = pathname === "/contact";
   const [scrolled, setScrolled] = useState(false);
@@ -151,8 +152,8 @@ export function NavClient({ links, logoIdentity }: NavClientProps) {
         className={`${styles.navOuter} ${scrolled ? styles.scrolled : ""} ${readingNavHidden && !menuOpen ? styles.readingNavHidden : ""}`}
       >
         <div className={`container ${styles.nav} ${logoIdentity === "personal" ? styles.personal : ""}`}>
-          <Link href="/" aria-label="ConScept home" onClick={closeMenu}>
-            <Logo variant="compact" identity={logoIdentity} />
+          <Link href="/" aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`} onClick={closeMenu}>
+            <Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} />
           </Link>
           <div className={styles.right}>
             <nav className={styles.links} aria-label="Primary">

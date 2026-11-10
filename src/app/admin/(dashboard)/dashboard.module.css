@@ -1,4 +1,10 @@
 .shell {
+  --space-800: 64px;
+  --space-1200: 96px;
+  --space-1600: 128px;
+  --radius-none: 0;
+  --radius-full: 999px;
+  --admin-touch-target: 44px;
   display: flex;
   height: 100dvh;
   min-height: 100vh;
@@ -19,7 +25,7 @@
   height: 100dvh;
   max-height: 100dvh;
   box-sizing: border-box;
-  padding: max(var(--space-400), var(--safe-area-top)) var(--space-400) max(var(--space-400), var(--safe-area-bottom)) max(var(--space-400), var(--safe-area-left));
+  padding: max(var(--space-400), var(--safe-area-top)) var(--space-400) calc(var(--space-400) + var(--safe-area-bottom)) max(var(--space-400), var(--safe-area-left));
   background: var(--bg-surface);
   border-right: 1px solid var(--border-default);
   overflow: visible;
@@ -32,8 +38,8 @@
 
 .sidebarCollapsed {
   width: 72px;
-  padding-right: 12px;
-  padding-left: max(12px, var(--safe-area-left));
+  padding-right: var(--space-150);
+  padding-left: max(var(--space-150), var(--safe-area-left));
 }
 
 .sidebar::-webkit-scrollbar,
@@ -127,7 +133,7 @@
   z-index: 50;
   width: max-content;
   max-width: 220px;
-  padding: 8px 10px;
+  padding: var(--space-100) var(--space-100);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   background: var(--bg-surface);
@@ -197,15 +203,33 @@
 
 .content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-400);
   min-width: 0;
   height: 100%;
   box-sizing: border-box;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: max(var(--space-600), var(--safe-area-top)) max(var(--space-600), var(--safe-area-right)) max(var(--space-600), var(--safe-area-bottom)) var(--space-600);
+  padding: max(var(--space-800), var(--safe-area-top)) max(var(--space-800), var(--safe-area-right)) max(var(--space-800), var(--safe-area-bottom)) var(--space-800);
   overflow-x: hidden;
   scrollbar-width: none;
 }
+.content > * { flex-shrink: 0; }
+.content > :global(h1.heading-01) { margin: 0 !important; padding: 0 !important; }
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .content { padding-inline: var(--space-600); }
+}
+
+@media (max-width: 767px) {
+  .content :global(button) { min-width: var(--admin-touch-target); min-height: var(--admin-touch-target); }
+  .content { gap: var(--space-300); }
+}
+
+.content > :global(h1) { position: sticky; top: 0; z-index: 5; background: var(--bg-canvas); box-shadow: 0 -100px 0 100px var(--bg-canvas); }
+@media (max-width: 767px) { .content > :global(h1) { position: static; box-shadow: none; } }
 
 .content :global(select) {
   appearance: none;
@@ -229,26 +253,6 @@
   top: 0;
   z-index: 10;
   box-sizing: border-box;
-  background: var(--bg-canvas);
-}
-
-.content > .pageHeader {
-  margin-top: calc(-1 * var(--space-600));
-  padding-top: var(--space-600);
-}
-
-.content > .header {
-  margin-top: calc(-1 * var(--space-600));
-  padding-top: var(--space-600);
-}
-
-.content > h1.heading-01 {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  box-sizing: border-box;
-  margin-top: calc(-1 * var(--space-600));
-  padding-top: var(--space-600);
   background: var(--bg-canvas);
 }
 
@@ -287,6 +291,10 @@
   margin-bottom: 0;
 }
 
+@media (max-width: 767px) {
+  .content :global(h1.heading-01:not(.dashboardTitle)) { position: static; box-shadow: none; }
+}
+
 .content .pageHeader h1 {
   position: static;
   padding: 0;
@@ -299,7 +307,6 @@
   position: sticky;
   top: calc(-1 * var(--space-600) + 8rem);
   z-index: 3;
-  margin-top: calc(-1 * var(--space-200));
   padding: var(--space-100) 0 var(--space-200);
   background: var(--bg-canvas);
 }
@@ -328,7 +335,7 @@
   min-height: 0;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 767px) {
   .shell {
     display: block;
   }
@@ -341,7 +348,7 @@
     max-width: 300px;
     height: 100dvh;
     max-height: 100dvh;
-    padding: max(16px, var(--safe-area-top)) 16px max(16px, var(--safe-area-bottom)) max(16px, var(--safe-area-left));
+    padding: max(var(--space-200), var(--safe-area-top)) var(--space-200) calc(var(--space-200) + var(--safe-area-bottom)) max(var(--space-200), var(--safe-area-left));
     overflow-y: auto;
     overscroll-behavior: contain;
     transform: translateX(-105%);
@@ -355,12 +362,15 @@
 
   .sidebarCollapsed {
     width: min(300px, calc(100vw - 56px));
-    padding-inline: 16px;
+    padding-inline: var(--space-200);
   }
 
   .sidebarCollapsed .brand {
     align-items: flex-start;
   }
+
+  .sidebarCollapsed .brandLogo { width: auto; }
+  .sidebarCollapsed .brandLogo > span > :last-child { display: revert; }
 
   .sidebarCollapsed .brandLabel {
     display: block;
@@ -369,7 +379,7 @@
   .sidebarCollapsed .navLink {
     width: 100%;
     justify-content: flex-start;
-    padding: 10px 12px;
+    padding: var(--space-100) var(--space-150);
     border-left: 3px solid transparent;
     border-bottom: 0;
   }
@@ -397,7 +407,7 @@
   .sidebarCollapsed .logout {
     width: 100%;
     justify-content: flex-start;
-    padding-inline: 12px;
+    padding-inline: var(--space-150);
   }
 
   .sidebarCollapsed .sidebarToggle > span,
@@ -426,10 +436,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: var(--space-100);
     min-width: 48px;
     min-height: 48px;
-    padding: 0 12px;
+    padding: 0 var(--space-150);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-md);
     background: var(--bg-surface);
@@ -471,8 +481,10 @@
   }
 
   .sidebarTop {
-    padding-right: 40px;
+    padding-right: var(--space-400);
   }
+
+  .sidebarToggle { display: none; }
 
   .sidebarToggle,
   .logout,
@@ -482,10 +494,12 @@
     box-sizing: border-box;
   }
 
+  .sidebar .navWrap :global(a) { min-height: calc(var(--space-600) + var(--space-100)); }
+
   .content {
     width: 100%;
     height: 100dvh;
-    padding: calc(max(16px, var(--safe-area-top)) + 56px) max(16px, var(--safe-area-right)) max(24px, var(--safe-area-bottom)) max(16px, var(--safe-area-left));
+    padding: calc(max(var(--space-200), var(--safe-area-top)) + var(--space-600)) max(var(--space-300), var(--safe-area-right)) calc(var(--space-300) + var(--safe-area-bottom)) max(var(--space-300), var(--safe-area-left));
   }
 
   .content:has([data-editor-page]) {

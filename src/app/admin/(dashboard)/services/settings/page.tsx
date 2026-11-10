@@ -1,3 +1,4 @@
+import styles from "../../admin.module.css";
 import { notFound } from "next/navigation";
 import { getPage } from "@/lib/pages";
 import { AdminTabs } from "@/components/admin/AdminTabs/AdminTabs";
@@ -20,8 +21,10 @@ export default async function ServicesPageSettingsPage({
 
   return (
     <>
+      <div className={styles.pageHeaderGroup}>
       <h1 className="heading-01">Services</h1>
-      <AdminTabs tabs={SERVICES_TABS} active="/admin/services/settings" />
+      <AdminTabs embedded tabs={SERVICES_TABS} active="/admin/services/settings" />
+      </div>
       <PageSettingsForm
         page={page}
         error={error}

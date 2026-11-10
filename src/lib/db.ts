@@ -386,6 +386,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   confirmation_body: "I reply within two working days.",
   contact_email_to: "",
   logo_image: "",
+  logo_icon_image: "",
   about_hero_image: "",
   about_cv: "",
 };
@@ -663,6 +664,27 @@ if (!getSettingStmt.get("_migrated_hero_ctas")) {
      WHERE key = 'hero'`
   ).run("Explore our approach", "/approach", "See our work", "/work");
   insertSettingStmt.run("_migrated_hero_ctas", "1");
+}
+
+// The personal homepage previously overrode its stored hero actions with
+// hard-coded labels and destinations. Make the stored values match that
+// visible behavior before those actions become editable for the single site
+// identity. Only rewrite the untouched legacy defaults.
+if (!getSettingStmt.get("_migrated_single_identity_hero_ctas")) {
+  const identity = getSettingStmt.get("logo_identity") as { value: string } | undefined;
+  if (identity?.value === "personal") {
+    db.prepare(
+      `UPDATE homepage_sections
+       SET cta_primary_label = ?, cta_primary_href = ?,
+           cta_secondary_label = ?, cta_secondary_href = ?
+       WHERE key = 'hero'
+         AND cta_primary_label = 'Explore our approach'
+         AND cta_primary_href = '/approach'
+         AND cta_secondary_label = 'See our work'
+         AND cta_secondary_href = '/work'`
+    ).run("See my work", "/work", "Read articles", "/insights");
+  }
+  insertSettingStmt.run("_migrated_single_identity_hero_ctas", "1");
 }
 
 // Services shown on the homepage's Services section and listed on the

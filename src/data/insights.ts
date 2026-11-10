@@ -36,6 +36,16 @@ export function getInsights(): Insight[] {
     .all(now) as Insight[];
 }
 
+/** Published articles in publication-date order for the homepage. */
+export function getHomepageInsights(): Insight[] {
+  return getInsights().map((insight, order) => ({ insight, order }))
+    .sort((a, b) => {
+      const dateA = Date.parse(a.insight.published_at) || 0;
+      const dateB = Date.parse(b.insight.published_at) || 0;
+      return dateB - dateA || a.order - b.order;
+    }).slice(0, 3).map(({ insight }) => insight);
+}
+
 export function getInsightBySlug(slug: string, includeUnpublished = false): Insight | undefined {
   let normalizedSlug = slug;
   try {

@@ -42,7 +42,6 @@ export async function POST(request: NextRequest) {
 
   updateSettings({
     author_name: String(form.get("author_name") ?? "").trim() || "Andrei Stanescu",
-    logo_identity: form.get("logo_identity") === "personal" ? "personal" : "business",
     confirmation_title: String(form.get("confirmation_title") ?? "").trim(),
     confirmation_body: String(form.get("confirmation_body") ?? "").trim(),
     contact_email_to: String(form.get("contact_email_to") ?? "").trim(),

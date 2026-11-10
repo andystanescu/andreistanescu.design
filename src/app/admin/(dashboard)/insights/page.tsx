@@ -12,26 +12,29 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminInsightsPage({ searchParams }: { searchParams: Promise<{ status?: string | string[] }> }) {
   const query = await searchParams;
-  const status = query.status === "draft" ? "draft" : "all";
+  const status = query.status === "draft" ? "draft" : "published";
   const now = ukDateTimeValue();
   const allInsights = db
     .prepare("SELECT * FROM insights ORDER BY position ASC, id ASC")
     .all() as Insight[];
   const drafts = allInsights.filter((insight) => !insight.published);
-  const insights = status === "draft" ? drafts : allInsights;
+  const published = allInsights.filter((insight) => Boolean(insight.published));
+  const insights = status === "draft" ? drafts : published;
 
   return (
     <>
+      <div className={styles.pageHeaderGroup}>
       <div className={styles.pageHeader}><h1 className="heading-01">Insights</h1><Link href="/admin/insights/new" className={styles.newLink}>New article</Link></div>
-      <AdminTabs tabs={INSIGHTS_TABS} active="/admin/insights" />
-      <ContentStatusFilter baseHref="/admin/insights" current={status} total={allInsights.length} drafts={drafts.length} />
+      <AdminTabs embedded tabs={INSIGHTS_TABS} active="/admin/insights" />
+      </div>
+      <ContentStatusFilter baseHref="/admin/insights" current={status} published={published.length} drafts={drafts.length} />
       <div className={styles.toolbar}>
-        <p className="heading-02">{status === "draft" ? "Draft articles" : "All articles"}</p>
+        <p className="heading-02">{status === "draft" ? "Draft articles" : "Published articles"}</p>
       </div>
 
       {insights.length === 0 ? (
         <p className={`body-default ${styles.empty}`}>
-          {status === "draft" ? "No article drafts. All articles are published." : <>No articles yet. The homepage&apos;s &ldquo;Latest Insights&rdquo;
+          {status === "draft" ? "No article drafts." : <>No published articles yet. The homepage&apos;s &ldquo;Latest Insights&rdquo;
           section and /insights stay empty until you publish one.</>}
         </p>
       ) : (
@@ -53,13 +56,13 @@ export default async function AdminInsightsPage({ searchParams }: { searchParams
                   </p>
                 </div>
                 <div className={styles.listItemActions}>
-                  {status === "all" && <form action={`/api/admin/insights/${insight.id}/move`} method="POST">
+                  {status === "published" && <form action={`/api/admin/insights/${insight.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="up" />
                     <button type="submit" disabled={index === 0} aria-label="Move up">
                       ↑
                     </button>
                   </form>}
-                  {status === "all" && <form action={`/api/admin/insights/${insight.id}/move`} method="POST">
+                  {status === "published" && <form action={`/api/admin/insights/${insight.id}/move`} method="POST">
                     <input type="hidden" name="direction" value="down" />
                     <button
                       type="submit"

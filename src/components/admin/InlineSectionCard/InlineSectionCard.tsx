@@ -5,6 +5,7 @@ import adminStyles from "@/app/admin/(dashboard)/admin.module.css";
 import { getSettings } from "@/lib/settings";
 import { ImageField } from "@/components/admin/ImageField/ImageField";
 import styles from "./InlineSectionCard.module.css";
+import { SectionLivePreview } from "./SectionLivePreview";
 
 type Props = {
   section: HomepageSection | AboutSection;
@@ -12,20 +13,21 @@ type Props = {
   parent: "homepage" | "about";
   fixed?: boolean;
   reorder?: ReactNode;
+  preview?: ReactNode;
 };
 
-export function InlineSectionCard({ section, label, parent, fixed = false, reorder }: Props) {
-  const homepage = parent === "homepage";
+export function InlineSectionCard({ section, label, parent, fixed = false, reorder, preview }: Props) {
   const aboutHero = parent === "about" && section.key === "hero";
   const action = `/api/admin/${parent}/${section.key}`;
   const settings = aboutHero ? getSettings() : null;
   return (
     <div className={styles.card}>
-      <details className={styles.details} open={aboutHero || undefined}>
+      <details className={styles.details}>
         <summary className={styles.summary}>
           <span><strong className="body-default">{label}</strong>{fixed && <small>fixed position</small>}{!section.visible && <small className={styles.hidden}>hidden from site</small>}</span>
           <span className={styles.summaryActions}>{reorder}<span className={styles.expandIcon} aria-hidden="true">+</span></span>
         </summary>
+        <SectionLivePreview sectionKey={section.key} page={parent} preview={preview}>
         <form className={adminStyles.form} action={action} method="POST" encType={aboutHero ? "multipart/form-data" : undefined}>
           <label className={adminStyles.field}><span className="label-small">Eyebrow</span><input name="eyebrow" defaultValue={section.eyebrow} className={adminStyles.input} /></label>
           {aboutHero && settings && <div className={adminStyles.field}>
@@ -35,15 +37,10 @@ export function InlineSectionCard({ section, label, parent, fixed = false, reord
           </div>}
           <label className={adminStyles.field}><span className="label-small">Headline (wrap a word in #like this# for orange)</span><input name="headline" defaultValue={section.headline} required className={adminStyles.input} /></label>
           <label className={adminStyles.field}><span className="label-small">Description</span><textarea name="description" defaultValue={section.description} className={adminStyles.textarea} /></label>
-          {homepage && <>
-            <input type="hidden" name="cta_primary_label" value={(section as HomepageSection).cta_primary_label} />
-            <input type="hidden" name="cta_primary_href" value={(section as HomepageSection).cta_primary_href} />
-            <input type="hidden" name="cta_secondary_label" value={(section as HomepageSection).cta_secondary_label} />
-            <input type="hidden" name="cta_secondary_href" value={(section as HomepageSection).cta_secondary_href} />
-          </>}
           <label className={adminStyles.checkboxField}><input type="checkbox" name="visible" defaultChecked={!!section.visible} /><span className={adminStyles.switch} /><span className="body-default">Visible on site</span></label>
           <div className={adminStyles.formActions}><a href="" className={adminStyles.tertiaryButton}>Cancel</a><button type="submit" className={adminStyles.submit}><span className="label-button">Save section</span></button></div>
         </form>
+        </SectionLivePreview>
       </details>
     </div>
   );
