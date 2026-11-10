@@ -4,7 +4,7 @@
 
 .wide {
   width: 100%;
-  max-width: 1920px;
+  max-width: var(--layout-content-width);
   margin-inline: auto;
   padding-left: max(var(--layout-gutter-visual), var(--safe-area-left));
   padding-right: max(var(--layout-gutter-visual), var(--safe-area-right));

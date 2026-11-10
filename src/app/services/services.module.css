@@ -60,12 +60,12 @@
    insights chapter. Shared section components keep their own internal
    structure while this page controls the outer composition. */
 .main :global(#selected_impact) > :global(.container) {
-  max-width: 1312px;
+  max-width: var(--layout-content-width);
   gap: var(--space-400);
 }
 
 .main :global(#latest_insights) > :global(.container) {
-  max-width: 1312px;
+  max-width: var(--layout-content-width);
 }
 
 .list {

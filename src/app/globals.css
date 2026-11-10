@@ -6,6 +6,7 @@
      inset while letting visual material use more of the viewport. */
   --layout-gutter-narrative: var(--space-800);
   --layout-gutter-visual: var(--space-800);
+  --layout-content-width: 2560px;
   --layout-section-space: var(--space-1200);
 
   /* Hero rhythm. Page heroes share these values so their editorial elements
@@ -417,7 +418,7 @@ html {
    that keeps expanding past that point. */
 .container {
   width: 100%;
-  max-width: 1312px;
+  max-width: var(--layout-content-width);
   margin-inline: auto;
   padding-right: max(var(--layout-gutter-narrative), var(--safe-area-right));
   padding-left: max(var(--layout-gutter-narrative), var(--safe-area-left));

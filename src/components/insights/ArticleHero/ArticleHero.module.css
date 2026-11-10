@@ -1,6 +1,6 @@
 .hero{
   width:100%;
-  max-width:1920px;
+  max-width:var(--layout-content-width);
   margin-inline:auto;
   padding:var(--space-800) max(var(--layout-gutter-narrative),var(--safe-area-right)) var(--space-800) max(var(--layout-gutter-narrative),var(--safe-area-left));
 }

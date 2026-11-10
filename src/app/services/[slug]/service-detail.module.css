@@ -206,7 +206,7 @@
 .architectureApproachStage:nth-child(3) .architectureApproachActivities { border-top-color:var(--accent-foundation); }
 .architectureApproachReturn { display:flex; align-items:center; gap:var(--space-150); margin:var(--space-400) 0 0; padding-top:var(--space-300); border-top:1px solid var(--border-default); color:var(--text-secondary); font:13px/1.45 var(--font-family-body); }
 .architectureApproachReturn span { color:var(--text-accent); font-size:22px; line-height:1; }
-.evidence { width:100%; max-width:1920px; padding:var(--space-600) max(var(--layout-gutter-narrative),var(--safe-area-right)) var(--space-1200) max(var(--layout-gutter-narrative),var(--safe-area-left)); container-name:evidence-section; container-type:inline-size; }
+.evidence { width:100%; max-width:var(--layout-content-width); padding:var(--space-600) max(var(--layout-gutter-narrative),var(--safe-area-right)) var(--space-1200) max(var(--layout-gutter-narrative),var(--safe-area-left)); container-name:evidence-section; container-type:inline-size; }
 .evidenceHeader { width:100%; }
 .evidenceHeader h2 { width:fit-content; max-width:100%; margin-top:var(--space-200); white-space:normal; }
 .evidenceLead { width:fit-content; max-width:100%; margin-top:var(--space-300); color:var(--text-secondary); white-space:normal; }
@@ -915,7 +915,7 @@
 }
 
 .aiOperationalLoop { padding-block:var(--space-800); border-block:1px solid var(--border-default); }
-.aiOperationalLoopContent { width:100%; max-width:1920px; margin-inline:auto; }
+.aiOperationalLoopContent { width:100%; max-width:var(--layout-content-width); margin-inline:auto; }
 .aiOperationalLoopHeader { display:grid; grid-template-columns:minmax(0,1fr) minmax(300px,.72fr); gap:var(--space-300) var(--space-800); align-items:end; }
 .aiOperationalLoopHeader > :first-child { grid-column:1 / -1; }
 .aiOperationalLoopHeader h2 { max-width:900px; margin:0; }
