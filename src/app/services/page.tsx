@@ -1,7 +1,5 @@
 import { notFound } from "next/navigation";
-import type { CSSProperties } from "react";
 import { Nav } from "@/components/Nav/Nav";
-import { ScrollStack } from "@/components/home/ScrollStack/ScrollStack";
 import { Footer } from "@/components/Footer/Footer";
 import { RichContent } from "@/components/RichContent/RichContent";
 import { getPublishedPage } from "@/lib/pages";
@@ -28,10 +26,7 @@ export default function ServicesPage() {
   return (
     <>
       <Nav />
-      <ScrollStack className={styles.scrollSequence}>
         <main className={styles.main}>
-          <div className={`${styles.scrollPanel} ${styles.groupedPanel}`} data-scroll-panel style={{ "--stack-order": 1 } as CSSProperties}>
-            <div className={styles.groupedContent}>
               <section className={`container ${styles.hero}`}>
                 <div className={styles.heroCopy}>
                   <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>
@@ -64,20 +59,10 @@ export default function ServicesPage() {
                   </ul>
                 )}
               </section>
-            </div>
-          </div>
-          <div className={styles.scrollPanel} data-scroll-panel style={{ "--stack-order": 2 } as CSSProperties}>
-            <SelectedImpact />
-          </div>
-          <div className={styles.scrollPanel} data-scroll-panel style={{ "--stack-order": 3 } as CSSProperties}>
-            <LatestInsights />
-          </div>
+          <SelectedImpact />
+          <LatestInsights />
         </main>
-        <div className={`${styles.scrollPanel} ${styles.footerPanel}`} data-scroll-panel data-scroll-mode="flow" style={{ "--stack-order": 4 } as CSSProperties}>
-          <Footer
-          />
-        </div>
-      </ScrollStack>
+        <Footer />
     </>
   );
 }

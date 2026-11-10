@@ -45,7 +45,7 @@ export default async function AdminHomepagePage({
           using the arrows, and control visibility in the Sections list.
           Hero stays at the top; the footer stays at the bottom.
         </p>
-        <p className={`body-small ${styles.helper}`}>Services and Approach appear together as one scrolling group at the position of whichever comes first in the list. Their order within that group follows the list. Selected Impact and Latest Insights each form a separate scrolling panel.</p>
+        <p className={`body-small ${styles.helper}`}>Services and Approach stay together at the position of whichever comes first in the list. Their order follows the list.</p>
       </div>} initialTab={tab === "metadata" || tab === "layout" ? tab : "sections"} tabs={[
         { id: "layout", label: "Layout preview", content: <LayoutEditor page="homepage" initial={getLayoutConfiguration("homepage")} previewOnly /> },
         {
