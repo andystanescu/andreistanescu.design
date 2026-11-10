@@ -5,8 +5,8 @@ import type { ReactNode } from "react";
 import styles from "./AdminNav.module.css";
 
 const GROUPS = [
-  { label: "", items: [{ label: "Dashboard", href: "/admin", icon: "dashboard" }, { label: "Site identity", href: "/admin/site-identity", icon: "identity" }] },
-  { label: "Pages", items: [{ label: "Homepage", href: "/admin/homepage", icon: "home" }, { label: "About page", href: "/admin/about", icon: "about" }, { label: "Pages", href: "/admin/pages", icon: "pages" }] },
+  { label: "", items: [{ label: "Dashboard", href: "/admin", icon: "dashboard" }, { label: "Site identity", href: "/admin/site-identity", icon: "identity" }, { label: "Navigation", href: "/admin/pages", icon: "pages" }] },
+  { label: "Pages", items: [{ label: "Homepage", href: "/admin/homepage", icon: "home" }, { label: "About page", href: "/admin/about", icon: "about" }, { label: "Contact", href: "/admin/contact", icon: "contact" }, { label: "Privacy policy", href: "/admin/privacy", icon: "pages" }, { label: "Terms of service", href: "/admin/terms", icon: "pages" }] },
   { label: "Content", items: [{ label: "Services", href: "/admin/services", icon: "services" }, { label: "Approach steps", href: "/admin/approach-steps", icon: "approach" }, { label: "Case studies", href: "/admin/case-studies", icon: "caseStudies" }, { label: "Insights", href: "/admin/insights", icon: "insights" }] },
   { label: "System", items: [{ label: "Content transfer", href: "/admin/content-transfer", icon: "transfer" }, { label: "Settings", href: "/admin/settings", icon: "settings" }, { label: "Submissions", href: "/admin/submissions", icon: "submissions" }] },
 ] as const;
@@ -16,7 +16,7 @@ export function AdminNav({ collapsed = false }: { collapsed?: boolean }) {
   const pathname = usePathname();
   const effectivePath = NESTED_UNDER[pathname] ?? pathname;
   const isActive = (href: string) => href === "/admin" ? effectivePath === href : effectivePath.startsWith(href);
-  return <nav className={`${styles.nav} ${collapsed ? styles.navCollapsed : ""}`} aria-label="Admin">{GROUPS.map((group) => <div className={styles.group} key={group.label || "dashboard"}>{group.label && <p className={styles.groupLabel}>{group.label}</p>}<div className={styles.groupItems}>{group.items.map((item) => <Link key={item.href} href={item.href} aria-label={item.label} aria-current={isActive(item.href) ? "page" : undefined} className={`${styles.navLink} ${isActive(item.href) ? styles.navLinkActive : ""}`}><AdminIcon name={item.icon} /><span className={styles.linkLabel}>{item.label}</span></Link>)}</div></div>)}</nav>;
+  return <nav className={`${styles.nav} ${collapsed ? styles.navCollapsed : ""}`} aria-label="Admin">{GROUPS.map((group) => <div className={styles.group} key={group.label || "dashboard"}>{group.label && <p className={styles.groupLabel}>{group.label}</p>}<div className={styles.groupItems}>{group.items.map((item) => <Link key={item.href} href={item.href} aria-label={item.label} title={collapsed ? item.label : undefined} aria-current={isActive(item.href) ? "page" : undefined} className={`${styles.navLink} ${isActive(item.href) ? styles.navLinkActive : ""}`}><AdminIcon name={item.icon} /><span className={styles.linkLabel}>{item.label}</span></Link>)}</div></div>)}</nav>;
 }
 
 function AdminIcon({ name }: { name: string }) {
@@ -25,6 +25,7 @@ function AdminIcon({ name }: { name: string }) {
     home: <><path d="m3 10 9-7 9 7" /><path d="M5 9v11h14V9" /><path d="M9 20v-6h6v6" /></>,
     about: <><circle cx="12" cy="7" r="3.5" /><path d="M5 21c.7-4 2.7-6 7-6s6.3 2 7 6" /></>,
     pages: <><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v5h5M9 12h6M9 16h6" /></>,
+    contact: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" /></>,
     services: <><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M8 6V4h8v2M3 11h18M10 11v2h4v-2" /></>,
     approach: <><path d="m12 3 8 4-8 4-8-4zM4 12l8 4 8-4M4 17l8 4 8-4" /></>,
     caseStudies: <><path d="M4 5h16v14H4z" /><path d="M8 9h8M8 13h5" /></>,

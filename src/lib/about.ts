@@ -5,6 +5,7 @@ export type AboutSection = {
   eyebrow: string;
   headline: string;
   description: string;
+  cta_label: string;
   position: number;
   fixed: number;
   visible: number;
@@ -40,11 +41,11 @@ export function getSectionOrder(): string[] {
 
 export function updateSection(
   key: string,
-  update: { eyebrow: string; headline: string; description: string; visible?: boolean }
+  update: { eyebrow: string; headline: string; description: string; ctaLabel?: string; visible?: boolean }
 ) {
   db.prepare(
-    "UPDATE about_sections SET eyebrow = ?, headline = ?, description = ?, visible = ? WHERE key = ?"
-  ).run(update.eyebrow, update.headline, update.description, update.visible === false ? 0 : 1, key);
+    "UPDATE about_sections SET eyebrow = ?, headline = ?, description = ?, cta_label = COALESCE(?, cta_label), visible = ? WHERE key = ?"
+  ).run(update.eyebrow, update.headline, update.description, update.ctaLabel ?? null, update.visible === false ? 0 : 1, key);
 }
 
 export function moveSectionPosition(key: string, direction: "up" | "down") {

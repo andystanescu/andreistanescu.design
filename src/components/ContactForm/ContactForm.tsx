@@ -30,6 +30,7 @@ export function ContactForm({ personal = true }: { personal?: boolean }) {
           name: data.get("name"),
           email: data.get("email"),
           message: data.get("message"),
+          company_website: data.get("company_website"),
           newsletter: data.get("newsletter") === "on",
         }),
       });
@@ -76,6 +77,10 @@ export function ContactForm({ personal = true }: { personal?: boolean }) {
       {state.status === "error" && (
         <p className={styles.error} role="alert">{state.message}</p>
       )}
+
+      <div className={styles.honeypot} aria-hidden="true">
+        <label>Company website<input type="text" name="company_website" tabIndex={-1} autoComplete="off" /></label>
+      </div>
 
       <div className={styles.shortFields}>
         <label className={styles.field}>

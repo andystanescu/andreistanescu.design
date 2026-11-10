@@ -5,6 +5,12 @@ import { sendContactNotification } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
+  if (typeof body?.company_website === "string" && body.company_website.trim()) {
+    const bounded = (value: unknown, limit: number) => typeof value === "string" ? value.trim().slice(0, limit) : "";
+    createSubmission({ name: bounded(body.name, 200), email: bounded(body.email, 320), message: bounded(body.message, 5000), newsletter: false, blocked: true });
+    const settings = getSettings();
+    return NextResponse.json({ confirmationTitle: settings.confirmation_title, confirmationBody: settings.confirmation_body });
+  }
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const email = typeof body?.email === "string" ? body.email.trim() : "";
   const message = typeof body?.message === "string" ? body.message.trim() : "";

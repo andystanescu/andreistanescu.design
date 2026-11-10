@@ -25,7 +25,7 @@ function subscribe(onStoreChange: () => void) {
   };
 }
 
-export function ThemeSwitch() {
+export function ThemeSwitch({ horizontal = false, compact = false }: { horizontal?: boolean; compact?: boolean } = {}) {
   const dark = useSyncExternalStore(subscribe, isDarkTheme, () => false);
 
   const toggleTheme = () => {
@@ -39,7 +39,7 @@ export function ThemeSwitch() {
   return (
     <button
       type="button"
-      className={styles.switch}
+      className={`${styles.switch} ${horizontal ? styles.horizontal : ""} ${compact ? styles.compact : ""}`}
       role="switch"
       aria-checked={dark}
       aria-label={`Switch to ${dark ? "light" : "dark"} mode`}

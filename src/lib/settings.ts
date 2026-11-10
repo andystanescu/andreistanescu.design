@@ -4,6 +4,7 @@ import { persistDefaultTheme, persistPublishedTheme } from "@/lib/themePersisten
 export type SettingsMap = {
   author_name: string;
   logo_identity: "business" | "personal";
+  navigation_style: "default" | "masthead" | "islands" | "menu-first" | "floating-rail";
   work_outcome_title: string;
   work_outcome_body: string;
   approach_principle_eyebrow: string;
@@ -29,6 +30,14 @@ export type SettingsMap = {
   confirmation_title: string;
   confirmation_body: string;
   contact_email_to: string;
+  footer_message: string;
+  footer_show_services: string;
+  footer_show_navigation: string;
+  footer_show_contact: string;
+  footer_contact_label: string;
+  footer_contact_title: string;
+  footer_contact_message: string;
+  footer_copyright: string;
   logo_image: string;
   logo_icon_image: string;
   logo_image_footer: string;
@@ -55,6 +64,7 @@ export type SettingsMap = {
 const KEYS: (keyof SettingsMap)[] = [
   "author_name",
   "logo_identity",
+  "navigation_style",
   "work_outcome_title",
   "work_outcome_body",
   "approach_principle_eyebrow",
@@ -80,6 +90,14 @@ const KEYS: (keyof SettingsMap)[] = [
   "confirmation_title",
   "confirmation_body",
   "contact_email_to",
+  "footer_message",
+  "footer_show_services",
+  "footer_show_navigation",
+  "footer_show_contact",
+  "footer_contact_label",
+  "footer_contact_title",
+  "footer_contact_message",
+  "footer_copyright",
   "logo_image",
   "logo_icon_image",
   "logo_image_footer",
@@ -117,6 +135,7 @@ export function getSettings(): SettingsMap {
   return {
     author_name: map.author_name ?? "Andrei Stanescu",
     logo_identity: logoIdentity,
+    navigation_style: map.navigation_style === "masthead" || map.navigation_style === "islands" || map.navigation_style === "menu-first" || map.navigation_style === "floating-rail" ? map.navigation_style : "default",
     work_outcome_title: map.work_outcome_title ?? "Better systems make better work repeatable.",
     work_outcome_body: map.work_outcome_body ?? "Clarity compounds: decisions become easier, teams move with more confidence and products improve over time.",
     approach_principle_eyebrow: map.approach_principle_eyebrow ?? "THE PRINCIPLE",
@@ -142,6 +161,14 @@ export function getSettings(): SettingsMap {
     confirmation_title: map.confirmation_title ?? "",
     confirmation_body: map.confirmation_body ?? "",
     contact_email_to: map.contact_email_to ?? "",
+    footer_message: map.footer_message ?? "Designing the foundations that exceptional products are built upon.",
+    footer_show_services: map.footer_show_services ?? "1",
+    footer_show_navigation: map.footer_show_navigation ?? "1",
+    footer_show_contact: map.footer_show_contact ?? "1",
+    footer_contact_label: map.footer_contact_label ?? "Let's talk",
+    footer_contact_title: map.footer_contact_title ?? "Let's connect",
+    footer_contact_message: map.footer_contact_message ?? `Have a project in mind or want to explore how ${logoIdentity === "personal" ? "I" : "we"} can help?`,
+    footer_copyright: map.footer_copyright ?? `${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} 2026`,
     logo_image: map.logo_image ?? "",
     logo_icon_image: map.logo_icon_image ?? "",
     theme_primary_500: map.theme_primary_500 ?? "#11161F",

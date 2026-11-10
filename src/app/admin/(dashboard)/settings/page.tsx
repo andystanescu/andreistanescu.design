@@ -24,7 +24,7 @@ export default async function AdminSettingsPage() {
 
       <p className={`body-small ${styles.helper}`} style={{ maxWidth: 640 }}>
         Main menu visibility and order now live on each page in{" "}
-        <Link href="/admin/pages">Pages</Link>.
+        <Link href="/admin/pages">Navigation</Link>.
       </p>
 
       <form

@@ -36,7 +36,8 @@ export async function POST(
     return relativeRedirect(url.pathname + url.search);
   }
 
-  updateSection(key, { eyebrow, headline, description, visible });
+  const ctaLabel = form.has("cta_label") ? String(form.get("cta_label") ?? "").trim() : undefined;
+  updateSection(key, { eyebrow, headline, description, ctaLabel, visible });
   if (key === "hero") {
     updateSettings({ about_hero_image: aboutHeroImage });
   }

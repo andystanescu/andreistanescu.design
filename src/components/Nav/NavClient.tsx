@@ -5,9 +5,11 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/Logo/Logo";
+import { LogoIcon } from "@/components/Logo/LogoIcon";
 import { Button } from "@/components/Button/Button";
 import { ArrowIcon } from "@/components/Icon/ArrowIcon";
 import { ThemeSwitch } from "@/components/ThemeSwitch/ThemeSwitch";
+import { NavigationIcon } from "@/components/Nav/NavigationIcon";
 import type { NavLink } from "@/lib/pages";
 import styles from "./Nav.module.css";
 
@@ -15,9 +17,11 @@ type NavClientProps = {
   links: NavLink[];
   logoIdentity: "business" | "personal";
   logoImage: string;
+  logoIconImage: string;
+  navigationStyle: "default" | "masthead" | "islands" | "menu-first" | "floating-rail";
 };
 
-export function NavClient({ links, logoIdentity, logoImage }: NavClientProps) {
+export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navigationStyle }: NavClientProps) {
   const pathname = usePathname();
   const isContactPage = pathname === "/contact";
   const [scrolled, setScrolled] = useState(false);
@@ -85,7 +89,7 @@ export function NavClient({ links, logoIdentity, logoImage }: NavClientProps) {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") setMenuOpen(false);
       if (e.key === "Tab" && overlayRef.current) {
-        const controls = Array.from(overlayRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        const controls = Array.from(overlayRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter((control) => control.getClientRects().length > 0);
         if (!controls.length) return;
         const first = controls[0];
         const last = controls[controls.length - 1];
@@ -94,7 +98,7 @@ export function NavClient({ links, logoIdentity, logoImage }: NavClientProps) {
       }
     }
     function handleResize() {
-      if (window.innerWidth > 900) setMenuOpen(false);
+      if (navigationStyle === "default" && window.innerWidth > 900) setMenuOpen(false);
     }
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("resize", handleResize);
@@ -103,7 +107,7 @@ export function NavClient({ links, logoIdentity, logoImage }: NavClientProps) {
       window.removeEventListener("resize", handleResize);
       (previousFocus?.isConnected ? previousFocus : menuToggleRef.current)?.focus();
     };
-  }, [menuOpen]);
+  }, [menuOpen, navigationStyle]);
 
   useEffect(() => {
     return () => document.body.classList.remove("no-scroll");
@@ -115,6 +119,57 @@ export function NavClient({ links, logoIdentity, logoImage }: NavClientProps) {
   // still highlights its top-level section.
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+  if (navigationStyle === "floating-rail") {
+    return <header data-navigation-style="floating-rail" className={`${styles.floatingRail} ${readingNavHidden ? styles.floatingRailHidden : ""}`}>
+      <Link className={styles.railBrand} href="/" aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`}><LogoIcon identity={logoIdentity} imageUrl={logoIconImage} /></Link>
+      <nav className={styles.railLinks} aria-label="Primary">{links.map((link) => <Link key={link.href} href={link.href} aria-label={link.label} aria-current={isActive(link.href) ? "page" : undefined}><NavigationIcon page={link.href} /><span>{link.label}</span></Link>)}</nav>
+      <div className={styles.railTheme}><span className={styles.railDesktopTheme}><ThemeSwitch /></span><span className={styles.railMobileTheme}><ThemeSwitch compact /></span></div>
+    </header>;
+  }
+
+  if (navigationStyle === "menu-first") {
+    return <header data-navigation-style="menu-first" className={`${styles.menuFirst} ${readingNavHidden && !menuOpen ? styles.menuFirstHidden : ""}`}>
+      <div ref={overlayRef} role={menuOpen ? "dialog" : undefined} aria-modal={menuOpen ? true : undefined} aria-label={menuOpen ? "Navigation menu" : undefined} className={styles.menuFirstLayout}>
+        <div className={styles.menuFirstBar}>
+          <Link href="/" onClick={closeMenu} aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`}><Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} /></Link>
+          <div className={styles.menuFirstControls}>
+            <div className={styles.menuFirstDesktopTheme}><ThemeSwitch horizontal /></div>
+            <button ref={menuToggleRef} className={styles.menuFirstToggle} type="button" aria-expanded={menuOpen} aria-controls="menu-first-panel" onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? "Close" : "Menu"}<span aria-hidden="true">{menuOpen ? "×" : "☰"}</span></button>
+            {!isContactPage && <div className={styles.menuFirstDesktopAction}><Button href="/contact" onClick={closeMenu} icon={<ArrowIcon size={16} />}>Let&apos;s talk</Button></div>}
+          </div>
+        </div>
+        {menuOpen && <div id="menu-first-panel" className={styles.menuFirstPanel}>
+          <nav className={styles.menuFirstLinks} aria-label="Primary">{links.map((link, index) => <Link key={link.href} href={link.href} onClick={closeMenu} aria-current={isActive(link.href) ? "page" : undefined}><span>{String(index + 1).padStart(2, "0")}</span><strong>{link.label}</strong></Link>)}</nav>
+          <div className={styles.menuFirstMobileActions}>{!isContactPage && <Button href="/contact" onClick={closeMenu} icon={<ArrowIcon size={16} />}>Let&apos;s talk</Button>}<ThemeSwitch horizontal /></div>
+        </div>}
+      </div>
+    </header>;
+  }
+
+  if (navigationStyle === "islands") {
+    return <header data-navigation-style="islands" className={styles.islands}>
+      <div className={styles.islandsInner}>
+        <Link className={styles.islandsBrand} href="/" aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`}><Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} /></Link>
+        <div className={`${styles.islandsDock} ${readingNavHidden ? styles.islandsDockHidden : ""}`}>
+          <nav className={styles.islandsLinks} aria-label="Primary">{links.map((link) => <Link key={link.href} href={link.href} aria-label={link.label} aria-current={isActive(link.href) ? "page" : undefined} className={isActive(link.href) ? styles.islandsActive : undefined}><span className={styles.islandsIcon}><NavigationIcon page={link.href} /></span><span className={styles.islandsLabel}>{link.label}</span></Link>)}</nav>
+          {!isContactPage && <div className={styles.islandsMobileAction}><Button href="/contact">Let&apos;s talk</Button></div>}
+        </div>
+        <div className={styles.islandsActions}>{!isContactPage && <Button href="/contact" icon={<ArrowIcon size={16} />}>Let&apos;s talk</Button>}<ThemeSwitch horizontal /></div>
+      </div>
+    </header>;
+  }
+
+  if (navigationStyle === "masthead") {
+    return <header data-navigation-style="masthead" data-masthead-collapsed={scrolled || undefined} className={styles.masthead}>
+      <div className={styles.mastheadBrandRow}>
+        <div className={styles.mastheadTheme}><ThemeSwitch horizontal /></div>
+        <Link className={styles.mastheadLogo} href="/" aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`}><Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} /></Link>
+        <div className={styles.mastheadAction}>{!isContactPage && <Button href="/contact" icon={<ArrowIcon size={16} />}>Let&apos;s talk</Button>}</div>
+      </div>
+      <nav className={styles.mastheadLinks} aria-label="Primary">{links.map((link) => <Link key={link.href} href={link.href} aria-current={isActive(link.href) ? "page" : undefined} className={isActive(link.href) ? styles.mastheadActive : undefined}>{link.label}</Link>)}</nav>
+    </header>;
+  }
 
   const overlay = (
     <div

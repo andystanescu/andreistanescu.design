@@ -75,8 +75,6 @@ export default function ServicesPage() {
         </main>
         <div className={`${styles.scrollPanel} ${styles.footerPanel}`} data-scroll-panel data-scroll-mode="flow" style={{ "--stack-order": 4 } as CSSProperties}>
           <Footer
-            contactPrompt="Recognise the problem but not sure which service it fits? Tell me what is getting in the way and we can work out the right direction together."
-            contactActionLabel="Start a conversation"
           />
         </div>
       </ScrollStack>

@@ -23,7 +23,7 @@ export function LatestInsights() {
           className={styles.sectionHeader}
           action={
             <Link href="/insights" className={styles.seeAll}>
-              See all insights
+              {section.cta_primary_label || "See all insights"}
               <ArrowIcon size={16} />
             </Link>
           }

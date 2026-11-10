@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getPage } from "@/lib/pages";
+import { DEDICATED_PAGE_PATHS, getPage } from "@/lib/pages";
 import { RichTextEditor } from "@/components/admin/RichTextEditor/RichTextEditor";
 import { MetadataFields } from "@/components/admin/MetadataFields/MetadataFields";
 import { AdminContentTabs } from "@/components/admin/AdminContentTabs/AdminContentTabs";
@@ -21,6 +21,7 @@ export default async function EditPagePage({
   if (!page) {
     notFound();
   }
+  const dedicatedPath = DEDICATED_PAGE_PATHS[slug];
 
   return (
     <>
@@ -30,6 +31,7 @@ export default async function EditPagePage({
         action={`/api/admin/pages/${page.slug}`}
         method="POST"
       >
+        {dedicatedPath && <input type="hidden" name="redirect" value={dedicatedPath} />}
         <AdminContentTabs header={<div className={styles.pageHeader}><h1 className="heading-01">Edit page: {page.title}</h1></div>} tabs={[
           { id: "details", label: "Details", content: <div>
         <label className={styles.field}>
@@ -100,7 +102,7 @@ export default async function EditPagePage({
         ]} />
 
         <div className={styles.formActions}>
-          <a href="/admin/pages" className={styles.tertiaryButton}>Cancel</a>
+          <a href={dedicatedPath || "/admin/pages"} className={styles.tertiaryButton}>Cancel</a>
           <button type="submit" className={styles.submit}>
             <span className="label-button">Save changes</span>
           </button>

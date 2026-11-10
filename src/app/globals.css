@@ -154,6 +154,10 @@
   --font-family-mono: var(--font-mono), "IBM Plex Mono", monospace;
 }
 
+html:has([data-navigation-style="masthead"]) { --nav-height: 136px; }
+@media (min-width: 901px) { html:has([data-navigation-style="masthead"][data-masthead-collapsed="true"]) { --nav-height: 52px; } }
+@media (max-width: 900px) { html:has([data-navigation-style="masthead"]) { --nav-height: 112px; } }
+
 @media (max-width: 767px) {
   :root {
     --hero-space-eyebrow-title: var(--space-100);
@@ -711,3 +715,10 @@ summary:focus-visible {
     max-width: none;
   }
 }
+html:has([data-navigation-style="islands"]) { --nav-height: 80px; }
+@media(max-width:900px){html:has([data-navigation-style="islands"]) { --nav-height: 64px; }}
+html:has([data-navigation-style="menu-first"]) { --nav-height: 80px; }
+@media(max-width:900px){html:has([data-navigation-style="menu-first"]) { --nav-height: 64px; }}
+html:has([data-navigation-style="floating-rail"]) { --nav-height: 0px; }
+@media(min-width:901px){body:has([data-navigation-style="floating-rail"]) { padding-left: 104px; }}
+@media(max-width:900px){html:has([data-navigation-style="floating-rail"]) { --nav-height: 68px; }}

@@ -11,39 +11,32 @@ import styles from "./Footer.module.css";
 type FooterProps = {
   variant?: "full" | "compact";
   hideContactCta?: boolean;
-  contactPrompt?: string;
-  contactActionLabel?: string;
 };
 
 export function Footer({
   variant = "full",
   hideContactCta = false,
-  contactPrompt,
-  contactActionLabel = "Let's talk",
 }: FooterProps) {
   const navigationLinks = getNavLinks();
   const settings = getSettings();
+  const actionLabel = settings.footer_contact_label || "Let's talk";
   const services = getServiceItems();
-  const copyrightName = settings.logo_identity === "personal" ? "Andrei Stanescu" : "ConScept";
   const privacyPage = getPublishedPage("privacy");
   const termsPage = getPublishedPage("terms");
-  const defaultContactPrompt = `Have a project in mind or want to explore how ${settings.logo_identity === "personal" ? "I" : "we"} can help?`;
-  const resolvedContactPrompt = contactPrompt || defaultContactPrompt;
+  const resolvedContactPrompt = settings.footer_contact_message;
   const compactContent = (
     <div className={`container ${styles.compactInner}`}>
-      {!hideContactCta && (
+      {!hideContactCta && settings.footer_show_contact === "1" && (
         <div className={styles.compactPrompt}>
           <p className="body-large">{resolvedContactPrompt}</p>
-          <FooterLink href="/contact" className={styles.compactCta}>{contactActionLabel} <span aria-hidden="true">→</span></FooterLink>
+          <FooterLink href="/contact" className={styles.compactCta}>{actionLabel} <span aria-hidden="true">→</span></FooterLink>
         </div>
       )}
-      <nav className={styles.compactLinks} aria-label="Footer navigation">
-        <FooterLink href="/work">Work</FooterLink>
-        <FooterLink href="/insights">Articles</FooterLink>
-        <FooterLink href="/about">About</FooterLink>
-        <FooterLink href="/services">Services</FooterLink>
-      </nav>
-      <p className={styles.compactCopyright}>© Andrei Stanescu</p>
+      {(settings.footer_show_navigation === "1" || settings.footer_show_services === "1") && <nav className={styles.compactLinks} aria-label="Footer navigation">
+        {settings.footer_show_navigation === "1" && <><FooterLink href="/work">Work</FooterLink><FooterLink href="/insights">Articles</FooterLink><FooterLink href="/about">About</FooterLink></>}
+        {settings.footer_show_services === "1" && <FooterLink href="/services">Services</FooterLink>}
+      </nav>}
+      <p className={styles.compactCopyright}>© {settings.footer_copyright}</p>
     </div>
   );
 
@@ -66,13 +59,12 @@ export function Footer({
           <div className={styles.brand}>
             <Logo variant="primary" theme="inverted" identity={settings.logo_identity} imageUrl={settings.logo_image} />
             <p className="body-small" style={{ color: "var(--text-secondary)" }}>
-              Designing the foundations that exceptional products are built
-              upon.
+              {settings.footer_message}
             </p>
           </div>
 
           <div className={styles.linksGroup}>
-            <div className={styles.column}>
+            {settings.footer_show_services === "1" && <div className={styles.column}>
               <p className="label-small">Services</p>
               {services.map((service) => (
                 <FooterLink
@@ -84,9 +76,9 @@ export function Footer({
                   {service.title}
                 </FooterLink>
               ))}
-            </div>
+            </div>}
 
-            <div className={styles.column}>
+            {settings.footer_show_navigation === "1" && <div className={styles.column}>
               <p className="label-small">Navigation</p>
               {navigationLinks.map((link) => (
                 <FooterLink
@@ -98,16 +90,16 @@ export function Footer({
                   {link.label}
                 </FooterLink>
               ))}
-            </div>
+            </div>}
 
-            {!hideContactCta && (
+            {!hideContactCta && settings.footer_show_contact === "1" && (
               <div className={styles.connect}>
-                <p className="label-small">Let&apos;s connect</p>
+                <p className="label-small">{settings.footer_contact_title}</p>
                 <p className="body-small" style={{ color: "var(--text-secondary)" }}>
                   {resolvedContactPrompt}
                 </p>
                 <Button href="/contact" icon={<ArrowIcon size={16} />}>
-                  {contactActionLabel}
+                  {actionLabel}
                 </Button>
               </div>
             )}
@@ -118,7 +110,7 @@ export function Footer({
 
         <div className={styles.bottom}>
           <p className="body-small" style={{ color: "var(--text-tertiary)" }}>
-            © {copyrightName} 2026
+            © {settings.footer_copyright}
           </p>
           <div className={styles.legal}>
             {privacyPage && <FooterLink href="/privacy" className="body-small" style={{ color: "var(--text-tertiary)" }}>Privacy</FooterLink>}

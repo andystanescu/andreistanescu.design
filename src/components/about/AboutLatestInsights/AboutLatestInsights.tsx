@@ -25,7 +25,7 @@ export function AboutLatestInsights() {
       intro={section.description}
       action={
           <Link href="/insights" className={styles.seeAll}>
-            See all insights
+              {section.cta_label || "See all insights"}
             <ArrowIcon size={16} />
           </Link>
       }

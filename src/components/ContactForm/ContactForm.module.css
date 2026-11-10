@@ -9,6 +9,15 @@
   gap: var(--space-300);
 }
 
+.honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .shortFields {
   display: grid;
   width: 100%;

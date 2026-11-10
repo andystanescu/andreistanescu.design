@@ -29,7 +29,7 @@ export function AboutHero({ preview = false }: { preview?: boolean } = {}) {
         {personal && settings.about_cv && (
           <div>
             <Button href="/api/cv-download" download>
-              Download CV
+              {section.cta_label || "Download CV"}
             </Button>
           </div>
         )}

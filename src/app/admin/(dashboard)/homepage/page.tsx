@@ -98,7 +98,7 @@ export default async function AdminHomepagePage({
             <div className={styles.panelHeader}><h2 className="heading-03">Homepage metadata and SEO</h2></div>
             <form className={styles.form} action="/api/admin/homepage-settings" method="POST">
               <input type="hidden" name="return_tab" value="metadata" />
-              <MetadataFields values={{ meta_title: settings.homepage_meta_title, meta_description: settings.homepage_meta_description, meta_keywords: settings.homepage_meta_keywords, canonical_url: settings.homepage_canonical_url, og_image: settings.homepage_og_image, no_index: settings.homepage_no_index === "1" ? 1 : 0 }} />
+              <MetadataFields homepage values={{ meta_title: settings.homepage_meta_title, meta_description: settings.homepage_meta_description, meta_keywords: settings.homepage_meta_keywords, canonical_url: settings.homepage_canonical_url, no_index: settings.homepage_no_index === "1" ? 1 : 0 }} />
               <div className={styles.formActions}><a href="/admin/homepage" className={styles.tertiaryButton}>Cancel</a><button type="submit" className={styles.submit}><span className="label-button">Save homepage metadata</span></button></div>
             </form>
           </section>,

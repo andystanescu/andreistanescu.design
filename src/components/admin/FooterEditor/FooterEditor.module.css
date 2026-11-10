@@ -1,0 +1,21 @@
+.editor { display: grid; gap: var(--space-300); width: 100%; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-400); align-items: start; }
+.preview { display: grid; gap: var(--space-200); min-width: 0; }
+.preview > p { color: var(--text-secondary); }
+.canvas { display: grid; gap: var(--space-400); width: 100%; min-width: 0; padding: var(--space-300); border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--bg-canvas); color: var(--text-primary); }
+.previewBrand, .previewColumn, .previewContact { width: auto; max-width: 100%; min-width: 0; }
+.previewLinks { min-width: 0; }
+.canvas :global(.body-small) { color: var(--text-secondary); }
+.previewButton { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-100); width: fit-content; padding: var(--space-150) var(--space-300); border-radius: var(--radius-md); background: var(--action-primary-bg); color: var(--action-primary-text); }
+.previewHeader { display: flex; justify-content: space-between; align-items: center; gap: var(--space-200); flex-wrap: wrap; }
+.devices { display: flex; gap: var(--space-100); }
+.devices button { padding: var(--space-100) var(--space-150); border: 1px solid var(--border-default); border-radius: var(--radius-md); }
+.devices button[aria-pressed="true"] { border-color: var(--accent-foundation); color: var(--text-accent); }
+.mobileCanvas { width: 100%; max-width: 375px; margin-inline: auto; }
+.mobileCanvas :global(a), .mobileCanvas span { min-width: 0; }
+.inlineField { display: inline-grid; grid-template-columns: minmax(0, 1fr); width: 100%; min-width: 0; vertical-align: top; }
+.inlineText { grid-area: 1 / 1; display: block; width: 100%; max-width: 100%; min-width: 0; padding: 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: inherit; font: inherit; text-align: left; cursor: text; overflow-wrap: break-word; }
+.inlineText:hover, .inlineText:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 4px; }
+.inlineInput { grid-area: 1 / 1; display: block; width: 100%; max-width: 100%; min-width: 0; padding: 0; border: 0; border-radius: var(--radius-sm); outline: 2px solid var(--border-focus); outline-offset: 4px; background: var(--bg-field); color: var(--text-primary); font: inherit; resize: vertical; }
+.copyright { display: flex; align-items: flex-start; gap: var(--space-100); min-width: 0; }
+.copyright .inlineField { flex: 1; }

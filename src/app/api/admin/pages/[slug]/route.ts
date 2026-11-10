@@ -1,6 +1,6 @@
 import { relativeRedirect } from "@/lib/relativeRedirect";
 import { NextRequest, NextResponse } from "next/server";
-import { getPage, updatePage } from "@/lib/pages";
+import { DEDICATED_PAGE_PATHS, getPage, updatePage } from "@/lib/pages";
 import { applyHeadingAccents } from "@/lib/headingAccents";
 import { updateSettings } from "@/lib/settings";
 
@@ -33,7 +33,7 @@ export async function POST(
   const redirectTo = String(form.get("redirect") ?? "").trim() || "/admin/pages";
 
   if (!title) {
-    const url = new URL(`/admin/pages/${slug}`, request.url);
+    const url = new URL(DEDICATED_PAGE_PATHS[slug] || `/admin/pages/${slug}`, request.url);
     url.searchParams.set("error", "Title is required.");
     return relativeRedirect(url.pathname + url.search);
   }

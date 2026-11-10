@@ -44,7 +44,16 @@ export const RELOCATED_PAGE_SLUGS = new Set([
   "approach",
   "insights",
   "about",
+  "contact",
+  "privacy",
+  "terms",
 ]);
+
+export const DEDICATED_PAGE_PATHS: Record<string, string> = {
+  contact: "/admin/contact",
+  privacy: "/admin/privacy",
+  terms: "/admin/terms",
+};
 
 export function getGenericPages(): Page[] {
   return getAllPages().filter((p) => !RELOCATED_PAGE_SLUGS.has(p.slug));

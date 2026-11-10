@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
     [identity === "personal" ? "homepage_meta_description_personal" : "homepage_meta_description_business"]: metaDescription,
     homepage_meta_keywords: formText(form, "meta_keywords"),
     homepage_canonical_url: formText(form, "canonical_url"),
-    homepage_og_image: formText(form, "og_image"),
     homepage_no_index: form.get("no_index") === "on" ? "1" : "0",
   });
   return relativeRedirect("/admin/homepage?tab=metadata");

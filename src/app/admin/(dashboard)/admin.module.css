@@ -143,6 +143,12 @@
   max-width: 720px;
 }
 .homepageSectionList { max-width: none; width: 100%; }
+.submissionsList { max-width: none; width: 100%; }
+.submissionTabs { display: flex; flex-wrap: wrap; gap: var(--space-100); border-bottom: 1px solid var(--border-default); }
+.submissionTab { display: inline-flex; align-items: center; gap: var(--space-100); min-height: 44px; padding: var(--space-100) var(--space-200); border-bottom: 2px solid transparent; color: var(--text-secondary); }
+.submissionTabActive { border-bottom-color: var(--accent-foundation); color: var(--text-primary); }
+.submissionItem { align-items: flex-start; flex-wrap: wrap; }
+.submissionActions { display: flex; flex-wrap: wrap; gap: var(--space-100); }
 
 .listItem {
   display: flex;
@@ -424,6 +430,10 @@
 .metadataGrid .checkboxField {
   grid-column: 1 / -1;
 }
+
+.homepageMetadataGrid .field:nth-child(1) { grid-column: 1 / -1; }
+.homepageMetadataGrid .input,
+.homepageMetadataGrid .textarea { max-width: none; }
 
 @media (max-width: 640px) {
   .metadataGrid { grid-template-columns: 1fr; }

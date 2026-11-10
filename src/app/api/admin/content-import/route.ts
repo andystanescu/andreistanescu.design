@@ -163,11 +163,11 @@ export async function POST(request: NextRequest) {
 
       const aboutSections = Array.isArray(configuration.aboutSections) ? configuration.aboutSections : [];
       const saveAboutSection = db.prepare(`INSERT OR REPLACE INTO about_sections
-        (key, eyebrow, headline, description, position, fixed, visible)
-        VALUES (?, ?, ?, ?, ?, ?, ?)`);
+        (key, eyebrow, headline, description, position, fixed, visible, cta_label)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
       for (const record of aboutSections) {
         const key = text(record, "key").trim();
-        if (key) saveAboutSection.run(key, text(record, "eyebrow"), text(record, "headline"), text(record, "description"), integer(record, "position"), integer(record, "fixed"), integer(record, "visible", 1));
+        if (key) saveAboutSection.run(key, text(record, "eyebrow"), text(record, "headline"), text(record, "description"), integer(record, "position"), integer(record, "fixed"), integer(record, "visible", 1), text(record, "cta_label"));
       }
 
       const philosophyItems = Array.isArray(configuration.aboutPhilosophyItems) ? configuration.aboutPhilosophyItems : [];

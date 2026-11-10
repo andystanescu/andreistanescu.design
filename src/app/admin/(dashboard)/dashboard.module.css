@@ -28,8 +28,8 @@
   padding: max(var(--space-400), var(--safe-area-top)) var(--space-400) calc(var(--space-400) + var(--safe-area-bottom)) max(var(--space-400), var(--safe-area-left));
   background: var(--bg-surface);
   border-right: 1px solid var(--border-default);
-  overflow: visible;
-  overscroll-behavior: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-width: none;
   position: relative;
   z-index: 20;
@@ -331,7 +331,7 @@
 
 .navWrap {
   display: flex;
-  flex: 1;
+  flex: 1 0 auto;
   min-height: 0;
 }
 

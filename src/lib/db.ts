@@ -99,6 +99,7 @@ function initializeDatabase() {
     message TEXT NOT NULL,
     newsletter INTEGER NOT NULL DEFAULT 0,
     emailed INTEGER NOT NULL DEFAULT 0,
+    blocked INTEGER NOT NULL DEFAULT 0,
     email_error TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
@@ -217,6 +218,7 @@ function initializeDatabase() {
     eyebrow TEXT NOT NULL DEFAULT '',
     headline TEXT NOT NULL DEFAULT '',
     description TEXT NOT NULL DEFAULT '',
+    cta_label TEXT NOT NULL DEFAULT '',
     position INTEGER NOT NULL DEFAULT 0,
     fixed INTEGER NOT NULL DEFAULT 0
   );
@@ -353,6 +355,7 @@ addColumnIfMissing("pages", "canonical_url", "canonical_url TEXT NOT NULL DEFAUL
 addColumnIfMissing("pages", "og_image", "og_image TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("pages", "no_index", "no_index INTEGER NOT NULL DEFAULT 0");
 addColumnIfMissing("service_items", "card_size", "card_size TEXT NOT NULL DEFAULT 'standard'");
+addColumnIfMissing("submissions", "blocked", "blocked INTEGER NOT NULL DEFAULT 0");
 addColumnIfMissing("pages", "nav_label", "nav_label TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("pages", "position", "position INTEGER NOT NULL DEFAULT 0");
 addColumnIfMissing(
@@ -377,6 +380,7 @@ addColumnIfMissing(
 );
 addColumnIfMissing("homepage_sections", "visible", "visible INTEGER NOT NULL DEFAULT 1");
 addColumnIfMissing("about_sections", "visible", "visible INTEGER NOT NULL DEFAULT 1");
+addColumnIfMissing("about_sections", "cta_label", "cta_label TEXT NOT NULL DEFAULT ''");
 
 const DEFAULT_SETTINGS: Record<string, string> = {
   logo_identity: "personal",
