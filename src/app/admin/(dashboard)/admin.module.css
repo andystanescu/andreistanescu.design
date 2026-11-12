@@ -143,6 +143,17 @@
   max-width: 720px;
 }
 .homepageSectionList { max-width: none; width: 100%; }
+.serviceCategoryList { max-width: none; width: 100%; }
+.serviceSectionOrderItem { min-width:0; }
+.serviceSectionOrderItem > :last-child { flex:1; min-width:0; }
+.serviceSectionOrderActions { display:flex; align-items:center; }
+.serviceSectionOrderActions button { width:var(--space-300); min-height:var(--space-400); color:var(--text-tertiary); }
+.serviceSectionDragHandle { cursor:grab; touch-action:none; }
+.textarea.serviceApproachCode { max-width:none; width:100%; }
+@media (max-width: 767px) {
+  .serviceCategoryItem { flex-wrap: wrap; }
+  .serviceCategoryActions { flex-wrap: wrap; }
+}
 .submissionsList { max-width: none; width: 100%; }
 .submissionTabs { display: flex; flex-wrap: wrap; gap: var(--space-100); border-bottom: 1px solid var(--border-default); }
 .submissionTab { display: inline-flex; align-items: center; gap: var(--space-100); min-height: 44px; padding: var(--space-100) var(--space-200); border-bottom: 2px solid transparent; color: var(--text-secondary); }

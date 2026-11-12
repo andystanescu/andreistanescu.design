@@ -22,7 +22,7 @@ export default async function ServicesPageSettingsPage({
   return (
     <>
       <div className={styles.pageHeaderGroup}>
-      <h1 className="heading-01">Services</h1>
+      <h1 className="heading-01">Categories &amp; services</h1>
       <AdminTabs embedded tabs={SERVICES_TABS} active="/admin/services/settings" />
       </div>
       <PageSettingsForm

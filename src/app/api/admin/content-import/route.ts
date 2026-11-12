@@ -143,13 +143,28 @@ export async function POST(request: NextRequest) {
       }
 
       const services = Array.isArray(configuration.services) ? configuration.services : [];
-      const saveService = db.prepare(`INSERT OR REPLACE INTO service_items
-        (id, slug, title, description, icon, body, show_on_homepage, position,
-         published, card_size)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
       for (const record of services) {
         const slug = text(record, "slug").trim();
-        if (slug) saveService.run(integer(record, "id"), slug, text(record, "title"), text(record, "description"), text(record, "icon"), text(record, "body"), integer(record, "show_on_homepage"), integer(record, "position"), integer(record, "published", 1), text(record, "card_size", "standard"));
+        const title = text(record, "title").trim();
+        if (!slug || !title) continue;
+        const bySlug = db.prepare("SELECT id, category_id FROM service_items WHERE slug = ?").get(slug) as { id: number; category_id: number } | undefined;
+        let categoryId = bySlug?.category_id;
+        if (!categoryId) {
+          const known = db.prepare("SELECT category_id FROM category_legacy_names WHERE name = ? COLLATE NOCASE").get(title) as { category_id: number } | undefined;
+          categoryId = known?.category_id;
+          if (!categoryId) {
+            const created = db.prepare("INSERT INTO categories(name, position) VALUES (?, (SELECT COALESCE(MAX(position), -1) + 1 FROM categories))").run(title);
+            categoryId = Number(created.lastInsertRowid);
+            db.prepare("INSERT INTO category_legacy_names(name, category_id) VALUES (?, ?)").run(title, categoryId);
+          }
+        }
+        const byCategory = db.prepare("SELECT id FROM service_items WHERE category_id = ?").get(categoryId) as { id: number } | undefined;
+        if (bySlug && byCategory && bySlug.id !== byCategory.id) throw new Error(`Service ${slug} conflicts with an existing category.`);
+        const serviceId = bySlug?.id ?? byCategory?.id;
+        const values = [slug, title, text(record, "description"), text(record, "icon"), text(record, "body"), integer(record, "show_on_homepage"), integer(record, "position"), integer(record, "published", 1), text(record, "card_size", "standard"), integer(record, "service_enabled", integer(record, "published", 1)), categoryId, text(record, "template_key"), text(record, "hero_lead"), text(record, "hero_description"), text(record, "section_content", "{}"), text(record, "section_settings", "{}")] as const;
+        if (serviceId) db.prepare(`UPDATE service_items SET slug=?, title=?, description=?, icon=?, body=?, show_on_homepage=?, position=?, published=?, card_size=?, service_enabled=?, category_id=?, template_key=?, hero_lead=?, hero_description=?, section_content=?, section_settings=? WHERE id=?`).run(...values, serviceId);
+        else db.prepare(`INSERT INTO service_items (slug, title, description, icon, body, show_on_homepage, position, published, card_size, service_enabled, category_id, template_key, hero_lead, hero_description, section_content, section_settings) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(...values);
+        db.prepare("UPDATE categories SET description = ? WHERE id = ?").run(text(record, "description"), categoryId);
       }
 
       const approachSteps = Array.isArray(configuration.approachSteps) ? configuration.approachSteps : [];

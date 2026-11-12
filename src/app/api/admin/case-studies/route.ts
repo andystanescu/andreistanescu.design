@@ -5,12 +5,15 @@ import { resolveImageField } from "@/lib/uploads";
 import { applyHeadingAccents } from "@/lib/headingAccents";
 import { getSettings } from "@/lib/settings";
 import { dateInputValue } from "@/lib/dateUtils";
+import { readCategorySelection, replaceCaseStudyCategories } from "@/lib/categories";
 
 export async function POST(request: NextRequest) {
   const form = await request.formData();
   const slug = String(form.get("slug") ?? "").trim();
   const eyebrow = String(form.get("eyebrow") ?? "").trim();
-  const category = String(form.get("category") ?? "").trim();
+  let categories;
+  try { categories = readCategorySelection(form); } catch { return new Response("Invalid category selection", { status: 400 }); }
+  const category = categories ? categories[0]?.name ?? "" : String(form.get("category") ?? "").trim();
   const year = String(form.get("year") ?? "").trim();
   const projectRole = String(form.get("project_role") ?? "").trim();
   const contribution = String(form.get("contribution") ?? "").trim();
@@ -46,7 +49,8 @@ export async function POST(request: NextRequest) {
     .get() as { max: number };
 
   try {
-    db.prepare(
+    db.exec("BEGIN IMMEDIATE");
+    const result = db.prepare(
       `INSERT INTO case_studies (slug, eyebrow, category, year, project_role, contribution, timeline, scope, team, title, description, tags, body, cover_image, thumbnail_image, position, published, in_progress, author, published_at, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index)
        VALUES (${Array(26).fill("?").join(",")})`
     ).run(
@@ -77,7 +81,10 @@ export async function POST(request: NextRequest) {
       ogImage,
       noIndex
     );
+    if (categories) replaceCaseStudyCategories(Number(result.lastInsertRowid), categories);
+    db.exec("COMMIT");
   } catch {
+    if (db.isTransaction) db.exec("ROLLBACK");
     const url = new URL("/admin/case-studies/new", request.url);
     url.searchParams.set("error", `A case study with slug "${slug}" already exists.`);
     return relativeRedirect(url.pathname + url.search);

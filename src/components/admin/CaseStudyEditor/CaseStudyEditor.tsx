@@ -16,12 +16,12 @@ import Link from "next/link";
 import type { RelatedReadingOption } from "@/lib/relatedReadings";
 import { addHeadingIds } from "@/lib/tableOfContents";
 
-type ServiceOption = { slug: string; title: string };
+type CategoryOption = { id: number; name: string };
 type PasswordEntry = { name: string; masked: string };
-type Props = { study: CaseStudy; metrics: CaseStudyMetric[]; assessment: CaseStudyAssessment; services: ServiceOption[]; relatedReadings: RelatedReadingOption[]; passwordRequired: boolean; passwordEntries: PasswordEntry[]; authorAvatarUrl?: string; action?: string };
+type Props = { study: CaseStudy; metrics: CaseStudyMetric[]; assessment: CaseStudyAssessment; categories: CategoryOption[]; selectedCategoryIds: number[]; relatedReadings: RelatedReadingOption[]; passwordRequired: boolean; passwordEntries: PasswordEntry[]; authorAvatarUrl?: string; action?: string };
 type Tab = "details" | "outcomes" | "assessment" | "content" | "metadata" | "visibility";
 
-export function CaseStudyEditor({ study, metrics, assessment, services, relatedReadings, passwordRequired, passwordEntries, authorAvatarUrl, action }: Props) {
+export function CaseStudyEditor({ study, metrics, assessment, categories, selectedCategoryIds, relatedReadings, passwordRequired, passwordEntries, authorAvatarUrl, action }: Props) {
   const editing = study.id > 0;
   const [tab, setTab] = useState<Tab>(editing ? "content" : "details");
   const studyAuthor = "author" in study && typeof study.author === "string" ? study.author : "";
@@ -171,7 +171,7 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
       <div className={styles.editorLayout}>
       <div className={styles.editorMain}>
       <section id="case-study-panel-details" role="tabpanel" aria-labelledby="case-study-tab-details" hidden={tab !== "details"} className={styles.panel} aria-label="Case study details">
-        {services.length < 8 ? <CategoryCards value={study.category} services={services} /> : <Field label="Category (from Services)"><select name="category" defaultValue={study.category} className={adminStyles.input}><option value="">Select a service category</option>{services.map((service) => <option key={service.slug} value={service.title}>{service.title}</option>)}</select></Field>}
+        <CategoryCards categories={categories} selectedIds={selectedCategoryIds} />
         <Field label="Year"><select name="year" defaultValue={study.year} className={adminStyles.input}><option value="">Select a year</option>{Array.from({ length: new Date().getFullYear() - 2014 }, (_, index) => String(new Date().getFullYear() - index)).map((year) => <option key={year} value={year}>{year}</option>)}</select></Field>
         <Field label="Slug (used in the URL: /work/…)" ><input name="slug" defaultValue={study.slug} required className={adminStyles.input} /></Field>
         <Field label="Eyebrow"><input name="eyebrow" defaultValue={study.eyebrow} className={adminStyles.input} /></Field>
@@ -288,9 +288,9 @@ export function CaseStudyEditor({ study, metrics, assessment, services, relatedR
 
 function Field({ label, children }: { label: string; children: ReactNode }) { return <label className={adminStyles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>{label}</span>{children}</label>; }
 
-function CategoryCards({ value, services }: { value: string; services: ServiceOption[] }) {
-  const [selected, setSelected] = useState(value);
-  return <div className={adminStyles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Category (from Services)</span><input type="hidden" name="category" value={selected} /><div className={styles.categoryCards} role="group" aria-label="Case study category">{services.map((service) => <button key={service.slug} type="button" className={selected === service.title ? styles.categoryCardActive : styles.categoryCard} aria-pressed={selected === service.title} onClick={() => setSelected(service.title)}><strong>{service.title}</strong><small>{service.slug}</small></button>)}</div>{services.length === 0 && <p className="body-small">Add a service before selecting a category.</p>}</div>;
+function CategoryCards({ categories, selectedIds }: { categories: CategoryOption[]; selectedIds: number[] }) {
+  const [selected, setSelected] = useState(selectedIds);
+  return <div className={adminStyles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Categories</span><input type="hidden" name="categories_present" value="1" />{selected.map((id) => <input key={id} type="hidden" name="category_ids" value={id} />)}<div className={styles.categoryCards} role="group" aria-label="Case study categories">{categories.map((category) => <button key={category.id} type="button" className={selected.includes(category.id) ? styles.categoryCardActive : styles.categoryCard} aria-pressed={selected.includes(category.id)} onClick={() => setSelected((current) => current.includes(category.id) ? current.filter((id) => id !== category.id) : [...current, category.id])}><strong>{category.name}</strong></button>)}</div><p className="body-small">Select all that apply. The first selected category is shown as the primary label. <Link href="/admin/categories">Manage categories</Link></p></div>;
 }
 
 function TagEditor({ initialValue, onCommit }: { initialValue: string; onCommit: () => void }) {

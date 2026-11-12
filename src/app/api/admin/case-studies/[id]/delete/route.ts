@@ -7,6 +7,14 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  db.prepare("DELETE FROM case_studies WHERE id = ?").run(id);
+  db.exec("BEGIN IMMEDIATE");
+  try {
+    db.prepare("DELETE FROM case_study_categories WHERE case_study_id = ?").run(id);
+    db.prepare("DELETE FROM case_studies WHERE id = ?").run(id);
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
   return relativeRedirect("/admin/case-studies");
 }

@@ -7,10 +7,10 @@ import styles from "./AdminNav.module.css";
 const GROUPS = [
   { label: "", items: [{ label: "Dashboard", href: "/admin", icon: "admin-dashboard" }, { label: "Site identity", href: "/admin/site-identity", icon: "admin-site-identity" }, { label: "Navigation", href: "/admin/pages", icon: "admin-navigation" }] },
   { label: "Pages", items: [{ label: "Homepage", href: "/admin/homepage", icon: "admin-homepage" }, { label: "About me", href: "/admin/about", icon: "admin-about-page" }, { label: "Contact", href: "/admin/contact", icon: "network-mail" }, { label: "Privacy policy", href: "/admin/privacy", icon: "admin-privacy-policy" }, { label: "Terms of service", href: "/admin/terms", icon: "admin-terms-of-service" }] },
-  { label: "Content", items: [{ label: "Services", href: "/admin/services", icon: "admin-services" }, { label: "Approach steps", href: "/admin/approach-steps", icon: "admin-approach-steps" }, { label: "Case studies", href: "/admin/case-studies", icon: "admin-case-studies" }, { label: "Insights", href: "/admin/insights", icon: "admin-insights" }] },
+  { label: "Content", items: [{ label: "Services", href: "/admin/categories", icon: "admin-services" }, { label: "Approach steps", href: "/admin/approach-steps", icon: "admin-approach-steps" }, { label: "Case studies", href: "/admin/case-studies", icon: "admin-case-studies" }, { label: "Insights", href: "/admin/insights", icon: "admin-insights" }] },
   { label: "System", items: [{ label: "Content transfer", href: "/admin/content-transfer", icon: "admin-content-transfer" }, { label: "Settings", href: "/admin/settings", icon: "action-settings" }, { label: "Submissions", href: "/admin/submissions", icon: "admin-submissions" }] },
 ] as const;
-const NESTED_UNDER: Record<string, string> = { "/admin/about-philosophy": "/admin/about", "/admin/about-highlights": "/admin/about" };
+const NESTED_UNDER: Record<string, string> = { "/admin/about-philosophy": "/admin/about", "/admin/about-highlights": "/admin/about", "/admin/services/settings": "/admin/categories" };
 
 export function AdminNav({ collapsed = false }: { collapsed?: boolean }) {
   const pathname = usePathname();

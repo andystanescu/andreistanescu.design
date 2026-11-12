@@ -1,5 +1,5 @@
 import { CaseStudyEditor } from "@/components/admin/CaseStudyEditor/CaseStudyEditor";
-import { getServiceItems } from "@/lib/serviceItems";
+import { getCategories } from "@/lib/categories";
 import { getSettings } from "@/lib/settings";
 import type { CaseStudy } from "@/data/caseStudies";
 import { getRelatedReadingOptions } from "@/lib/relatedReadings";
@@ -18,7 +18,7 @@ export default async function NewCaseStudyPage({
     published_at: "", meta_title: "", meta_description: "", meta_keywords: "", canonical_url: "", og_image: "", no_index: 0,
   } satisfies CaseStudy;
   const assessment = { scores: {}, likelyEngagement: [], conducted: [], conductedEngagementIds: [], notApplicable: [], overall: "", overallDescription: "", primaryDrivers: [], placement: "start" };
-  const services = getServiceItems().map((service) => ({ slug: service.slug, title: service.title }));
+  const categories = getCategories().map((category) => ({ ...category }));
   const relatedReadings = getRelatedReadingOptions();
 
   return <>
@@ -27,7 +27,8 @@ export default async function NewCaseStudyPage({
       study={blankStudy}
       metrics={[]}
       assessment={assessment}
-      services={services}
+      categories={categories}
+      selectedCategoryIds={[]}
       relatedReadings={relatedReadings}
       passwordRequired={false}
       passwordEntries={[]}

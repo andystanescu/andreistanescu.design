@@ -35,7 +35,8 @@ function prepareLiveCode(source: string): string {
     .replace(/export\s+default\s+/g, "");
 
   if (!/\brender\s*\(/.test(code)) {
-    const component = code.match(/function\s+([A-Z][A-Za-z0-9_]*)\s*\(/)?.[1];
+    const component = code.match(/function\s+([A-Z][A-Za-z0-9_]*)\s*\(/)?.[1]
+      ?? code.match(/(?:const|let)\s+([A-Z][A-Za-z0-9_]*)\s*(?::[^=]+)?=/)?.[1];
     if (component) code += `\nrender(<${component} />);`;
   }
   return code;

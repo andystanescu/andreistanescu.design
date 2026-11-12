@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Fragment, type ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { Nav } from "@/components/Nav/Nav";
 import { Footer } from "@/components/Footer/Footer";
@@ -10,12 +11,20 @@ import { AiOperationsApproach } from "@/components/services/AiOperationsApproach
 import { GovernanceChangeModel } from "@/components/services/GovernanceChangeModel/GovernanceChangeModel";
 import { GovernanceTension } from "@/components/services/GovernanceTension/GovernanceTension";
 import { GovernanceApproach } from "@/components/services/GovernanceApproach/GovernanceApproach";
-import { GovernanceRecognition } from "@/components/services/GovernanceRecognition/GovernanceRecognition";
+import { ServiceRecognition } from "@/components/services/ServiceRecognition/ServiceRecognition";
 import { ServiceSection, ServiceSectionHeader } from "@/components/services/ServiceSection/ServiceSection";
+import { ServiceEvidenceGrid, type EvidenceItem } from "@/components/services/ServiceEvidenceGrid";
 import { getCaseStudies } from "@/data/caseStudies";
 import { getInsights } from "@/data/insights";
 import { calculateReadingTime } from "@/lib/readingTime";
-import { getServiceItemBySlug } from "@/lib/serviceItems";
+import { getServiceItemBySlug, getServiceTemplate } from "@/lib/serviceItems";
+import { getServiceHeroCopy } from "@/lib/serviceHero";
+import { getServiceSectionOrder, parseServiceSectionSettings, sectionLayout, sectionVisible, type ServiceSectionKey } from "@/lib/serviceSectionSettings";
+import { LiveComponentBlock } from "@/components/LiveComponentBlock/LiveComponentBlock";
+import { getServiceSectionContent, parseServiceSectionOverrides } from "@/lib/serviceSectionContent";
+import { getCategoryNamesForLegacyName } from "@/lib/categories";
+import { db } from "@/lib/db";
+import { RichContent } from "@/components/RichContent/RichContent";
 import styles from "./service-detail.module.css";
 import type { Metadata } from "next";
 import { contentMetadata, absoluteUrl } from "@/lib/seo";
@@ -52,31 +61,6 @@ const productArchitectureApproachStages = [
   ["04", "INTERVENTION", "Change the structure in its real product context.", [["06", "Execute", "Put the decision into practice across journeys, systems and teams."]]],
   ["05", "UPDATED LANDSCAPE", "Learn from the change and choose what deserves attention next.", [["07", "Learn", "Observe what changed and what the product reveals."], ["08", "Reprioritise", "Return learning to the opportunity landscape and begin the next cycle."]]],
 ] as const;
-const audiences = [["01", "Growing product teams", "Bring consistency to a product portfolio that is expanding faster than the system behind it."], ["02", "Design & engineering leads", "Align decisions, ownership and implementation around one shared product language."], ["03", "Organisations in transition", "Turn fragmented patterns into a durable foundation for the next stage of growth."]];
-const designSystemRecognition = [
-  "The component library exists, but teams adopt it inconsistently.",
-  "Figma and the production implementation have drifted apart.",
-  "Teams keep rebuilding the same patterns across products.",
-  "Documentation can no longer be trusted to describe how the system works.",
-  "Nobody is sure who owns changes to the system.",
-  "New products cannot use the system safely without workarounds.",
-];
-const productArchitectureRecognition = [
-  "Journeys work independently, but they do not feel like parts of one product.",
-  "Navigation keeps growing through exceptions and special cases.",
-  "The same concept means different things in different areas of the product.",
-  "Adding functionality requires changes to unrelated parts of the product.",
-  "Teams disagree about where capabilities belong.",
-  "Nobody can confidently explain how the whole product fits together.",
-];
-const aiOperationsRecognition = [
-  "AI is already being used, but everyone uses it differently.",
-  "Review effort is growing almost as quickly as AI-generated output.",
-  "Teams can automate tasks, but are not sure which decisions should remain human.",
-  "Good AI workflows exist as individual habits rather than shared practice.",
-  "Nobody is quite sure who is accountable when AI gets something wrong.",
-  "AI makes work faster, but quality is becoming harder to predict.",
-];
 const defaultDeliverables = ["Design system strategy and roadmap", "Information architecture and structure", "Design tokens and theming", "Component library and patterns", "Accessibility and inclusive design", "Documentation and guidelines", "Governance and adoption model"];
 const aiOperationsDeliverables = ["AI opportunity and delegation mapping", "Workflow and operational journey mapping", "Human-in-the-loop decision design", "AI interaction and prompt patterns", "Exception handling and escalation flows", "Prototype-to-production implementation guidance", "Measurement, governance and adoption framework"];
 const governanceScaleDeliverables = ["Governance strategy and operating model", "Roles, responsibilities and ownership map", "Decision principles and escalation paths", "Contribution and change-management workflow", "Review cadence and quality guardrails", "Adoption measurement and reporting framework", "Evolution and stewardship model"];
@@ -87,14 +71,6 @@ const collaborationPerspectives = [
   ["Engineering", "Technical constraints, feasibility and system health."],
   ["Business & users", "Operational realities, evidence and lived context."],
 ] as const;
-const collaborationRecognition = [
-  "The same decision keeps resurfacing in different meetings.",
-  "Design, product and engineering describe the same problem differently.",
-  "Decisions are made, but different teams leave with different interpretations.",
-  "Important context lives with individuals rather than the team.",
-  "Work repeatedly stalls because assumptions surface too late.",
-  "Everyone agrees in the meeting, but execution immediately starts diverging.",
-];
 
 const productArchitecture = {
   eyebrow: "PRODUCT ARCHITECTURE",
@@ -131,38 +107,6 @@ function ProductArchitectureGraphic() {
     </div>
     <p className={styles.architectureFooter}><span>DECISIONS CONNECT CONTEXT, STRUCTURE, EXPERIENCE AND DELIVERY</span><span aria-hidden="true">↗</span></p>
   </figure>;
-}
-
-function ProductArchitectureTransformation() {
-  const symptoms = ["Disconnected journeys", "Duplicated concepts", "Navigation exceptions", "Conflicting terminology"];
-  const outcomes = ["Shared boundaries", "Shared vocabulary", "Coherent journeys", "Clearer decisions"];
-
-  return <ServiceSection labelledBy="service-transformation-title" width="wide" className={styles.architectureTransformation}>
-    <ServiceSectionHeader
-      eyebrow="ARCHITECTURE TRANSFORMATION"
-      title="Different symptoms can share the same structural cause."
-      description="When the underlying product structure is unclear, friction appears across journeys, language and decisions."
-      titleId="service-transformation-title"
-      className={styles.architectureTransformationHeader}
-      descriptionClassName={styles.architectureTransformationLead}
-    />
-    <div className={styles.transformationFlow}>
-      <div className={styles.transformationStage}>
-        <p className={styles.transformationLabel}>WHAT PEOPLE EXPERIENCE</p>
-        <ul>{symptoms.map((item) => <li key={item}>{item}</li>)}</ul>
-      </div>
-      <span className={styles.transformationArrow} aria-hidden="true">↓</span>
-      <div className={styles.transformationCore}>
-        <span>THE SHARED CAUSE</span>
-        <strong>Underlying product structure</strong>
-      </div>
-      <span className={styles.transformationArrow} aria-hidden="true">↓</span>
-      <div className={styles.transformationStage}>
-        <p className={styles.transformationLabel}>WHAT BECOMES POSSIBLE</p>
-        <ul>{outcomes.map((item) => <li key={item}>{item}</li>)}</ul>
-      </div>
-    </div>
-  </ServiceSection>;
 }
 
 function CollaborationAlignmentModel() {
@@ -328,43 +272,30 @@ function normalizeCategory(value: string) {
   return value.toLocaleLowerCase("en-GB").replace(/[^a-z0-9]+/g, " ").trim();
 }
 
-function publishedTime(value: string) {
-  const timestamp = Date.parse(value);
-  return Number.isFinite(timestamp) ? timestamp : 0;
-}
-
-type EvidenceItem = {
-  type: "case-study" | "article";
-  title: string;
-  description: string;
-  metadata: string;
-  href: string;
-};
-
-function ServiceEvidence({ categoryName, title, description }: { categoryName: string; title: string; description: string }) {
-  const category = normalizeCategory(categoryName);
+function ServiceEvidence({ categoryId, categoryName, title, description }: { categoryId: number; categoryName: string; title: string; description: string }) {
+  const category = String(categoryId);
+  const categoryNames = new Set(getCategoryNamesForLegacyName(categoryName).map(normalizeCategory));
+  const caseIds = new Set((db.prepare("SELECT case_study_id FROM case_study_categories WHERE category_id = ?").all(categoryId) as Array<{ case_study_id: number }>).map((row) => row.case_study_id));
   const evidence: Array<{ publishedAt: string; id: number; item: EvidenceItem }> = [
     ...getCaseStudies()
-      .filter((study) => normalizeCategory(study.category) === category)
+      .filter((study) => caseIds.has(study.id))
       .map((study) => ({
         publishedAt: study.published_at,
         id: study.id,
         item: { type: "case-study" as const, title: study.title, description: study.description, metadata: study.year, href: `/work/${encodeURIComponent(study.slug)}` },
       })),
     ...getInsights()
-      .filter((insight) => normalizeCategory(insight.category) === category)
+      .filter((insight) => categoryNames.has(normalizeCategory(insight.category)))
       .map((insight) => ({
         publishedAt: insight.published_at,
         id: insight.id,
         item: { type: "article" as const, title: insight.title, description: insight.excerpt, metadata: `${calculateReadingTime(insight.body)} MIN READ`, href: `/insights/${encodeURIComponent(insight.slug)}` },
       })),
   ]
-    .sort((a, b) => publishedTime(b.publishedAt) - publishedTime(a.publishedAt) || b.id - a.id)
-    .slice(0, 3);
+    ;
 
   if (evidence.length === 0) return null;
   const items = evidence.map(({ item }) => item);
-  const gridCountClass = items.length === 1 ? styles.evidenceGridSingle : items.length === 2 ? styles.evidenceGridTwo : styles.evidenceGridThree;
 
   return <ServiceSection labelledBy="service-evidence-title" className={styles.evidence}>
     <ServiceSectionHeader
@@ -375,107 +306,15 @@ function ServiceEvidence({ categoryName, title, description }: { categoryName: s
       className={styles.evidenceHeader}
       descriptionClassName={styles.evidenceLead}
     />
-    <div className={`${styles.evidenceGrid} ${gridCountClass}`}>
-      {items.map((item) => <Link
-        className={`${styles.evidenceItem} ${item.type === "article" ? styles.evidenceArticle : styles.evidenceCaseStudy}`}
-        href={item.href}
-        aria-label={`${item.type === "article" ? "Read article" : "View case study"}: ${item.title}`}
-        key={`${item.type}-${item.href}`}
-      >
-        <article className={styles.evidenceContent}>
-          <p className={`label-eyebrow ${styles.evidenceType}`}>{item.type === "case-study" ? "CASE STUDY" : "ARTICLE"}</p>
-          <h3 className={styles.evidenceTitle}>{item.title}</h3>
-          <p className={styles.evidenceDescription}>{item.description}</p>
-          <div className={styles.evidenceFooter}>
-            <p className={styles.evidenceMetadata}>{item.metadata}</p>
-            <span className={styles.evidenceAction}>{item.type === "case-study" ? "View case study" : "Read article"}<span aria-hidden="true">→</span></span>
-          </div>
-        </article>
-      </Link>)}
-    </div>
+    <ServiceEvidenceGrid category={category} items={items} />
   </ServiceSection>;
 }
 
-function DesignSystemRecognition() {
-  return <ServiceSection labelledBy="service-recognition-title" className={styles.recognition}>
-    <ServiceSectionHeader
-      eyebrow="RECOGNITION"
-      title="A design system may need attention when…"
-      titleId="service-recognition-title"
-      className={styles.recognitionHeader}
-    />
-    <ol className={styles.recognitionList}>
-      {designSystemRecognition.map((condition, index) => <li key={condition}>
-        <span className={styles.recognitionNumber}>{String(index + 1).padStart(2, "0")}</span>
-        <p>{condition}</p>
-      </li>)}
-    </ol>
-  </ServiceSection>;
-}
-
-function ProductArchitectureRecognition() {
-  return <ServiceSection labelledBy="service-recognition-title" width="wide" className={`${styles.recognition} ${styles.productArchitectureRecognition}`}>
-    <ServiceSectionHeader
-      eyebrow="RECOGNITION"
-      title="Product architecture may need attention when…"
-      titleId="service-recognition-title"
-      className={styles.recognitionHeader}
-    />
-    <ol className={`${styles.recognitionList} ${styles.productArchitectureRecognitionList}`}>
-      {productArchitectureRecognition.map((condition, index) => <li key={condition}>
-        <span className={styles.recognitionNumber}>{String(index + 1).padStart(2, "0")}</span>
-        <p>{condition}</p>
-      </li>)}
-    </ol>
-  </ServiceSection>;
-}
-
-function AiOperationsRecognition() {
-  return <ServiceSection labelledBy="service-recognition-title" width="wide" className={`${styles.recognition} ${styles.aiOperationsRecognition}`}>
-    <ServiceSectionHeader
-      eyebrow="RECOGNITION"
-      title="The way your team works may need attention when…"
-      titleId="service-recognition-title"
-      className={styles.recognitionHeader}
-    />
-    <ol className={`${styles.recognitionList} ${styles.aiOperationsRecognitionList}`}>
-      {aiOperationsRecognition.map((condition, index) => <li key={condition}>
-        <span className={styles.recognitionNumber}>{String(index + 1).padStart(2, "0")}</span>
-        <p>{condition}</p>
-      </li>)}
-    </ol>
-    <div className={styles.aiSignalsConvergence} aria-hidden="true">
-      <svg viewBox="0 0 1200 100" preserveAspectRatio="none">
-        <path d="M70 0 L600 72 M282 0 L600 72 M494 0 L600 72 M706 0 L600 72 M918 0 L600 72 M1130 0 L600 72 M600 72 L600 100" />
-        <circle cx="600" cy="72" r="4" />
-        <path className={styles.aiSignalsArrow} d="M594 94 L600 100 L606 94" />
-      </svg>
-    </div>
-  </ServiceSection>;
-}
-
-function CollaborationRecognition() {
-  return <ServiceSection labelledBy="service-recognition-title" width="wide" className={`${styles.recognition} ${styles.collaborationRecognition}`}>
-    <ServiceSectionHeader
-      eyebrow="RECOGNITION"
-      title="Teams can be talking constantly and still be misaligned."
-      titleId="service-recognition-title"
-      className={styles.recognitionHeader}
-    />
-    <ol className={`${styles.recognitionList} ${styles.collaborationRecognitionList}`}>
-      {collaborationRecognition.map((condition, index) => <li key={condition}>
-        <span className={styles.recognitionNumber}>{String(index + 1).padStart(2, "0")}</span>
-        <p>{condition}</p>
-      </li>)}
-    </ol>
-  </ServiceSection>;
-}
-
-function ServiceClosingCta({ title, description }: { title: string; description: string }) {
+function ServiceClosingCta({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
   return <ServiceSection labelledBy="service-closing-cta-title" className={styles.recognitionCta}>
     <div className={styles.recognitionCtaInner}>
       <ServiceSectionHeader
-        eyebrow="START WITH THE FRICTION"
+        eyebrow={eyebrow}
         title={title}
         titleId="service-closing-cta-title"
         className={styles.recognitionCtaHeading}
@@ -492,11 +331,19 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   const service = getServiceItemBySlug(slug);
   if (!service) notFound();
-  const isProductArchitecture = service.slug === "product-architecture";
-  const isDesignSystems = service.slug === "design-systems";
-  const isAiEnabledOperations = service.slug === "ai-enabled-design-operations";
-  const isGovernanceScale = service.slug === "governance-scale";
-  const isCollaborationAlignment = service.slug === "collaboration-alignment";
+  const template = getServiceTemplate(service);
+  const defaultHero = getServiceHeroCopy(template, service.description);
+  const sectionContent = getServiceSectionContent(template, parseServiceSectionOverrides(service.section_content));
+  const settings = parseServiceSectionSettings(service.section_settings);
+  const outcomeLayout = sectionLayout(settings, "outcomes", template);
+  const workLayout = sectionLayout(settings, "work", template);
+  const aiWorkLayout = workLayout === "ai-enabled-design-operations" || (workLayout === "product-architecture" && template === "ai-enabled-design-operations");
+  const recognitionLayout = sectionLayout(settings, "recognition", template);
+  const isProductArchitecture = template === "product-architecture";
+  const isDesignSystems = template === "design-systems";
+  const isAiEnabledOperations = template === "ai-enabled-design-operations";
+  const isGovernanceScale = template === "governance-scale";
+  const isCollaborationAlignment = template === "collaboration-alignment";
   const content = isProductArchitecture ? productArchitecture : {
     eyebrow: "DESIGN SYSTEMS",
     lead: isAiEnabledOperations
@@ -522,6 +369,47 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
     audienceTitle: "A system for teams at a turning point.",
     audienceLead: "Whether you are launching a new product or untangling an existing one, I create the clarity your team needs to move forward."
   };
+  const sectionNodes: Partial<Record<ServiceSectionKey, ReactNode>> = {
+    additionalContent: (service.body && sectionVisible(settings, "additionalContent", template) && <ServiceSection labelledBy="service-details-title" className={styles.delivery}><h2 id="service-details-title" className="heading-02">About {service.title}</h2><RichContent html={service.body} /></ServiceSection>),
+    outcomes: (sectionVisible(settings, "outcomes", template) && <section className={`${styles.benefits} ${outcomeLayout !== "governance-scale" ? styles.benefitsQuiet : ""} ${outcomeLayout === "ai-enabled-design-operations" ? styles.aiOperationsBenefits : ""} ${outcomeLayout === "governance-scale" ? styles.governanceOutcomes : ""} ${outcomeLayout === "collaboration-alignment" ? styles.collaborationOutcomes : ""}`}><div className={`container ${styles.benefitsGrid}`}>{sectionContent.outcomes.map(({title, description}, index) => <article key={index} className={styles.benefit}>{outcomeLayout === "ai-enabled-design-operations" ? <span className={styles.aiOutcomeStage}>{template === outcomeLayout ? aiOperationsBenefitStages[index] : String(index + 1).padStart(2, "0")}</span> : outcomeLayout === "governance-scale" || outcomeLayout === "collaboration-alignment" ? null : <LatticeBenefitIcon index={index} />}<h2>{title}</h2><p>{description}</p></article>)}</div>{outcomeLayout === "governance-scale" && template === outcomeLayout && <p className={`container ${styles.governanceFeedback}`}><span aria-hidden="true">↻</span> Ownership, decisions and stewardship reinforce one another over time.</p>}{outcomeLayout === "collaboration-alignment" && template === outcomeLayout && <p className={`container ${styles.collaborationFeedback}`}>Shared context makes disagreement useful; clear decisions help different disciplines act in the same direction.</p>}</section>),
+    tension: (isGovernanceScale && sectionVisible(settings, "tension", template) && <GovernanceTension />),
+    work: (sectionVisible(settings, "work", template) && (workLayout === "design-systems" ? <ServiceSection labelledBy="service-work-title" className={`${styles.delivery} ${styles.designSystemDelivery}`}>
+        <ServiceSectionHeader
+          eyebrow="WHAT THE WORK CAN INVOLVE"
+          title={sectionContent.workTitle}
+          titleId="service-work-title"
+          className={styles.deliveryCopy}
+          eyebrowClassName={styles.deliveryEyebrow}
+          titleClassName={`heading-02 ${styles.deliveryHeading}`}
+        />
+        <ul className={styles.deliverables}>{sectionContent.workItems.map((item, index) => <li key={index}>{item}</li>)}</ul>
+      </ServiceSection> : <ServiceSection labelledBy="service-deliverables-title" width={workLayout !== "collaboration-alignment" ? "wide" : "contained"} className={`${styles.delivery} ${workLayout === "product-architecture" && !aiWorkLayout ? styles.architectureDelivery : ""} ${aiWorkLayout ? styles.aiOperationsDelivery : ""} ${workLayout === "governance-scale" ? styles.governanceDelivery : ""} ${workLayout === "collaboration-alignment" ? styles.collaborationDelivery : ""}`}>
+        <div className={styles.deliveryCopy}>
+          <ServiceSectionHeader
+            eyebrow="WHAT THE WORK CAN INVOLVE"
+            title={sectionContent.workTitle}
+            titleId="service-deliverables-title"
+            eyebrowClassName={styles.deliveryEyebrow}
+            titleClassName={`heading-02 ${styles.deliveryHeading}`}
+          />
+          <ul className={styles.deliverables}>{sectionContent.workItems.map((item, index) => <li key={index}>{item}</li>)}</ul>
+        </div>
+        {aiWorkLayout ? <AiOperationsGraphic /> : workLayout === "product-architecture" ? <ProductArchitectureGraphic /> : null}
+      </ServiceSection>)),
+    alignment: (isCollaborationAlignment && sectionVisible(settings, "alignment", template) && <CollaborationAlignmentModel />),
+    agreement: (isCollaborationAlignment && sectionVisible(settings, "agreement", template) && <CollaborationAgreement />),
+    operationalLoop: (isAiEnabledOperations && sectionVisible(settings, "operationalLoop", template) && <AiOperationalLoop />),
+    changeModel: (isGovernanceScale && sectionVisible(settings, "changeModel", template) && <GovernanceChangeModel />),
+    ecosystem: (isDesignSystems && sectionVisible(settings, "ecosystem", template) && <DesignSystemEcosystem />),
+    approach: (sectionVisible(settings, "approach", template) && (settings.approachCode.trim() ? <ServiceSection labelledBy="custom-service-approach-title" className={styles.approach}><h2 id="custom-service-approach-title" className="label-eyebrow">APPROACH</h2><LiveComponentBlock code={settings.approachCode} runtime="react" chrome="minimal" /></ServiceSection> : isDesignSystems ? <DesignSystemApproach /> : isProductArchitecture ? <ProductArchitectureApproach /> : isAiEnabledOperations ? <AiOperationsApproach /> : isGovernanceScale ? <GovernanceApproach /> : isCollaborationAlignment ? <CollaborationApproach /> : <ServiceSection labelledBy="service-approach-title" className={styles.approach}><ServiceSectionHeader eyebrow="APPROACH" title={content.approachTitle} titleId="service-approach-title" /><div className={styles.approachGrid}>{steps.map(([number, title, description]) => <article key={number} className={styles.step}><span className={styles.stepNumber}>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>)),
+    evidence: (sectionVisible(settings, "evidence", template) && <ServiceEvidence
+        categoryId={service.category_id}
+        categoryName={service.title}
+        title={`${service.title} in practice.`}
+        description={sectionContent.evidenceDescription}
+      />),
+    recognition: (sectionVisible(settings, "recognition", template) && <ServiceRecognition template={recognitionLayout} title={sectionContent.recognitionTitle} signals={sectionContent.recognitionSignals} />),
+  };
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
       "@context": "https://schema.org", "@type": "Service", name: service.title, description: service.description,
@@ -536,62 +424,14 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             Services&nbsp; / &nbsp;{service.title}
           </p>
           <h1 className="display-small">{service.title}</h1>
-          <p className={`body-large ${styles.heroLead}`}>{content.lead}</p>
-          <p className={`body-default ${styles.heroDescription}`}>{content.description}</p>
+          <p className={`body-large ${styles.heroLead}`}>{service.hero_lead || defaultHero.lead}</p>
+          {(service.hero_description || defaultHero.description) && <p className={`body-default ${styles.heroDescription}`}>{service.hero_description || defaultHero.description}</p>}
           <div className={styles.heroActions}><Link href="/contact" className={styles.primaryButton}>Let&apos;s talk <span aria-hidden="true">→</span></Link></div>
         </div>
       </section>
-      <section className={`${styles.benefits} ${isDesignSystems || isProductArchitecture || isAiEnabledOperations || isCollaborationAlignment ? styles.benefitsQuiet : ""} ${isAiEnabledOperations ? styles.aiOperationsBenefits : ""} ${isGovernanceScale ? styles.governanceOutcomes : ""} ${isCollaborationAlignment ? styles.collaborationOutcomes : ""}`}><div className={`container ${styles.benefitsGrid}`}>{content.benefits.map(([title, description], index) => <article key={title} className={styles.benefit}>{isAiEnabledOperations ? <span className={styles.aiOutcomeStage}>{aiOperationsBenefitStages[index]}</span> : isGovernanceScale || isCollaborationAlignment ? null : <LatticeBenefitIcon index={index} />}<h2>{title}</h2><p>{description}</p></article>)}</div>{isGovernanceScale && <p className={`container ${styles.governanceFeedback}`}><span aria-hidden="true">↻</span> Ownership, decisions and stewardship reinforce one another over time.</p>}{isCollaborationAlignment && <p className={`container ${styles.collaborationFeedback}`}>Shared context makes disagreement useful; clear decisions help different disciplines act in the same direction.</p>}</section>
-      {isGovernanceScale && <GovernanceTension />}
-      {isDesignSystems ? <ServiceSection labelledBy="service-work-title" className={`${styles.delivery} ${styles.designSystemDelivery}`}>
-        <ServiceSectionHeader
-          eyebrow="WHAT THE WORK CAN INVOLVE"
-          title={content.deliverablesIntro}
-          titleId="service-work-title"
-          className={styles.deliveryCopy}
-          eyebrowClassName={styles.deliveryEyebrow}
-          titleClassName={`heading-02 ${styles.deliveryHeading}`}
-        />
-        <ul className={styles.deliverables}>{content.deliverables.map((item) => <li key={item}>{item}</li>)}</ul>
-      </ServiceSection> : <ServiceSection labelledBy="service-deliverables-title" width={isProductArchitecture || isAiEnabledOperations || isGovernanceScale ? "wide" : "contained"} className={`${styles.delivery} ${isProductArchitecture ? styles.architectureDelivery : ""} ${isAiEnabledOperations ? styles.aiOperationsDelivery : ""} ${isGovernanceScale ? styles.governanceDelivery : ""} ${isCollaborationAlignment ? styles.collaborationDelivery : ""}`}>
-        <div className={styles.deliveryCopy}>
-          <ServiceSectionHeader
-            eyebrow={isProductArchitecture || isAiEnabledOperations || isGovernanceScale || isCollaborationAlignment ? "WHAT THE WORK CAN INVOLVE" : "DELIVERABLES"}
-            title={content.deliverablesIntro}
-            titleId="service-deliverables-title"
-            eyebrowClassName={styles.deliveryEyebrow}
-            titleClassName={`heading-02 ${styles.deliveryHeading}`}
-          />
-          <ul className={styles.deliverables}>{content.deliverables.map((item) => <li key={item}>{item}</li>)}</ul>
-        </div>
-        {isProductArchitecture ? <ProductArchitectureGraphic /> : isAiEnabledOperations ? <AiOperationsGraphic /> : isGovernanceScale || isCollaborationAlignment ? null : <div className={styles.systemPreview}><strong>Aa</strong><div className={styles.tokenRow}><span className={`${styles.token} ${styles.tokenLight}`} /><span className={`${styles.token} ${styles.tokenDark}`} /></div><p className={styles.systemCaption}>Tokens / components / code</p></div>}
-      </ServiceSection>}
-      {isCollaborationAlignment && <CollaborationAlignmentModel />}
-      {isCollaborationAlignment && <CollaborationAgreement />}
-      {isAiEnabledOperations && <AiOperationalLoop />}
-      {isGovernanceScale && <GovernanceChangeModel />}
-      {isDesignSystems && <DesignSystemEcosystem />}
-      {isDesignSystems ? <DesignSystemApproach /> : isProductArchitecture ? <><ProductArchitectureTransformation /><ProductArchitectureApproach /></> : isAiEnabledOperations ? <AiOperationsApproach /> : isGovernanceScale ? <GovernanceApproach /> : isCollaborationAlignment ? <CollaborationApproach /> : <ServiceSection labelledBy="service-approach-title" className={styles.approach}><ServiceSectionHeader eyebrow="APPROACH" title={content.approachTitle} titleId="service-approach-title" /><div className={styles.approachGrid}>{steps.map(([number, title, description]) => <article key={number} className={styles.step}><span className={styles.stepNumber}>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
-      {(isDesignSystems || isProductArchitecture || isAiEnabledOperations || isGovernanceScale || isCollaborationAlignment) && <ServiceEvidence
-        categoryName={isProductArchitecture ? "Product Architecture" : isAiEnabledOperations ? "AI-Enabled Design Operations" : isGovernanceScale ? "Governance & Scale" : isCollaborationAlignment ? "Collaboration & Alignment" : "Design Systems"}
-        title={isProductArchitecture ? "Product architecture in practice." : isAiEnabledOperations ? "AI-enabled operations in practice." : isGovernanceScale ? "Governance in practice." : isCollaborationAlignment ? "Collaboration in practice." : "Design systems in practice."}
-        description={isProductArchitecture
-          ? "Selected work and thinking where product structure clarified journeys, boundaries and decisions."
-          : isAiEnabledOperations
-          ? "Selected work and thinking where AI changed how work could be done without removing the judgement it still needed."
-          : isGovernanceScale
-          ? "Selected work and thinking where clearer ownership, decisions and stewardship helped systems keep working as they grew."
-          : isCollaborationAlignment
-          ? "Selected work and thinking where shared understanding changed how teams made decisions and moved forward."
-          : "Selected work and thinking where shared foundations, patterns and governance shaped the outcome."}
-      />}
-      {isDesignSystems ? <DesignSystemRecognition /> : isProductArchitecture ? <ProductArchitectureRecognition /> : isAiEnabledOperations ? <AiOperationsRecognition /> : isGovernanceScale ? <GovernanceRecognition /> : isCollaborationAlignment ? <CollaborationRecognition /> : <ServiceSection labelledBy="service-audience-title" className={styles.audience}><ServiceSectionHeader eyebrow="IS THIS YOU?" title={content.audienceTitle} description={content.audienceLead} titleId="service-audience-title" descriptionClassName={styles.audienceLead} /><div className={styles.audienceGrid}>{audiences.map(([number, title, description]) => <article key={number} className={styles.audienceCard}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></ServiceSection>}
-      {isDesignSystems && <ServiceClosingCta title="Tell me where things are getting stuck." description="We can look at what’s creating the friction and work out where attention would make the biggest difference." />}
-      {isProductArchitecture && <ServiceClosingCta title="Tell me where the product is becoming difficult to reason about." description="We can trace what sits underneath the complexity and work out where clearer structure would make the biggest difference." />}
-      {isAiEnabledOperations && <ServiceClosingCta title="Tell me where the work is getting harder to control." description="We can look at where friction, repetition or uncertainty is building and work out what deserves attention first." />}
-      {isGovernanceScale && <ServiceClosingCta title="Tell me where decisions are getting stuck." description="We can look at what’s creating the friction and work out what needs to become clearer." />}
-      {isCollaborationAlignment && <ServiceClosingCta title="Tell me what keeps coming back into the conversation." description="We can look at why it isn't turning into a durable decision and what would help the team move forward." />}
+      {getServiceSectionOrder(settings, template, Boolean(service.body)).map((key) => <Fragment key={key}>{sectionNodes[key]}</Fragment>)}
+      <ServiceClosingCta eyebrow={sectionContent.ctaEyebrow} title={sectionContent.ctaTitle} description={sectionContent.ctaDescription} />
     </main>
-    <Footer hideContactCta={isDesignSystems || isProductArchitecture || isAiEnabledOperations || isGovernanceScale || isCollaborationAlignment} />
+    <Footer hideContactCta />
   </>;
 }

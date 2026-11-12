@@ -12,7 +12,7 @@ export const ABOUT_TABS = [
 ];
 
 export const SERVICES_TABS = [
-  { label: "Services", href: "/admin/services" },
+  { label: "Categories & services", href: "/admin/categories" },
   { label: "Page settings", href: "/admin/services/settings" },
 ];
 

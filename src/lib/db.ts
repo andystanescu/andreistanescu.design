@@ -2,6 +2,8 @@ import { DatabaseSync } from "node:sqlite";
 import { existsSync, mkdirSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
+import { migrateCategoryFoundation } from "./categoryMigration";
+import { migrateServiceCategories } from "./serviceCategoryMigration";
 
 // Use Node built-in SQLite with a configurable storage directory.
 // No provider-specific runtime or native compilation is required.
@@ -355,6 +357,11 @@ addColumnIfMissing("pages", "canonical_url", "canonical_url TEXT NOT NULL DEFAUL
 addColumnIfMissing("pages", "og_image", "og_image TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("pages", "no_index", "no_index INTEGER NOT NULL DEFAULT 0");
 addColumnIfMissing("service_items", "card_size", "card_size TEXT NOT NULL DEFAULT 'standard'");
+addColumnIfMissing("service_items", "template_key", "template_key TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("service_items", "hero_lead", "hero_lead TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("service_items", "hero_description", "hero_description TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("service_items", "section_content", "section_content TEXT NOT NULL DEFAULT '{}'");
+addColumnIfMissing("service_items", "section_settings", "section_settings TEXT NOT NULL DEFAULT '{}'");
 addColumnIfMissing("submissions", "blocked", "blocked INTEGER NOT NULL DEFAULT 0");
 addColumnIfMissing("pages", "nav_label", "nav_label TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("pages", "position", "position INTEGER NOT NULL DEFAULT 0");
@@ -742,7 +749,7 @@ const getServiceItemStmt = db.prepare(
 const serviceCount = db
   .prepare("SELECT COUNT(*) AS count FROM service_items")
   .get() as { count: number };
-if (serviceCount.count === 0) {
+if (serviceCount.count === 0 && !db.prepare("SELECT 1 FROM settings WHERE key = ?").get("shared_categories_v1")) {
   SEED_SERVICE_ITEMS.forEach((item, index) => {
     if (!getServiceItemStmt.get(item.slug)) {
       insertServiceItemStmt.run(
@@ -1001,6 +1008,8 @@ for (const article of db
   }
 }
 
+    migrateCategoryFoundation(db);
+    migrateServiceCategories(db);
     db.exec("COMMIT;");
   } catch (error) {
     try {

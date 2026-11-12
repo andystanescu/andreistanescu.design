@@ -1,22 +1,13 @@
 import { ServiceSection, ServiceSectionHeader } from "@/components/services/ServiceSection/ServiceSection";
 import styles from "./GovernanceRecognition.module.css";
 
-const signals = [
-  "Everyone knows something needs to change, but nobody knows who can decide.",
-  "Small contributions require too many conversations.",
-  "Different teams interpret the same standards differently.",
-  "Exceptions accumulate without ever changing the underlying rule.",
-  "The people maintaining the system have responsibility without authority.",
-  "Decisions are made, but nobody can find out later why they were made.",
-];
-
-export function GovernanceRecognition() {
+export function GovernanceRecognition({ title, signals, onTitleChange, onSignalChange }: { title: string; signals: string[]; onTitleChange?: (value: string) => void; onSignalChange?: (index: number, value: string) => void }) {
   return (
     <ServiceSection width="wide" labelledBy="governance-recognition-title" className={styles.section}>
       <div className={styles.layout}>
         <ServiceSectionHeader
           eyebrow="RECOGNITION"
-          title="A system becomes harder to sustain when…"
+          title={onTitleChange ? <span contentEditable="plaintext-only" suppressContentEditableWarning role="textbox" aria-label="Recognition heading" onBlur={(event) => onTitleChange(event.currentTarget.textContent?.trim() ?? "")}>{title}</span> : title}
           titleId="governance-recognition-title"
           className={styles.header}
         />
@@ -24,9 +15,9 @@ export function GovernanceRecognition() {
           <p className={styles.signalsLabel}>DECISION FRICTION</p>
           <ol className={styles.signals}>
             {signals.map((signal, index) => (
-              <li key={signal}>
+              <li key={index}>
                 <span>{String(index + 1).padStart(2, "0")}</span>
-                <p>{signal}</p>
+                <p contentEditable={onSignalChange ? "plaintext-only" : undefined} suppressContentEditableWarning={Boolean(onSignalChange)} role={onSignalChange ? "textbox" : undefined} aria-label={onSignalChange ? `Recognition statement ${index + 1}` : undefined} onBlur={onSignalChange ? (event) => onSignalChange(index, event.currentTarget.textContent?.trim() ?? "") : undefined}>{signal}</p>
               </li>
             ))}
           </ol>

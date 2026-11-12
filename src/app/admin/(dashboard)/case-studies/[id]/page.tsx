@@ -6,6 +6,7 @@ import { CaseStudyEditor } from "@/components/admin/CaseStudyEditor/CaseStudyEdi
 import { getCaseStudyAssessment } from "@/data/caseStudies";
 import { getSettings } from "@/lib/settings";
 import { getRelatedReadingOptions } from "@/lib/relatedReadings";
+import { getCategories, getCaseStudyCategoryIds } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -31,9 +32,7 @@ export default async function EditCaseStudyPage({
   const clientStudy = { ...study };
   const metrics = getCaseStudyMetrics(study).map((metric) => ({ ...metric }));
   const storedAssessment = getCaseStudyAssessment(study);
-  const services = db
-    .prepare("SELECT slug, title FROM service_items ORDER BY position ASC, id ASC")
-    .all() as Array<{ slug: string; title: string }>;
+  const categories = getCategories();
   const assessment = {
     ...storedAssessment,
     scores: { ...storedAssessment.scores },
@@ -52,7 +51,7 @@ export default async function EditCaseStudyPage({
   return (
     <>
       {error && <p style={{ color: "var(--border-error)" }}>{error}</p>}
-      <CaseStudyEditor study={clientStudy} metrics={metrics} assessment={assessment} services={services.map((service) => ({ ...service }))} relatedReadings={getRelatedReadingOptions({ slug: study.slug, contentType: "case_study" })} passwordRequired={Boolean(study.password_required)} passwordEntries={passwordEntries} authorAvatarUrl={getSettings().about_hero_image} />
+      <CaseStudyEditor study={clientStudy} metrics={metrics} assessment={assessment} categories={categories.map((category) => ({ ...category }))} selectedCategoryIds={getCaseStudyCategoryIds(study.id)} relatedReadings={getRelatedReadingOptions({ slug: study.slug, contentType: "case_study" })} passwordRequired={Boolean(study.password_required)} passwordEntries={passwordEntries} authorAvatarUrl={getSettings().about_hero_image} />
     </>
   );
 }

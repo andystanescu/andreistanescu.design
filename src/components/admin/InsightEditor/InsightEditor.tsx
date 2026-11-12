@@ -76,7 +76,7 @@ function Field({ label, name, value, textarea = false, required = false, placeho
 
 function CategoryCards({ value, categories }: { value: string; categories: Array<{ id: number; title: string }> }) {
   const [selected, setSelected] = useState(value);
-  return <div className={styles.field}><span className="label-small">Category (shown in the breadcrumb and hero eyebrow)</span><input type="hidden" name="category" value={selected} /><div className={editorStyles.categoryCards} role="group" aria-label="Insight category">{categories.map((category) => <button key={category.id} type="button" className={selected === category.title ? editorStyles.categoryCardActive : editorStyles.categoryCard} aria-pressed={selected === category.title} onClick={() => setSelected(category.title)}><strong>{category.title}</strong><small>{category.title.toLowerCase().replace(/\s+/g, "-")}</small></button>)}</div>{categories.length === 0 && <p className="body-small">Add a service before selecting a category.</p>}</div>;
+  return <div className={styles.field}><span className="label-small">Category (shown in the breadcrumb and hero eyebrow)</span><input type="hidden" name="category" value={selected} /><div className={editorStyles.categoryCards} role="group" aria-label="Insight category">{categories.map((category) => <button key={category.id} type="button" className={selected === category.title ? editorStyles.categoryCardActive : editorStyles.categoryCard} aria-pressed={selected === category.title} onClick={() => setSelected(category.title)}><strong>{category.title}</strong></button>)}</div>{categories.length === 0 && <p className="body-small">Add a category before selecting one.</p>}</div>;
 }
 
 function TagEditor({ initialValue }: { initialValue: string }) {

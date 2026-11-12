@@ -1,12 +1,10 @@
 import { relativeRedirect } from "@/lib/relativeRedirect";
-import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { NextRequest } from "next/server";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  db.prepare("DELETE FROM service_items WHERE id = ?").run(id);
-  return relativeRedirect("/admin/services");
+  await params;
+  return relativeRedirect("/admin/categories");
 }

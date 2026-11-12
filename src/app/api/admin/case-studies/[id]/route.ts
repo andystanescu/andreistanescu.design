@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import { getSettings } from "@/lib/settings";
 import { dateInputValue } from "@/lib/dateUtils";
 import { addHeadingIds } from "@/lib/tableOfContents";
+import { readCategorySelection, replaceCaseStudyCategories } from "@/lib/categories";
 
 export async function POST(
   request: NextRequest,
@@ -49,7 +50,9 @@ export async function POST(
   }
   const slug = String(form.get("slug") ?? "").trim();
   const eyebrow = String(form.get("eyebrow") ?? "").trim();
-  const category = String(form.get("category") ?? "").trim();
+  let categories;
+  try { categories = readCategorySelection(form); } catch { return NextResponse.json({ error: "Invalid category selection" }, { status: 400 }); }
+  const category = categories ? categories[0]?.name ?? "" : String(form.get("category") ?? "").trim();
   const year = String(form.get("year") ?? "").trim();
   const projectRole = String(form.get("project_role") ?? "").trim();
   const contribution = String(form.get("contribution") ?? "").trim();
@@ -156,6 +159,7 @@ export async function POST(
   const passwordHashes = JSON.stringify([...existingPasswordHashes.filter((_, index) => !passwordRemovals.includes(index)), ...addedPasswordHashes]);
 
   try {
+    db.exec("BEGIN IMMEDIATE");
     db.prepare(
       `UPDATE case_studies
        SET slug = ?, eyebrow = ?, category = ?, year = ?, project_role = ?, contribution = ?, timeline = ?, scope = ?, team = ?, title = ?, description = ?, tags = ?, body = ?, body_draft = ?, body_draft_enabled = ?, cover_image = ?, thumbnail_image = ?, outcome_eyebrow = ?, outcome_title = ?, metrics = ?, assessment = ?, password_required = ?, password_hashes = ?, published = ?, in_progress = ?, author = ?, published_at = ?, meta_title = ?, meta_description = ?, meta_keywords = ?, canonical_url = ?, og_image = ?, no_index = ?
@@ -196,7 +200,10 @@ export async function POST(
       noIndex,
       id
     );
+    if (categories && existing) replaceCaseStudyCategories(Number(id), categories);
+    db.exec("COMMIT");
   } catch {
+    if (db.isTransaction) db.exec("ROLLBACK");
     const url = new URL(`/admin/case-studies/${id}`, request.url);
     url.searchParams.set("error", `A case study with slug "${slug}" already exists.`);
     return relativeRedirect(url.pathname + url.search);

@@ -34,7 +34,7 @@ export function ServiceSection({
 
 type ServiceSectionHeaderProps = {
   eyebrow: string;
-  title: string;
+  title: ReactNode;
   description?: string;
   className?: string;
   eyebrowClassName?: string;
