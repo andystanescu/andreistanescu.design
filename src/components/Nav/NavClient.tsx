@@ -25,6 +25,7 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
   const pathname = usePathname();
   const isContactPage = pathname === "/contact";
   const [scrolled, setScrolled] = useState(false);
+  const [mastheadCollapsed, setMastheadCollapsed] = useState(false);
   const [readingNavHidden, setReadingNavHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const lastScrollY = useRef(0);
@@ -45,11 +46,32 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
     let frame = 0;
     let direction = 0;
     let directionStartY = window.scrollY;
+    let mastheadDirection = 0;
+    let mastheadDirectionStartY = window.scrollY;
+    let initialiseMasthead = true;
     const update = () => {
       frame = 0;
       const currentY = window.scrollY;
       const delta = currentY - lastScrollY.current;
       setScrolled(currentY > 8);
+
+      if (initialiseMasthead) {
+        setMastheadCollapsed(currentY > 8);
+        initialiseMasthead = false;
+      } else if (currentY <= 8) {
+        setMastheadCollapsed(false);
+        mastheadDirection = 0;
+        mastheadDirectionStartY = currentY;
+      } else if (delta !== 0) {
+        const nextDirection = Math.sign(delta);
+        if (nextDirection !== mastheadDirection) {
+          mastheadDirection = nextDirection;
+          mastheadDirectionStartY = lastScrollY.current;
+        }
+        if (Math.abs(currentY - mastheadDirectionStartY) > 10) {
+          setMastheadCollapsed(mastheadDirection > 0);
+        }
+      }
 
       if (!isReadingPage || window.innerWidth > 900 || currentY < 160) {
         setReadingNavHidden(false);
@@ -170,7 +192,7 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
   }
 
   if (navigationStyle === "masthead") {
-    return <header data-navigation-style="masthead" data-masthead-collapsed={scrolled || undefined} className={`${styles.masthead} ${readingNavHidden ? styles.mastheadReadingHidden : ""}`}>
+    return <header data-navigation-style="masthead" data-masthead-collapsed={mastheadCollapsed || undefined} className={`${styles.masthead} ${readingNavHidden ? styles.mastheadReadingHidden : ""}`}>
       <div className={styles.mastheadBrandRow}>
         <div className={styles.mastheadTheme}><ThemeSwitch horizontal /></div>
         <Link className={styles.mastheadLogo} href="/" aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`}><Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} /></Link>
