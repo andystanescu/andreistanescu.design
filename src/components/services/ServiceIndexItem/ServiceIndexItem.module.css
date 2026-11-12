@@ -5,7 +5,7 @@
 .title{grid-area:title;min-width:0;color:var(--text-primary)}
 .information{gap:var(--space-300)}
 .information{display:flex;grid-area:information;min-width:0;flex-direction:column;align-items:flex-start}
-.description{min-width:0;max-width:58ch;color:var(--text-secondary);overflow-wrap:break-word}
+.description{width:100%;min-width:0;color:var(--text-secondary);overflow-wrap:break-word}
 .action{display:inline-flex;grid-area:action;min-height:44px;align-items:center;align-self:start;justify-self:start;gap:var(--space-100);color:var(--text-accent);font:500 14px/1.2 var(--font-family-body)}
 .arrow{transition:transform .15s ease}
 .tags{display:flex;width:100%;min-width:0;max-width:100%;flex-wrap:wrap;gap:var(--space-100)}
