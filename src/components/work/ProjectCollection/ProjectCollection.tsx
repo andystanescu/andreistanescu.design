@@ -2,7 +2,9 @@ import type { CaseStudy } from "@/data/caseStudies";
 import { ProjectCard } from "@/components/work/ProjectCard/ProjectCard";
 import styles from "./ProjectCollection.module.css";
 
-export function ProjectCollection({ studies, limit, responsivePreview = false }: { studies: CaseStudy[]; limit?: number; responsivePreview?: boolean }) {
+export type ProjectSummary = Pick<CaseStudy, "slug" | "title" | "description" | "thumbnail_image" | "category" | "eyebrow" | "year" | "in_progress" | "password_required">;
+
+export function ProjectCollection({ studies, limit, responsivePreview = false }: { studies: ProjectSummary[]; limit?: number; responsivePreview?: boolean }) {
   const visibleStudies = typeof limit === "number" ? studies.slice(0, limit) : studies;
   const [featured, ...remaining] = visibleStudies;
 

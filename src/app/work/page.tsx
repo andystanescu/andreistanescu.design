@@ -3,13 +3,14 @@ import { notFound } from "next/navigation";
 import { Footer } from "@/components/Footer/Footer";
 import { RichContent } from "@/components/RichContent/RichContent";
 import { LatestInsights } from "@/components/home/LatestInsights/LatestInsights";
-import { ProjectCollection } from "@/components/work/ProjectCollection/ProjectCollection";
+import { WorkListing } from "@/components/work/WorkListing/WorkListing";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { getCaseStudies } from "@/data/caseStudies";
 import { getPublishedPage } from "@/lib/pages";
 import { pageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 import { getSettings } from "@/lib/settings";
+import { getCategories, getCaseStudyCategoryIds } from "@/lib/categories";
 import styles from "./work.module.css";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +39,12 @@ export default function WorkPage() {
         {!featured ? (
           <EmptyState eyebrow="Selected work" title="Case studies are on their way" description="Published projects will appear here when they are ready to share." />
         ) : (
-          <ProjectCollection studies={CASE_STUDIES} />
+          <WorkListing categories={getCategories().map(({ id, name }) => ({ id, name }))} studies={CASE_STUDIES.map((study) => ({
+            slug: study.slug, title: study.title, description: study.description,
+            thumbnail_image: study.thumbnail_image, category: study.category,
+            eyebrow: study.eyebrow, year: study.year, in_progress: study.in_progress,
+            password_required: study.password_required, categoryIds: getCaseStudyCategoryIds(study.id),
+          }))} />
         )}
 
         <section className={`${styles.outcome} section-dark`} aria-labelledby="work-outcome-title">

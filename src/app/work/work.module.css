@@ -13,8 +13,7 @@
 .featured:hover .featuredLink, .featured:focus-visible .featuredLink { color:var(--text-on-deep-primary); }
 .outcome { width:100vw; margin-top:var(--space-600); margin-left:calc(50% - 50vw); padding-block:var(--space-800); background:var(--bg-deep); }
 .outcomeGrid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-800); margin-top:var(--space-300); }
-.outcomeGrid h2 { color:var(--text-on-deep-primary); max-width:520px; }
-.outcomeGrid p { max-width:520px; }
+.outcomeGrid h2 { color:var(--text-on-deep-primary); }
 @media (max-width:900px) {
   .main > h1 { max-width:100%; }
   .featured { grid-template-columns:1fr; }
