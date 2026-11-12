@@ -15,13 +15,14 @@ type ProjectCardProps = {
   featured?: boolean;
   mediaTreatment?: "standard" | "feature";
   headingLevel?: "h2" | "h3";
+  className?: string;
 };
 
-export function ProjectCard({ slug, title, description, thumbnail, category = "Case study", index, year, inProgress = false, protectedStudy = false, featured = false, mediaTreatment = featured ? "feature" : "standard", headingLevel = "h3" }: ProjectCardProps) {
+export function ProjectCard({ slug, title, description, thumbnail, category = "Case study", index, year, inProgress = false, protectedStudy = false, featured = false, mediaTreatment = featured ? "feature" : "standard", headingLevel = "h3", className = "" }: ProjectCardProps) {
   const Heading = headingLevel;
   const statuses = [inProgress ? "In progress" : "", protectedStudy ? "Protected" : ""].filter(Boolean);
   return (
-    <Link className={`${styles.card} ${featured ? styles.featured : ""}`} href={`/work/${encodeURIComponent(slug)}`}>
+    <Link className={`${styles.card} ${featured ? styles.featured : ""} ${className}`} href={`/work/${encodeURIComponent(slug)}`}>
       <p className={`label-eyebrow ${styles.kicker}`}>{category || "Case study"} / {String(index).padStart(2, "0")}</p>
       <Heading className={`${featured ? "heading-01" : "heading-03"} ${styles.title}`}>{title}</Heading>
       <p className={`body-small ${styles.description}`}>{description}</p>

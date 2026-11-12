@@ -34,7 +34,7 @@ export function WorkListing({ studies, categories }: { studies: Study[]; categor
       <button type="button" aria-pressed={selected === null} className={selected === null ? filterStyles.filterActive : filterStyles.filter} onClick={() => setSelected(null)}>All</button>
       {categories.map((category) => <button key={category.id} type="button" aria-pressed={selected === category.id} className={selected === category.id ? filterStyles.filterActive : filterStyles.filter} onClick={() => setSelected(category.id)}>{category.name}</button>)}
     </div>
-    {visibleStudies.length > 0 ? <ProjectCollection studies={visibleStudies} /> : <section className={styles.empty} role="status">
+    {visibleStudies.length > 0 ? <ProjectCollection studies={visibleStudies} resultClassName={filterStyles.filterResults} /> : <section key={selected} className={`${styles.empty} ${filterStyles.filterResults}`} role="status">
       <p className="label-eyebrow">NO MATCHES</p>
       <h2 className="heading-02">Nothing published in {selectedName} yet</h2>
       <p className={`body-default ${styles.emptyDescription}`}>I’m still writing up this work. Browse another category, or view all case studies.</p>

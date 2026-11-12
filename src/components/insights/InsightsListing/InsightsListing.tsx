@@ -69,14 +69,14 @@ export function InsightsListing({ insights }: { insights: Insight[] }) {
           ))}
         </div>
 
-        {featured && <ArticlePreview slug={featured.slug} category={featured.category} title={featured.title} excerpt={featured.excerpt} minutes={calculateReadingTime(featured.body)} thumbnail={featured.thumbnail_image} featured headingLevel="h2" />}
+        {featured && <ArticlePreview key={featured.slug} className={styles.filterResults} slug={featured.slug} category={featured.category} title={featured.title} excerpt={featured.excerpt} minutes={calculateReadingTime(featured.body)} thumbnail={featured.thumbnail_image} featured headingLevel="h2" />}
       </section>
 
       {additional.length > 0 && (
         <section className={styles.gridSection}>
           <div className={styles.grid}>
             {visibleArticles.map((article) => (
-              <ArticlePreview key={`${selectedTag}-${article.slug}`} slug={article.slug} category={article.category || getTags(article.tags)[0]} title={article.title} excerpt={article.excerpt} minutes={calculateReadingTime(article.body)} />
+              <ArticlePreview key={article.slug} className={styles.filterResults} slug={article.slug} category={article.category || getTags(article.tags)[0]} title={article.title} excerpt={article.excerpt} minutes={calculateReadingTime(article.body)} />
             ))}
           </div>
           {insights.length >= 8 && visibleCount < additional.length && (
@@ -86,7 +86,7 @@ export function InsightsListing({ insights }: { insights: Insight[] }) {
           )}
         </section>
       )}
-      {selectedTag !== "All" && filteredInsights.length === 0 && <section className={styles.gridSection}>
+      {selectedTag !== "All" && filteredInsights.length === 0 && <section key={selectedTag} className={`${styles.gridSection} ${styles.filterResults}`}>
         <EmptyState eyebrow="No matches" title={`No articles in ${selectedTag}`} description="Try another category or show every published article." action={<button type="button" onClick={() => selectTag("All")}>Show all articles</button>} />
       </section>}
     </>

@@ -11,12 +11,13 @@ type ArticlePreviewProps = {
   featured?: boolean;
   headingLevel?: "h2" | "h3";
   presentation?: "card" | "editorial";
+  className?: string;
 };
 
-export function ArticlePreview({ slug, category = "Insights", title, excerpt, minutes, thumbnail, featured = false, headingLevel = "h3", presentation = "card" }: ArticlePreviewProps) {
+export function ArticlePreview({ slug, category = "Insights", title, excerpt, minutes, thumbnail, featured = false, headingLevel = "h3", presentation = "card", className = "" }: ArticlePreviewProps) {
   const Heading = headingLevel;
   return (
-    <Link href={`/insights/${slug}`} className={`${styles.preview} ${featured ? styles.featured : styles.standard} ${presentation === "editorial" ? styles.editorial : ""}`}>
+    <Link href={`/insights/${slug}`} className={`${styles.preview} ${featured ? styles.featured : styles.standard} ${presentation === "editorial" ? styles.editorial : ""} ${className}`}>
       {featured && <div className={styles.media} style={thumbnail ? { backgroundImage: `url(${thumbnail})` } : undefined} aria-hidden="true" />}
       <div className={styles.copy}>
         <p className={`label-eyebrow ${styles.category}`}>{category || "Insights"}</p>
