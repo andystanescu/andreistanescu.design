@@ -3,7 +3,7 @@ import { ArrowIcon } from "@/components/Icon/ArrowIcon";
 import { AccentText } from "@/components/AccentText/AccentText";
 import { getVisibleSection, getSectionOrder } from "@/lib/homepage";
 import { LatticeDiagram } from "./LatticeDiagram";
-import { LatticeInteractive } from "./LatticeInteractive";
+import { LatticeFormations } from "./LatticeFormations";
 import { DiagramLayout } from "./DiagramLayout";
 import { HeroCollage } from "./HeroCollage";
 import styles from "./Hero.module.css";
@@ -48,9 +48,9 @@ export function Hero({ preview = false }: { preview?: boolean } = {}) {
 
         <DiagramLayout
           lattice={
-            <LatticeInteractive>
-              <LatticeDiagram />
-            </LatticeInteractive>
+            <LatticeFormations>
+              <LatticeDiagram label="An interactive lattice of connected dots that forms a series of familiar shapes." />
+            </LatticeFormations>
           }
           legend={
             <>

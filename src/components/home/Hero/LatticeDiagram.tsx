@@ -6,11 +6,11 @@ const svgMarkup = readFileSync(
   "utf-8"
 );
 
-export function LatticeDiagram() {
+export function LatticeDiagram({ label = "A lattice diagram: four highlighted foundation nodes anchor a wider grid of connected system nodes, all gently drifting in place and responding to the cursor." }: { label?: string } = {}) {
   return (
     <div
       role="img"
-      aria-label="A lattice diagram: four highlighted foundation nodes anchor a wider grid of connected system nodes, all gently drifting in place and responding to the cursor."
+      aria-label={label}
       dangerouslySetInnerHTML={{ __html: svgMarkup }}
     />
   );
