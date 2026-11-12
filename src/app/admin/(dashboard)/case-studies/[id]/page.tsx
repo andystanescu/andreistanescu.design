@@ -1,3 +1,4 @@
+import { getExistingTags } from "@/lib/existingTags";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import type { CaseStudy } from "@/data/caseStudies";
@@ -51,7 +52,7 @@ export default async function EditCaseStudyPage({
   return (
     <>
       {error && <p style={{ color: "var(--border-error)" }}>{error}</p>}
-      <CaseStudyEditor study={clientStudy} metrics={metrics} assessment={assessment} categories={categories.map((category) => ({ ...category }))} selectedCategoryIds={getCaseStudyCategoryIds(study.id)} relatedReadings={getRelatedReadingOptions({ slug: study.slug, contentType: "case_study" })} passwordRequired={Boolean(study.password_required)} passwordEntries={passwordEntries} authorAvatarUrl={getSettings().about_hero_image} />
+      <CaseStudyEditor existingTags={getExistingTags()} study={clientStudy} metrics={metrics} assessment={assessment} categories={categories.map((category) => ({ ...category }))} selectedCategoryIds={getCaseStudyCategoryIds(study.id)} relatedReadings={getRelatedReadingOptions({ slug: study.slug, contentType: "case_study" })} passwordRequired={Boolean(study.password_required)} passwordEntries={passwordEntries} authorAvatarUrl={getSettings().about_hero_image} />
     </>
   );
 }

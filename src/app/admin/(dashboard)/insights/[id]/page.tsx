@@ -1,3 +1,4 @@
+import { getExistingTags } from "@/lib/existingTags";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import type { Insight } from "@/data/insights";
@@ -16,5 +17,5 @@ export default async function EditInsightPage({ params, searchParams }: { params
   const categories = getCategories().map((category) => ({ id: category.id, title: category.name }));
   const clientInsight = { ...insight };
   const settings = getSettings();
-  return <>{error && <p style={{ color: "var(--border-error)" }}>{error}</p>}<InsightEditor action={`/api/admin/insights/${insight.id}`} categories={categories} settingsAuthor={settings.author_name} relatedReadings={getRelatedReadingOptions({ slug: insight.slug, contentType: "article" })} authorAvatarUrl={settings.about_hero_image} insight={clientInsight} /></>;
+  return <>{error && <p style={{ color: "var(--border-error)" }}>{error}</p>}<InsightEditor existingTags={getExistingTags()} action={`/api/admin/insights/${insight.id}`} categories={categories} settingsAuthor={settings.author_name} relatedReadings={getRelatedReadingOptions({ slug: insight.slug, contentType: "article" })} authorAvatarUrl={settings.about_hero_image} insight={clientInsight} /></>;
 }

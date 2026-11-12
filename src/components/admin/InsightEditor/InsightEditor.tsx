@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { TagSuggestions } from "@/components/admin/TagSuggestions/TagSuggestions";
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { RichTextEditor } from "@/components/admin/RichTextEditor/RichTextEditor";
 import { ImageField } from "@/components/admin/ImageField/ImageField";
@@ -13,9 +14,9 @@ import { dateInputValue, todayInputValue, ukDateTimeValue } from "@/lib/dateUtil
 import Link from "next/link";
 import type { RelatedReadingOption } from "@/lib/relatedReadings";
 
-type Props = { action: string; categories: Array<{ id: number; title: string }>; settingsAuthor: string; relatedReadings: RelatedReadingOption[]; authorAvatarUrl?: string; insight?: Insight };
+type Props = { action: string; categories: Array<{ id: number; title: string }>; settingsAuthor: string; relatedReadings: RelatedReadingOption[]; existingTags: string[]; authorAvatarUrl?: string; insight?: Insight };
 
-export function InsightEditor({ action, categories, settingsAuthor, relatedReadings, authorAvatarUrl, insight }: Props) {
+export function InsightEditor({ action, categories, settingsAuthor, relatedReadings, existingTags, authorAvatarUrl, insight }: Props) {
   const editing = Boolean(insight);
   const [tab, setTab] = useState<"details" | "body" | "metadata">("details");
   const value = (key: keyof Insight) => insight?.[key] ?? "";
@@ -35,7 +36,7 @@ export function InsightEditor({ action, categories, settingsAuthor, relatedReadi
         <Field label="Title" name="title" value={value("title")} required />
         <Field label="Excerpt (shown on cards and listings)" name="excerpt" value={value("excerpt")} textarea required />
         <CategoryCards value={String(value("category"))} categories={categories} />
-        <TagEditor initialValue={String(value("tags"))} />
+        <TagEditor initialValue={String(value("tags"))} existingTags={existingTags} />
         <label className={styles.field}><span className="label-small">Published date</span><input type="date" name="published_at" defaultValue={dateInputValue(String(value("published_at")) || todayInputValue())} className={styles.input} /></label>
         <label className={styles.field}><span className="label-small">Schedule publishing (UK time)</span><input type="datetime-local" name="scheduled_at" defaultValue={String(value("scheduled_at"))} className={styles.input} /><span className="body-small" style={{ color: "var(--text-tertiary)" }}>Leave empty to publish immediately when Published is enabled.</span></label>
         <label className={styles.checkboxField}><input type="checkbox" name="published" defaultChecked={Boolean(insight?.published)} /><span className={styles.switch} aria-hidden="true" /><span className="body-default">Published</span></label>
@@ -79,7 +80,7 @@ function CategoryCards({ value, categories }: { value: string; categories: Array
   return <div className={styles.field}><span className="label-small">Category (shown in the breadcrumb and hero eyebrow)</span><input type="hidden" name="category" value={selected} /><div className={editorStyles.categoryCards} role="group" aria-label="Insight category">{categories.map((category) => <button key={category.id} type="button" className={selected === category.title ? editorStyles.categoryCardActive : editorStyles.categoryCard} aria-pressed={selected === category.title} onClick={() => setSelected(category.title)}><strong>{category.title}</strong></button>)}</div>{categories.length === 0 && <p className="body-small">Add a category before selecting one.</p>}</div>;
 }
 
-function TagEditor({ initialValue }: { initialValue: string }) {
+function TagEditor({ initialValue, existingTags }: { initialValue: string; existingTags: string[] }) {
   const [tags, setTags] = useState(() => initialValue.split(/[,;\n|*·]+/).map((tag) => tag.trim()).filter(Boolean));
   const [draft, setDraft] = useState("");
   const addTags = () => {
@@ -94,9 +95,10 @@ function TagEditor({ initialValue }: { initialValue: string }) {
     <span className="label-small">Tags</span>
     <input type="hidden" name="tags" value={tags.join(", ")} />
     <div className={tagStyles.tagComposer}>
-      <input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addTags(); } }} placeholder="Add one tag or paste several separated by commas" className={styles.input} />
+      <input aria-label="Add tags" value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addTags(); } }} placeholder="Add one tag or paste several separated by commas" className={styles.input} />
       <button type="button" className={tagStyles.addTagButton} onClick={addTags}>Add tags</button>
     </div>
+    <TagSuggestions draft={draft} existingTags={existingTags} selectedTags={tags} onSelect={(tag) => { setTags((current) => [...current, tag]); setDraft(""); }} />
     <div className={tagStyles.tagList} aria-label="Added tags">
       {tags.map((tag) => <span className={tagStyles.tag} key={tag}>{tag}<button type="button" aria-label={`Remove ${tag}`} onClick={() => removeTag(tag)}><AdminIcon name="action-close" /></button></span>)}
     </div>

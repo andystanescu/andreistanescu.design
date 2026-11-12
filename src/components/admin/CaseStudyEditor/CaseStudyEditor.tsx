@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { TagSuggestions } from "@/components/admin/TagSuggestions/TagSuggestions";
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import type { ReactNode } from "react";
 import { ImageField } from "@/components/admin/ImageField/ImageField";
@@ -18,10 +19,10 @@ import { addHeadingIds } from "@/lib/tableOfContents";
 
 type CategoryOption = { id: number; name: string };
 type PasswordEntry = { name: string; masked: string };
-type Props = { study: CaseStudy; metrics: CaseStudyMetric[]; assessment: CaseStudyAssessment; categories: CategoryOption[]; selectedCategoryIds: number[]; relatedReadings: RelatedReadingOption[]; passwordRequired: boolean; passwordEntries: PasswordEntry[]; authorAvatarUrl?: string; action?: string };
+type Props = { study: CaseStudy; metrics: CaseStudyMetric[]; assessment: CaseStudyAssessment; categories: CategoryOption[]; selectedCategoryIds: number[]; relatedReadings: RelatedReadingOption[]; existingTags: string[]; passwordRequired: boolean; passwordEntries: PasswordEntry[]; authorAvatarUrl?: string; action?: string };
 type Tab = "details" | "outcomes" | "assessment" | "content" | "metadata" | "visibility";
 
-export function CaseStudyEditor({ study, metrics, assessment, categories, selectedCategoryIds, relatedReadings, passwordRequired, passwordEntries, authorAvatarUrl, action }: Props) {
+export function CaseStudyEditor({ study, metrics, assessment, categories, selectedCategoryIds, relatedReadings, existingTags, passwordRequired, passwordEntries, authorAvatarUrl, action }: Props) {
   const editing = study.id > 0;
   const [tab, setTab] = useState<Tab>(editing ? "content" : "details");
   const studyAuthor = "author" in study && typeof study.author === "string" ? study.author : "";
@@ -183,7 +184,7 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
         <Field label="Scope"><input name="scope" defaultValue={study.scope} placeholder="Research, product strategy, interaction design" className={adminStyles.input} /></Field>
         <Field label="Team"><input name="team" defaultValue={study.team} placeholder="Product, design and engineering" className={adminStyles.input} /></Field>
         <Field label="Published date"><input type="date" name="published_at" defaultValue={dateInputValue(publishedDate)} className={adminStyles.input} /></Field>
-        <TagEditor initialValue={study.tags} onCommit={markUnsaved} />
+        <TagEditor initialValue={study.tags} existingTags={existingTags} onCommit={markUnsaved} />
       </section>
 
       <section id="case-study-panel-outcomes" role="tabpanel" aria-labelledby="case-study-tab-outcomes" hidden={tab !== "outcomes"} className={styles.panel} aria-label="Case study outcomes">
@@ -293,7 +294,7 @@ function CategoryCards({ categories, selectedIds }: { categories: CategoryOption
   return <div className={adminStyles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Categories</span><input type="hidden" name="categories_present" value="1" />{selected.map((id) => <input key={id} type="hidden" name="category_ids" value={id} />)}<div className={styles.categoryCards} role="group" aria-label="Case study categories">{categories.map((category) => <button key={category.id} type="button" className={selected.includes(category.id) ? styles.categoryCardActive : styles.categoryCard} aria-pressed={selected.includes(category.id)} onClick={() => setSelected((current) => current.includes(category.id) ? current.filter((id) => id !== category.id) : [...current, category.id])}><strong>{category.name}</strong></button>)}</div><p className="body-small">Select all that apply. The first selected category is shown as the primary label. <Link href="/admin/categories">Manage categories</Link></p></div>;
 }
 
-function TagEditor({ initialValue, onCommit }: { initialValue: string; onCommit: () => void }) {
+function TagEditor({ initialValue, existingTags, onCommit }: { initialValue: string; existingTags: string[]; onCommit: () => void }) {
   const [tags, setTags] = useState(() => initialValue.split(/[,;\n|*·]+/).map((tag) => tag.trim()).filter(Boolean));
   const [draft, setDraft] = useState("");
   const addTags = () => {
@@ -304,7 +305,7 @@ function TagEditor({ initialValue, onCommit }: { initialValue: string; onCommit:
     onCommit();
   };
   const removeTag = (tagToRemove: string) => { setTags((current) => current.filter((tag) => tag !== tagToRemove)); onCommit(); };
-  return <div className={adminStyles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Tags</span><input type="hidden" name="tags" value={tags.join(" · ")} /><div className={styles.tagComposer}><input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addTags(); } }} placeholder="Add one tag or paste several separated by commas" className={adminStyles.input} /><button type="button" className={styles.addTagButton} onClick={addTags}>Add tags</button></div><div className={styles.tagList} aria-label="Added tags">{tags.map((tag) => <span className={styles.tag} key={tag}>{tag}<button type="button" aria-label={`Remove ${tag}`} onClick={() => removeTag(tag)}><AdminIcon name="action-close" /></button></span>)}</div><small className={styles.tagHint}>Only tags shown here are published. Separate multiple tags with commas, semicolons, or new lines.</small></div>;
+  return <div className={adminStyles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Tags</span><input type="hidden" name="tags" value={tags.join(" · ")} /><div className={styles.tagComposer}><input aria-label="Add tags" value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addTags(); } }} placeholder="Add one tag or paste several separated by commas" className={adminStyles.input} /><button type="button" className={styles.addTagButton} onClick={addTags}>Add tags</button></div><TagSuggestions draft={draft} existingTags={existingTags} selectedTags={tags} onSelect={(tag) => { setTags((current) => [...current, tag]); setDraft(""); onCommit(); }} /><div className={styles.tagList} aria-label="Added tags">{tags.map((tag) => <span className={styles.tag} key={tag}>{tag}<button type="button" aria-label={`Remove ${tag}`} onClick={() => removeTag(tag)}><AdminIcon name="action-close" /></button></span>)}</div><small className={styles.tagHint}>Only tags shown here are published. Separate multiple tags with commas, semicolons, or new lines.</small></div>;
 }
 
 function PasswordManager({ passwordEntries, onCommit }: { passwordEntries: PasswordEntry[]; onCommit: () => void }) {

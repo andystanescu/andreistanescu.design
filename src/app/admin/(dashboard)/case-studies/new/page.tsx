@@ -1,3 +1,4 @@
+import { getExistingTags } from "@/lib/existingTags";
 import { CaseStudyEditor } from "@/components/admin/CaseStudyEditor/CaseStudyEditor";
 import { getCategories } from "@/lib/categories";
 import { getSettings } from "@/lib/settings";
@@ -24,6 +25,7 @@ export default async function NewCaseStudyPage({
   return <>
     {error && <p style={{ color: "var(--border-error)" }}>{error}</p>}
     <CaseStudyEditor
+      existingTags={getExistingTags()}
       study={blankStudy}
       metrics={[]}
       assessment={assessment}
