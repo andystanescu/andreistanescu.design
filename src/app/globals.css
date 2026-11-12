@@ -149,9 +149,9 @@
   --space-1600: 128px;
 
   /* Font families */
-  --font-family-heading: var(--font-heading), "IBM Plex Sans", sans-serif;
-  --font-family-body: var(--font-body), "Inter", sans-serif;
-  --font-family-mono: var(--font-mono), "IBM Plex Mono", monospace;
+  --font-family-heading: "IBM Plex Sans", sans-serif;
+  --font-family-body: "Inter", sans-serif;
+  --font-family-mono: "IBM Plex Mono", monospace;
 }
 
 html:has([data-navigation-style="masthead"]) { --nav-height: 136px; }

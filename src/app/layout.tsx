@@ -1,28 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans, IBM_Plex_Mono, Inter } from "next/font/google";
 import { ScrollToTop } from "@/components/ScrollToTop/ScrollToTop";
 import { PageTransition } from "@/components/PageTransition/PageTransition";
 import { EngagementTracker } from "@/components/EngagementTracker/EngagementTracker";
 import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
-
-const ibmPlexSans = IBM_Plex_Sans({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["500", "600"],
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["500"],
-});
-
-const inter = Inter({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -43,9 +24,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${inter.variable}`}
     >
-      <head><link rel="stylesheet" href="/api/site-theme" /></head>
+      <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&amp;family=IBM+Plex+Sans:wght@500;600&amp;family=Inter:wght@400;500&amp;display=swap" />
+        <link rel="stylesheet" href="/api/site-theme" />
+      </head>
       <body>
         <script dangerouslySetInnerHTML={{ __html: `try{const theme=localStorage.getItem("conscept-theme");if(theme==="light"||theme==="dark"){document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme}}catch{}` }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
