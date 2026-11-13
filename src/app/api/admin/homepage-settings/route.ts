@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { relativeRedirect } from "@/lib/relativeRedirect";
-import { getSettings, updateSettings } from "@/lib/settings";
+import { updateSettings } from "@/lib/settings";
 import { getSection, updateSection } from "@/lib/homepage";
 
 function formText(form: FormData, name: string, fallback = "") {
@@ -10,7 +10,6 @@ function formText(form: FormData, name: string, fallback = "") {
 
 export async function POST(request: NextRequest) {
   const form = await request.formData();
-  const identity = getSettings().logo_identity;
   const metaTitle = formText(form, "meta_title");
   const metaDescription = formText(form, "meta_description");
   if (form.get("return_tab") === "ctas") {
@@ -31,8 +30,9 @@ export async function POST(request: NextRequest) {
   }
 
   updateSettings({
-    [identity === "personal" ? "homepage_meta_title_personal" : "homepage_meta_title_business"]: metaTitle,
-    [identity === "personal" ? "homepage_meta_description_personal" : "homepage_meta_description_business"]: metaDescription,
+    site_name: formText(form, "site_name"),
+    site_meta_title: metaTitle,
+    site_meta_description: metaDescription,
     homepage_meta_keywords: formText(form, "meta_keywords"),
     homepage_canonical_url: formText(form, "canonical_url"),
     homepage_no_index: form.get("no_index") === "on" ? "1" : "0",

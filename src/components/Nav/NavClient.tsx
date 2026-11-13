@@ -153,7 +153,7 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
 
   if (navigationStyle === "floating-rail") {
     return <header data-navigation-style="floating-rail" className={`${styles.floatingRail} ${readingNavHidden ? styles.floatingRailHidden : ""}`}>
-      <Link className={styles.railBrand} href="/" aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`}><LogoIcon identity={logoIdentity} imageUrl={logoIconImage} /></Link>
+      <Link className={styles.railBrand} href="/" aria-label="Home"><LogoIcon identity={logoIdentity} imageUrl={logoIconImage} /></Link>
       <nav className={styles.railLinks} aria-label="Primary">{links.map((link) => <Link key={link.href} href={link.href} aria-label={link.label} aria-current={isActive(link.href) ? "page" : undefined}><NavigationIcon page={link.href} custom /><span>{link.label}</span></Link>)}</nav>
       <div className={styles.railTheme}><span className={styles.railDesktopTheme}><ThemeSwitch /></span><span className={styles.railMobileTheme}><ThemeSwitch compact /></span></div>
     </header>;
@@ -163,7 +163,7 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
     return <header data-navigation-style="menu-first" className={`${styles.menuFirst} ${readingNavHidden && !menuOpen ? styles.menuFirstHidden : ""}`}>
       <div ref={overlayRef} role={menuOpen ? "dialog" : undefined} aria-modal={menuOpen ? true : undefined} aria-label={menuOpen ? "Navigation menu" : undefined} className={styles.menuFirstLayout}>
         <div className={styles.menuFirstBar}>
-          <Link href="/" onClick={closeMenu} aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`}><Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} /></Link>
+          <Link href="/" onClick={closeMenu} aria-label="Home"><Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} /></Link>
           <div className={styles.menuFirstControls}>
             <div className={styles.menuFirstDesktopTheme}><ThemeSwitch horizontal /></div>
             <button ref={menuToggleRef} className={styles.menuFirstToggle} type="button" aria-expanded={menuOpen} aria-controls="menu-first-panel" onClick={() => setMenuOpen((open) => !open)}>{menuOpen ? "Close" : "Menu"}<span aria-hidden="true">{menuOpen ? "×" : "☰"}</span></button>
@@ -181,7 +181,7 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
   if (navigationStyle === "islands") {
     return <header data-navigation-style="islands" className={styles.islands}>
       <div className={styles.islandsInner}>
-        <Link className={styles.islandsBrand} href="/" aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`}><Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} /></Link>
+        <Link className={styles.islandsBrand} href="/" aria-label="Home"><Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} /></Link>
         <div className={`${styles.islandsDock} ${readingNavHidden ? styles.islandsDockHidden : ""}`}>
           <nav className={styles.islandsLinks} aria-label="Primary">{links.map((link) => <Link key={link.href} href={link.href} aria-label={link.label} aria-current={isActive(link.href) ? "page" : undefined} className={isActive(link.href) ? styles.islandsActive : undefined}><span className={styles.islandsIcon}><NavigationIcon page={link.href} custom /></span><span className={styles.islandsLabel}>{link.label}</span></Link>)}</nav>
           {!isContactPage && <div className={styles.islandsMobileAction}><Button href="/contact">Let&apos;s talk</Button></div>}
@@ -195,7 +195,7 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
     return <header data-navigation-style="masthead" data-masthead-collapsed={mastheadCollapsed || undefined} className={`${styles.masthead} ${readingNavHidden ? styles.mastheadReadingHidden : ""}`}>
       <div className={styles.mastheadBrandRow}>
         <div className={styles.mastheadTheme}><ThemeSwitch horizontal /></div>
-        <Link className={styles.mastheadLogo} href="/" aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`}><Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} /></Link>
+        <Link className={styles.mastheadLogo} href="/" aria-label="Home"><Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} /></Link>
         <div className={styles.mastheadAction}>{!isContactPage && <Button href="/contact" icon={<ArrowIcon size={16} />}>Let&apos;s talk</Button>}</div>
       </div>
       <nav className={styles.mastheadLinks} aria-label="Primary">{links.map((link) => <Link key={link.href} href={link.href} aria-current={isActive(link.href) ? "page" : undefined} className={isActive(link.href) ? styles.mastheadActive : undefined}>{link.label}</Link>)}</nav>
@@ -240,7 +240,7 @@ export function NavClient({ links, logoIdentity, logoImage, logoIconImage, navig
         className={`${styles.navOuter} ${scrolled ? styles.scrolled : ""} ${readingNavHidden && !menuOpen ? styles.readingNavHidden : ""}`}
       >
         <div className={`container ${styles.nav} ${logoIdentity === "personal" ? styles.personal : ""}`}>
-          <Link href="/" aria-label={`${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} home`} onClick={closeMenu}>
+          <Link href="/" aria-label="Home" onClick={closeMenu}>
             <Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} />
           </Link>
           <div className={styles.right}>

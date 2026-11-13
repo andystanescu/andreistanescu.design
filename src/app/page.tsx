@@ -8,10 +8,18 @@ import { LatestInsights } from "@/components/home/LatestInsights/LatestInsights"
 import { Footer } from "@/components/Footer/Footer";
 import { getSectionOrder } from "@/lib/homepage";
 import styles from "./page.module.css";
+import type { Metadata } from "next";
+import { getSettings } from "@/lib/settings";
+import { contentMetadata } from "@/lib/seo";
 
 // Case studies and insights now come from the database (editable via
 // /admin), so this can't be statically generated at build time.
 export const dynamic = "force-dynamic";
+
+export function generateMetadata(): Metadata {
+  const settings = getSettings();
+  return contentMetadata({ title: settings.site_meta_title, description: settings.site_meta_description, path: "/", keywords: settings.homepage_meta_keywords, canonicalUrl: settings.homepage_canonical_url || undefined, noIndex: settings.homepage_no_index === "1" });
+}
 
 const SECTION_COMPONENTS: Record<string, ComponentType> = {
   services: Services,

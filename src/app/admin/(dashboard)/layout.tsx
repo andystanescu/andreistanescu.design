@@ -11,7 +11,7 @@ export default function AdminDashboardLayout({
   const settings = getSettings();
   return (
     <div className={styles.shell} data-admin-shell>
-      <AdminSidebar logoIdentity={settings.logo_identity} />
+      <AdminSidebar logoIdentity={settings.logo_identity} logoImage={settings.logo_image} logoIconImage={settings.logo_icon_image} />
       <main className={styles.content} data-scroll-region data-page-transition-content>{children}</main>
     </div>
   );

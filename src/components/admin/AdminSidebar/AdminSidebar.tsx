@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { Logo } from "@/components/Logo/Logo";
+import { LogoIcon } from "@/components/Logo/LogoIcon";
 import { AdminNav } from "@/components/admin/AdminNav/AdminNav";
 import { ViewSiteLink } from "@/components/admin/ViewSiteLink/ViewSiteLink";
 import styles from "@/app/admin/(dashboard)/dashboard.module.css";
 
-export function AdminSidebar({ logoIdentity }: { logoIdentity: "business" | "personal" }) {
+export function AdminSidebar({ logoIdentity, logoImage, logoIconImage }: { logoIdentity: "business" | "personal"; logoImage: string; logoIconImage: string }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const drawerRef = useRef<HTMLElement>(null);
@@ -119,7 +120,7 @@ export function AdminSidebar({ logoIdentity }: { logoIdentity: "business" | "per
       >
       <div className={styles.sidebarTop}>
         <div className={styles.brand}>
-          <div className={styles.brandLogo}><Logo variant="compact" identity={logoIdentity} /></div>
+          <div className={styles.brandLogo}>{collapsed && !mobileOpen ? logoIconImage ? <LogoIcon identity={logoIdentity} imageUrl={logoIconImage} /> : <span aria-label="Admin">A</span> : <Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} />}</div>
           <p className={`${styles.brandLabel} label-eyebrow`} style={{ color: "var(--text-accent)" }}>
             admin
           </p>

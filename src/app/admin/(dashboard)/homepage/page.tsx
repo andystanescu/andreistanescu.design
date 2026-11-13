@@ -1,4 +1,5 @@
 import { getAllSections } from "@/lib/homepage";
+import Link from "next/link";
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { getSettings } from "@/lib/settings";
 import { Hero } from "@/components/home/Hero/Hero";
@@ -81,8 +82,10 @@ export default async function AdminHomepagePage({
             <div className={styles.panelHeader}><h2 className="heading-03">Homepage metadata and SEO</h2></div>
             <form className={styles.form} action="/api/admin/homepage-settings" method="POST">
               <input type="hidden" name="return_tab" value="metadata" />
+              <p className="body-small">The site name, title, description and keywords are defaults for the site. Page-specific metadata takes precedence. The canonical URL and indexing setting apply only to the homepage.</p>
+              <label className={styles.field}><span className="label-small">Site name</span><input name="site_name" defaultValue={settings.site_name} maxLength={120} required className={styles.input} /><small className="body-small">Used to identify the website in structured data.</small></label>
               <MetadataFields homepage values={{ meta_title: settings.homepage_meta_title, meta_description: settings.homepage_meta_description, meta_keywords: settings.homepage_meta_keywords, canonical_url: settings.homepage_canonical_url, no_index: settings.homepage_no_index === "1" ? 1 : 0 }} />
-              <div className={styles.formActions}><a href="/admin/homepage" className={styles.tertiaryButton}>Cancel</a><button type="submit" className={styles.submit}><span className="label-button">Save homepage metadata</span></button></div>
+              <div className={styles.formActions}><Link href="/admin/homepage" className={styles.tertiaryButton}>Cancel</Link><button type="submit" className={styles.submit}><span className="label-button">Save homepage metadata</span></button></div>
             </form>
           </section>,
         },

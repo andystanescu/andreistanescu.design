@@ -59,7 +59,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const study = getCaseStudyBySlug(slug);
   if (!study) return {};
-  return contentMetadata({ title: study.meta_title || `${study.title} | Andrei Stanescu`, description: study.meta_description || study.description, path: `/work/${encodeURIComponent(study.slug)}`, image: study.og_image || study.thumbnail_image || study.cover_image, keywords: study.meta_keywords, canonicalUrl: study.canonical_url || undefined, noIndex: Boolean(study.password_required) || Boolean(study.no_index) });
+  const defaults = getSettings();
+  return contentMetadata({ title: study.meta_title || defaults.site_meta_title, description: study.meta_description || defaults.site_meta_description, path: `/work/${encodeURIComponent(study.slug)}`, image: study.og_image || study.thumbnail_image || study.cover_image, keywords: study.meta_keywords, canonicalUrl: study.canonical_url || undefined, noIndex: Boolean(study.password_required) || Boolean(study.no_index) });
 }
 
 export default async function CaseStudyDetailPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams?: Promise<{ accessError?: string; preview?: string }> }) {

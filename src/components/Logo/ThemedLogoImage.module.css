@@ -1,0 +1,7 @@
+.dark { display: none !important; }
+:global(html[data-theme="dark"]) .light { display: none !important; }
+:global(html[data-theme="dark"]) .dark { display: block !important; }
+@media (prefers-color-scheme: dark) {
+  :global(html:not([data-theme="light"])) .light { display: none !important; }
+  :global(html:not([data-theme="light"])) .dark { display: block !important; }
+}

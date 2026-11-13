@@ -3,6 +3,9 @@ import { persistDefaultTheme, persistPublishedTheme } from "@/lib/themePersisten
 
 export type SettingsMap = {
   author_name: string;
+  site_name: string;
+  site_meta_title: string;
+  site_meta_description: string;
   logo_identity: "business" | "personal";
   navigation_style: "default" | "masthead" | "islands" | "menu-first" | "floating-rail";
   work_outcome_title: string;
@@ -40,6 +43,8 @@ export type SettingsMap = {
   footer_copyright: string;
   logo_image: string;
   logo_icon_image: string;
+  logo_color_mapping: string;
+  logo_icon_color_mapping: string;
   logo_image_footer: string;
   theme_primary_500: string;
   theme_secondary_500: string;
@@ -63,6 +68,9 @@ export type SettingsMap = {
 
 const KEYS: (keyof SettingsMap)[] = [
   "author_name",
+  "site_name",
+  "site_meta_title",
+  "site_meta_description",
   "logo_identity",
   "navigation_style",
   "work_outcome_title",
@@ -100,6 +108,8 @@ const KEYS: (keyof SettingsMap)[] = [
   "footer_copyright",
   "logo_image",
   "logo_icon_image",
+  "logo_color_mapping",
+  "logo_icon_color_mapping",
   "logo_image_footer",
   "theme_primary_500",
   "theme_secondary_500",
@@ -128,12 +138,20 @@ export function getSettings(): SettingsMap {
   }[];
   const map = Object.fromEntries(rows.map((r) => [r.key, r.value]));
   const logoIdentity = map.logo_identity === "personal" ? "personal" : "business";
+  const siteName = map.site_name?.trim() || map.author_name?.trim() || "Andrei Stanescu";
+  const legacyHomepageTitle = logoIdentity === "personal" ? map.homepage_meta_title_personal : map.homepage_meta_title_business || map.homepage_meta_title;
+  const legacyHomepageDescription = logoIdentity === "personal" ? map.homepage_meta_description_personal : map.homepage_meta_description_business || map.homepage_meta_description;
+  const siteMetaTitle = map.site_meta_title?.trim() || legacyHomepageTitle?.trim() || siteName;
+  const siteMetaDescription = map.site_meta_description?.trim() || legacyHomepageDescription?.trim() || "Design systems, product architecture and thoughtful ways of working.";
   const businessMetaTitle = map.homepage_meta_title_business || map.homepage_meta_title || "ConScept — Design systems, product architecture, AI-enabled design operations";
   const businessMetaDescription = map.homepage_meta_description_business || map.homepage_meta_description || "ConScept helps growing technology companies build the systems behind their products: design system architecture, product architecture, and AI-enabled design operations.";
   const personalMetaTitle = map.homepage_meta_title_personal || "Andrei Stanescu — Product, design and systems thinking";
   const personalMetaDescription = map.homepage_meta_description_personal || "Andrei Stanescu helps teams make better product decisions through design systems, product architecture and thoughtful ways of working.";
   return {
     author_name: map.author_name ?? "Andrei Stanescu",
+    site_name: siteName,
+    site_meta_title: siteMetaTitle,
+    site_meta_description: siteMetaDescription,
     logo_identity: logoIdentity,
     navigation_style: map.navigation_style === "masthead" || map.navigation_style === "islands" || map.navigation_style === "menu-first" || map.navigation_style === "floating-rail" ? map.navigation_style : "default",
     work_outcome_title: map.work_outcome_title ?? "Better systems make better work repeatable.",
@@ -171,6 +189,8 @@ export function getSettings(): SettingsMap {
     footer_copyright: map.footer_copyright ?? `${logoIdentity === "personal" ? "Andrei Stanescu" : "ConScept"} 2026`,
     logo_image: map.logo_image ?? "",
     logo_icon_image: map.logo_icon_image ?? "",
+    logo_color_mapping: map.logo_color_mapping ?? "{}",
+    logo_icon_color_mapping: map.logo_icon_color_mapping ?? "{}",
     theme_primary_500: map.theme_primary_500 ?? "#11161F",
     theme_secondary_500: map.theme_secondary_500 ?? "#3E4650",
     theme_accent_500: map.theme_accent_500 ?? "#E8441C",
@@ -182,8 +202,8 @@ export function getSettings(): SettingsMap {
     logo_image_footer: map.logo_image_footer || map.logo_image || "",
     about_hero_image: map.about_hero_image ?? "",
     about_cv: map.about_cv ?? "",
-    homepage_meta_title: logoIdentity === "personal" ? personalMetaTitle : businessMetaTitle,
-    homepage_meta_description: logoIdentity === "personal" ? personalMetaDescription : businessMetaDescription,
+    homepage_meta_title: siteMetaTitle,
+    homepage_meta_description: siteMetaDescription,
     homepage_meta_title_business: businessMetaTitle,
     homepage_meta_description_business: businessMetaDescription,
     homepage_meta_title_personal: personalMetaTitle,

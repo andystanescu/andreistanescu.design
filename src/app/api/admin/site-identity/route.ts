@@ -3,6 +3,7 @@ import { relativeRedirect } from "@/lib/relativeRedirect";
 import { getSettings, publishThemeConfiguration, resetThemeConfiguration, updateSettings } from "@/lib/settings";
 import { createPublishedTheme, DEFAULT_PALETTE_ANCHORS, isHexColor, parseThemeOverrides, type PaletteAnchors } from "@/lib/themePalette";
 import { saveUploadedImage, UploadError } from "@/lib/uploads";
+import { parseLogoColorMapping } from "@/lib/logoColors";
 
 const LOGO_TYPES = new Set(["image/svg+xml", "image/png"]);
 
@@ -16,25 +17,27 @@ export async function POST(request: NextRequest) {
 
   if (formType === "branding") {
     const current = getSettings();
-    const removeLogo = form.get("remove_logo") === "on";
-    const removeIcon = form.get("remove_logo_icon") === "on";
     const fullLogoFile = form.get("logo_image");
     const iconFile = form.get("logo_icon_image");
-    let logoImage = removeLogo ? "" : current.logo_image;
-    let logoIconImage = removeIcon ? "" : current.logo_icon_image;
+    let logoImage = current.logo_image;
+    let logoIconImage = current.logo_icon_image;
     for (const [file, name] of [[fullLogoFile, "full logo"], [iconFile, "icon"]] as const) {
       if (file instanceof File && file.size > 0 && !LOGO_TYPES.has(file.type)) {
         return redirectError(`Upload a PNG or SVG ${name}.`);
       }
     }
     try {
-      if (fullLogoFile instanceof File && fullLogoFile.size > 0 && !removeLogo) logoImage = await saveUploadedImage(fullLogoFile);
-      if (iconFile instanceof File && iconFile.size > 0 && !removeIcon) logoIconImage = await saveUploadedImage(iconFile);
+      if (fullLogoFile instanceof File && fullLogoFile.size > 0) logoImage = await saveUploadedImage(fullLogoFile);
+      if (iconFile instanceof File && iconFile.size > 0) logoIconImage = await saveUploadedImage(iconFile);
     } catch (error) {
       const message = error instanceof UploadError ? error.message : "The logo files could not be uploaded.";
       return redirectError(message);
     }
-    updateSettings({ logo_image: logoImage, logo_icon_image: logoIconImage });
+    updateSettings({
+      logo_image: logoImage, logo_icon_image: logoIconImage,
+      logo_color_mapping: !logoImage.toLowerCase().endsWith(".svg") ? "{}" : JSON.stringify(parseLogoColorMapping(String(form.get("logo_color_mapping") ?? current.logo_color_mapping))),
+      logo_icon_color_mapping: !logoIconImage.toLowerCase().endsWith(".svg") ? "{}" : JSON.stringify(parseLogoColorMapping(String(form.get("logo_icon_color_mapping") ?? current.logo_icon_color_mapping))),
+    });
     return relativeRedirect("/admin/site-identity?saved=branding");
   }
 

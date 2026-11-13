@@ -390,7 +390,7 @@ addColumnIfMissing("about_sections", "visible", "visible INTEGER NOT NULL DEFAUL
 addColumnIfMissing("about_sections", "cta_label", "cta_label TEXT NOT NULL DEFAULT ''");
 
 const DEFAULT_SETTINGS: Record<string, string> = {
-  logo_identity: "personal",
+  logo_identity: "business",
   work_outcome_title: "Better systems make better work repeatable.",
   work_outcome_body: "Clarity compounds: decisions become easier, teams move with more confidence and products improve over time.",
   confirmation_title: "Thanks — message received.",

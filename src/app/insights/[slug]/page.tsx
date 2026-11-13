@@ -19,6 +19,7 @@ import { getRelatedReadingReferences } from "@/lib/interactiveBlocks";
 import { RelatedReadingList } from "@/components/RelatedReadingList/RelatedReadingList";
 import { resolveRelatedReadings } from "@/lib/relatedReadings";
 import { ArticleHero } from "@/components/insights/ArticleHero/ArticleHero";
+import { getSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const insight = getInsightBySlug(slug);
   if (!insight) return {};
-  return contentMetadata({ title: insight.meta_title || `${insight.title} | Andrei Stanescu`, description: insight.meta_description || insight.excerpt, path: `/insights/${encodeURIComponent(insight.slug)}`, image: insight.og_image || insight.thumbnail_image || insight.cover_image, keywords: insight.meta_keywords, canonicalUrl: insight.canonical_url || undefined, noIndex: Boolean(insight.no_index) });
+  const defaults = getSettings();
+  return contentMetadata({ title: insight.meta_title || defaults.site_meta_title, description: insight.meta_description || defaults.site_meta_description, path: `/insights/${encodeURIComponent(insight.slug)}`, image: insight.og_image || insight.thumbnail_image || insight.cover_image, keywords: insight.meta_keywords, canonicalUrl: insight.canonical_url || undefined, noIndex: Boolean(insight.no_index) });
 }
 
 export default async function InsightDetailPage({

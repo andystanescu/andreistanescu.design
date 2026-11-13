@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { ThemedLogoImage } from "./ThemedLogoImage";
 import styles from "./Logo.module.css";
 import { PersonalLogoMark } from "./PersonalLogoMark";
 
@@ -22,7 +22,7 @@ export function Logo({ variant = "compact", theme = "default", identity = "busin
   const canSwapNavIcon = variant === "compact" && theme === "default" && identity === "business";
 
   if (imageUrl) {
-    return <span className={`${styles.logo} ${variant === "primary" ? styles.primary : ""}`}><Image className={styles.logoImage} src={imageUrl} alt={identity === "personal" ? "Andrei Stanescu" : "ConScept"} width={variant === "primary" ? 260 : 180} height={variant === "primary" ? 48 : 32} unoptimized /></span>;
+    return <span className={`${styles.logo} ${variant === "primary" ? styles.primary : ""}`}><ThemedLogoImage variant="full" forceDark={theme === "inverted"} className={styles.logoImage} src={imageUrl} alt="Site logo" width={variant === "primary" ? 260 : 180} height={variant === "primary" ? 48 : 32} /></span>;
   }
 
   if (identity === "personal") {

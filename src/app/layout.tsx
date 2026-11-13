@@ -1,17 +1,21 @@
 import type { Metadata, Viewport } from "next";
+import { createHash } from "node:crypto";
 import { ScrollToTop } from "@/components/ScrollToTop/ScrollToTop";
 import { PageTransition } from "@/components/PageTransition/PageTransition";
 import { EngagementTracker } from "@/components/EngagementTracker/EngagementTracker";
+import { FaviconTheme } from "@/components/Logo/FaviconTheme";
 import { SITE_URL } from "@/lib/seo";
+import { getSettings } from "@/lib/settings";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: "ConScept — Design systems, product architecture, AI-enabled design operations",
-  description:
-    "ConScept helps growing technology companies build the systems behind their products: design system architecture, product architecture, and AI-enabled design operations.",
-  icons: { icon: "/api/site-icon" },
-};
+export const dynamic = "force-dynamic";
+
+export function generateMetadata(): Metadata {
+  const settings = getSettings();
+  const revision = createHash("sha256").update([settings.logo_icon_image, settings.logo_icon_color_mapping, settings.theme_config, settings.theme_primary_500, settings.theme_secondary_500, settings.theme_accent_500, settings.theme_neutral_500].join("|")).digest("hex").slice(0, 12);
+  const iconType = /\.svg$/i.test(settings.logo_icon_image) ? "image/svg+xml" : /\.png$/i.test(settings.logo_icon_image) ? "image/png" : "image/x-icon";
+  return { metadataBase: new URL(SITE_URL), title: settings.site_meta_title, description: settings.site_meta_description, keywords: settings.homepage_meta_keywords || undefined, applicationName: settings.site_name, openGraph: { siteName: settings.site_name }, icons: settings.logo_icon_image ? { icon: [{ url: `/api/site-icon?v=${revision}`, type: iconType, ...(iconType === "image/svg+xml" ? { sizes: "any" } : {}) }] } : undefined };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -20,6 +24,7 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const settings = getSettings();
   return (
     <html
       lang="en"
@@ -32,10 +37,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <script dangerouslySetInnerHTML={{ __html: `try{const theme=localStorage.getItem("conscept-theme");if(theme==="light"||theme==="dark"){document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme}}catch{}` }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-          "@context": "https://schema.org", "@type": "WebSite", name: "Andrei Stanescu", url: SITE_URL,
-          description: "Design systems, product architecture and AI-enabled design operations.",
-        }) }} />
+          "@context": "https://schema.org", "@type": "WebSite", name: settings.site_name, url: SITE_URL,
+          description: settings.site_meta_description,
+        }).replace(/</g, "\\u003c") }} />
         <ScrollToTop />
+        <FaviconTheme />
         <EngagementTracker />
         <PageTransition>{children}</PageTransition>
       </body>

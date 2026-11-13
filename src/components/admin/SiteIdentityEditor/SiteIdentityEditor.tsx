@@ -4,10 +4,10 @@ import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent, type 
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import Image from "next/image";
 import { Logo } from "@/components/Logo/Logo";
-import { PersonalLogoMark } from "@/components/Logo/PersonalLogoMark";
 import { DEFAULT_PALETTE_ANCHORS, EDITABLE_THEME_GROUPS, generateThemePalette, isHexColor, resolveTheme, THEME_TONES, type PaletteAnchors, type ThemeOverrides, type ThemeTone } from "@/lib/themePalette";
 import adminStyles from "@/app/admin/(dashboard)/admin.module.css";
 import styles from "./SiteIdentityEditor.module.css";
+import { LogoColorEditor } from "./LogoColorEditor";
 
 type ThemeColors = {
   theme_primary_500: string;
@@ -42,6 +42,8 @@ export function SiteIdentityEditor({
   logoImage,
   logoIconImage,
   logoIdentity,
+  logoColorMapping,
+  iconColorMapping,
   colors: initialColors,
   overrides: initialOverrides,
   saved,
@@ -50,6 +52,8 @@ export function SiteIdentityEditor({
   logoImage: string;
   logoIconImage: string;
   logoIdentity: "business" | "personal";
+  logoColorMapping: string;
+  iconColorMapping: string;
   colors: ThemeColors;
   overrides?: ThemeOverrides;
   saved: string;
@@ -62,14 +66,15 @@ export function SiteIdentityEditor({
   const lastValidColors = useRef(initialColors);
   const [logoPreview, setLogoPreview] = useState(logoImage);
   const [iconPreview, setIconPreview] = useState(logoIconImage);
+  const [logoIsSvg, setLogoIsSvg] = useState(/\.svg(?:\?|$)/i.test(logoImage));
+  const [iconIsSvg, setIconIsSvg] = useState(/\.svg(?:\?|$)/i.test(logoIconImage));
   const [logoObjectUrl, setLogoObjectUrl] = useState("");
   const [iconObjectUrl, setIconObjectUrl] = useState("");
-  const [removeLogo, setRemoveLogo] = useState(false);
-  const [removeIcon, setRemoveIcon] = useState(false);
   const colorsValid = ROLES.every(({ key }) => isHexColor(colors[key]));
   const overridesValid = Object.values(overrides).every((mode) => Object.values(mode).every(isHexColor));
   const resolution = useMemo(() => colorsValid && overridesValid ? resolveTheme(resolveAnchors(colors), overrides) : null, [colors, colorsValid, overrides, overridesValid]);
   const automatic = useMemo(() => colorsValid ? resolveTheme(resolveAnchors(colors)) : null, [colors, colorsValid]);
+  const publishedLogoTheme = useMemo(() => resolveTheme(resolveAnchors(initialColors), initialOverrides), [initialColors, initialOverrides]);
 
   function updateOverride(token: string, value?: string) {
     setOverrides((current) => {
@@ -86,12 +91,12 @@ export function SiteIdentityEditor({
 
   function handleLogoChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
+    setLogoIsSvg(file ? file.type === "image/svg+xml" : /\.svg(?:\?|$)/i.test(logoImage));
     if (logoObjectUrl) URL.revokeObjectURL(logoObjectUrl);
     if (file) {
       const nextUrl = URL.createObjectURL(file);
       setLogoObjectUrl(nextUrl);
       setLogoPreview(nextUrl);
-      setRemoveLogo(false);
     } else {
       setLogoObjectUrl("");
       setLogoPreview(logoImage);
@@ -100,12 +105,12 @@ export function SiteIdentityEditor({
 
   function handleIconChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
+    setIconIsSvg(file ? file.type === "image/svg+xml" : /\.svg(?:\?|$)/i.test(logoIconImage));
     if (iconObjectUrl) URL.revokeObjectURL(iconObjectUrl);
     if (file) {
       const nextUrl = URL.createObjectURL(file);
       setIconObjectUrl(nextUrl);
       setIconPreview(nextUrl);
-      setRemoveIcon(false);
     } else {
       setIconObjectUrl("");
       setIconPreview(logoIconImage);
@@ -140,30 +145,30 @@ export function SiteIdentityEditor({
           <section className={`${adminStyles.panel} ${styles.identityPanel}`} aria-labelledby="identity-branding">
             <div className={styles.sectionHeading}>
               <div><p className="label-eyebrow">BRANDING</p><h2 id="identity-branding" className="heading-03">Site logos</h2></div>
-              <p className="body-small">Set a full logo for the header and footer, and a separate icon for the favicon. The built-in {logoIdentity === "business" ? "ConScept" : "Andrei Stanescu"} identity stays in place until you upload replacements.</p>
+              <p className="body-small">Set a full logo for the header and footer, and a separate icon for the favicon. Upload a replacement whenever you want to change either image.</p>
             </div>
             <div className={styles.brandingGrid}>
               <div className={styles.logoVariant}>
                 <span className={styles.logoVariantLabel}>Full logo</span>
                 <label className={`${styles.logoPreview} ${styles.fullLogoPreview}`}>
-                  {logoPreview && !removeLogo ? <Image src={logoPreview} alt="Full logo preview" width={340} height={100} unoptimized /> : <Logo variant="primary" identity={logoIdentity} />}
+                  {logoPreview ? <Image src={logoPreview} alt="Full logo preview" width={340} height={100} unoptimized /> : <Logo variant="primary" identity={logoIdentity} />}
                   <input className={styles.logoUpload} type="file" name="logo_image" accept=".png,.svg,image/png,image/svg+xml" onChange={handleLogoChange} aria-label="Upload full logo" aria-describedby="full-logo-help" />
                   <UploadIcon />
                 </label>
                 <span id="full-logo-help" className="body-small">PNG or SVG, up to 8 MB.</span>
-                {logoImage && <label className={styles.removeLogo}><input type="checkbox" name="remove_logo" checked={removeLogo} onChange={(event) => setRemoveLogo(event.target.checked)} /><span>Use the built-in full logo</span></label>}
               </div>
               <div className={styles.logoVariant}>
                 <span className={styles.logoVariantLabel}>Icon only · favicon</span>
                 <label className={`${styles.logoPreview} ${styles.iconLogoPreview}`}>
-                  {iconPreview && !removeIcon ? <Image src={iconPreview} alt="Icon-only logo preview" width={72} height={72} unoptimized /> : logoIdentity === "personal" ? <PersonalLogoMark size={64} /> : <Image src="/assets/logo-icon-nav.svg" alt="" width={64} height={64} unoptimized />}
+                  {iconPreview ? <Image src={iconPreview} alt="Icon-only logo preview" width={72} height={72} unoptimized /> : <span className="body-small">Upload an icon</span>}
                   <input className={styles.logoUpload} type="file" name="logo_icon_image" accept=".png,.svg,image/png,image/svg+xml" onChange={handleIconChange} aria-label="Upload icon" aria-describedby="icon-logo-help" />
                   <UploadIcon />
                 </label>
                 <span id="icon-logo-help" className="body-small">PNG or SVG, up to 8 MB. This also becomes the browser favicon.</span>
-                {logoIconImage && <label className={styles.removeLogo}><input type="checkbox" name="remove_logo_icon" checked={removeIcon} onChange={(event) => setRemoveIcon(event.target.checked)} /><span>Use the built-in icon</span></label>}
               </div>
             </div>
+            <LogoColorEditor label="Full logo" source={logoPreview} isSvg={logoIsSvg} savedSource={logoImage} initialMapping={logoColorMapping} palettes={publishedLogoTheme.palettes} backgrounds={{light: publishedLogoTheme.semantic.light["--bg-canvas"], dark: publishedLogoTheme.semantic.dark["--bg-canvas"]}} field="logo_color_mapping" />
+            <LogoColorEditor label="Icon" source={iconPreview} isSvg={iconIsSvg} savedSource={logoIconImage} initialMapping={iconColorMapping} palettes={publishedLogoTheme.palettes} backgrounds={{light: publishedLogoTheme.semantic.light["--bg-canvas"], dark: publishedLogoTheme.semantic.dark["--bg-canvas"]}} field="logo_icon_color_mapping" />
             <div className={adminStyles.formActions}>
               <button type="submit" className={adminStyles.submit}><span className="label-button">Save branding</span></button>
             </div>
