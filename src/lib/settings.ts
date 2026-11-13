@@ -54,6 +54,8 @@ export type SettingsMap = {
   theme_config: string;
   about_hero_image: string;
   about_cv: string;
+  about_cv_name: string;
+  about_cv_size: string;
   homepage_meta_title: string;
   homepage_meta_description: string;
   homepage_meta_title_business: string;
@@ -119,6 +121,8 @@ const KEYS: (keyof SettingsMap)[] = [
   "theme_config",
   "about_hero_image",
   "about_cv",
+  "about_cv_name",
+  "about_cv_size",
   "homepage_meta_title",
   "homepage_meta_description",
   "homepage_meta_title_business",
@@ -202,6 +206,8 @@ export function getSettings(): SettingsMap {
     logo_image_footer: map.logo_image_footer || map.logo_image || "",
     about_hero_image: map.about_hero_image ?? "",
     about_cv: map.about_cv ?? "",
+    about_cv_name: map.about_cv_name ?? "",
+    about_cv_size: map.about_cv_size ?? "",
     homepage_meta_title: siteMetaTitle,
     homepage_meta_description: siteMetaDescription,
     homepage_meta_title_business: businessMetaTitle,

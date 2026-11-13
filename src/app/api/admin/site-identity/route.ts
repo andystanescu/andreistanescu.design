@@ -15,6 +15,13 @@ export async function POST(request: NextRequest) {
   const form = await request.formData();
   const formType = String(form.get("form_type") ?? "");
 
+  if (formType === "details") {
+    const authorName = String(form.get("author_name") ?? "").trim();
+    if (!authorName || authorName.length > 120) return redirectError("Enter an author name of up to 120 characters.");
+    updateSettings({ author_name: authorName });
+    return relativeRedirect("/admin/site-identity?saved=details");
+  }
+
   if (formType === "branding") {
     const current = getSettings();
     const fullLogoFile = form.get("logo_image");

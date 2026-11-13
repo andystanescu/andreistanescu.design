@@ -25,7 +25,8 @@ const LABELS: Record<string, string> = {
   before_conscept: "Before ConScept",
 };
 
-export default function AdminAboutPage() {
+export default async function AdminAboutPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const { error } = await searchParams;
   const sections = getAllSections();
   const fixedSections = sections.filter((s) => s.fixed);
   const reorderable = sections.filter((s) => !s.fixed);
@@ -37,6 +38,7 @@ export default function AdminAboutPage() {
   return (
     <>
       <AboutAdminHeader active="/admin/about" />
+      {error && <p role="alert" style={{ color: "var(--text-error)" }}>{error}</p>}
       <div className={styles.aboutTabContent}>
         <p className={`body-small ${styles.helper}`}>
           Edit section copy and visibility here, and reorder sections by dragging

@@ -3,12 +3,17 @@ import { db } from "@/lib/db";
 import { readFile } from "fs/promises";
 import { basename, join } from "path";
 import { getUploadsDir } from "@/lib/uploads";
+import { parseTransferSelection, settingTransferGroup, TRANSFER_GROUPS, transferGroupSource, uploadFilenames } from "@/lib/contentTransfer";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const includeAssets = request.nextUrl.searchParams.get("includeAssets") === "1";
-  const caseStudies = db
+  const hasSelection = request.nextUrl.searchParams.has("content");
+  const selected = hasSelection ? parseTransferSelection(request.nextUrl.searchParams.get("content")) : new Set(TRANSFER_GROUPS.map(({ key }) => key));
+  const imageGroups = hasSelection ? parseTransferSelection(request.nextUrl.searchParams.get("images")) : new Set(includeAssets ? selected : []);
+  if (!selected.size) return Response.json({ error: "Select at least one content type." }, { status: 400 });
+  const caseStudies = (db
     .prepare(
       `SELECT slug, eyebrow, title, description, tags, position, published, in_progress,
               body, body_draft, body_draft_enabled, cover_image, thumbnail_image, category, year,
@@ -18,7 +23,10 @@ export async function GET(request: NextRequest) {
               meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index
        FROM case_studies ORDER BY position, id`
     )
-    .all();
+    .all() as Array<Record<string, unknown>>).map((study) => ({
+      ...study,
+      category_names: (db.prepare(`SELECT c.name FROM case_study_categories sc JOIN categories c ON c.id = sc.category_id JOIN case_studies s ON s.id = sc.case_study_id WHERE s.slug = ? ORDER BY sc.position, c.name`).all(study.slug as string) as Array<{ name: string }>).map((category) => category.name),
+    }));
   const insights = db
     .prepare(
       `SELECT slug, title, excerpt, body, published_at, scheduled_at, position, published,
@@ -43,7 +51,8 @@ export async function GET(request: NextRequest) {
      FROM analytics_events ORDER BY created_at, id`
   ).all();
   const configuration = {
-    settings: db.prepare("SELECT key, value FROM settings WHERE key NOT IN ('admin_credentials', 'session_secret') ORDER BY key").all(),
+    categories: db.prepare("SELECT name, description, position FROM categories ORDER BY position, id").all(),
+    settings: db.prepare("SELECT key, value FROM settings WHERE key NOT IN ('admin_credentials', 'session_secret', 'shared_categories_v1') ORDER BY key").all(),
     homepageSections: db.prepare("SELECT * FROM homepage_sections ORDER BY position, key").all(),
     services: db.prepare("SELECT * FROM service_items ORDER BY position, id").all(),
     approachSteps: db.prepare("SELECT * FROM approach_steps ORDER BY position, id").all(),
@@ -58,17 +67,18 @@ export async function GET(request: NextRequest) {
     nav_label: page.nav_label,
     position: page.position,
   }));
+  const pageContent = (pages as Array<Record<string, unknown>>).map((page) => Object.fromEntries(Object.entries(page).filter(([key]) => !["show_in_nav", "visible", "nav_label", "position"].includes(key))));
+  const groupedSettings = (configuration.settings as Array<{ key: string; value: string }>).filter(({ key }) => selected.has(settingTransferGroup(key)));
+  const selectedConfiguration = {
+    settings: groupedSettings,
+    ...(selected.has("services") ? { categories: configuration.categories, services: configuration.services } : {}),
+    ...(selected.has("pages") ? { homepageSections: configuration.homepageSections, approachSteps: configuration.approachSteps, aboutSections: configuration.aboutSections, aboutPhilosophyItems: configuration.aboutPhilosophyItems, aboutHighlightItems: configuration.aboutHighlightItems } : {}),
+  };
 
   let assets: { filename: string; content: string }[] | undefined;
-  if (includeAssets) {
-    const source = JSON.stringify({ caseStudies, insights, pages, experiences, configuration, analyticsEvents });
-    // Gallery blocks URI-encode their JSON payload inside an HTML attribute.
-    // Normalize only the upload-path prefix so their files are discovered by
-    // the same asset collector as ordinary images.
-    const assetSource = source.replace(/%2Fuploads%2F/gi, "/uploads/");
-    const filenames = [...assetSource.matchAll(/\/uploads\/([^"'?#%]+)/g)]
-      .map((match) => basename(match[1]))
-      .filter(Boolean);
+  if (imageGroups.size) {
+    const all = { caseStudies, insights, pages: { pages: pageContent, experiences, settings: groupedSettings.filter(({ key }) => settingTransferGroup(key) === "pages"), homepageSections: configuration.homepageSections, approachSteps: configuration.approachSteps, aboutSections: configuration.aboutSections, aboutPhilosophyItems: configuration.aboutPhilosophyItems, aboutHighlightItems: configuration.aboutHighlightItems }, siteIdentity: groupedSettings.filter(({ key }) => settingTransferGroup(key) === "siteIdentity"), services: configuration.services, siteSettings: groupedSettings.filter(({ key }) => settingTransferGroup(key) === "siteSettings"), analyticsEvents };
+    const filenames = [...imageGroups].filter((key) => selected.has(key)).flatMap((key) => [...uploadFilenames(transferGroupSource(all, key))]).map((name) => basename(name));
     assets = await Promise.all([...new Set(filenames)].map(async (filename) => {
       try {
         const bytes = await readFile(join(getUploadsDir(), filename));
@@ -85,13 +95,12 @@ export async function GET(request: NextRequest) {
         format: "conscept-content",
         version: 1,
         exportedAt: new Date().toISOString(),
-        caseStudies,
-        insights,
-        pages,
-        pageConfiguration,
-        experiences,
-        analyticsEvents,
-        configuration,
+        ...(selected.has("caseStudies") ? { caseStudies } : {}),
+        ...(selected.has("insights") ? { insights } : {}),
+        ...(selected.has("pages") ? { pages: pageContent, experiences } : {}),
+        ...(selected.has("navigation") ? { pageConfiguration } : {}),
+        ...(selected.has("analyticsEvents") ? { analyticsEvents } : {}),
+        ...(selectedConfiguration.settings.length || selected.has("services") || selected.has("pages") ? { configuration: selectedConfiguration } : {}),
         ...(assets ? { assets } : {}),
       },
       null,

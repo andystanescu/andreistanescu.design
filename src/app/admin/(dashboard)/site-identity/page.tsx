@@ -13,9 +13,10 @@ export default async function AdminSiteIdentityPage({ searchParams }: { searchPa
   return <>
     <div className={`${styles.pageHeader} ${styles.pageHeaderStacked}`}>
       <h1 className="heading-01">Site identity</h1>
-      <p className={`body-small ${styles.helper}`}>Manage the visual identity shared across the public site: logo and generated theme palettes.</p>
+      <p className={`body-small ${styles.helper}`}>Manage the author, logos and colours shared across the site.</p>
     </div>
     <SiteIdentityEditor
+      authorName={settings.author_name}
       logoImage={settings.logo_image}
       logoIconImage={settings.logo_icon_image}
       logoIdentity={settings.logo_identity}

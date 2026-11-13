@@ -7,6 +7,7 @@ import { ImageField } from "@/components/admin/ImageField/ImageField";
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import styles from "./InlineSectionCard.module.css";
 import { SectionLivePreview } from "./SectionLivePreview";
+import { CvUpload } from "@/components/admin/CvUpload/CvUpload";
 
 type Props = {
   section: HomepageSection | AboutSection;
@@ -39,6 +40,7 @@ export function InlineSectionCard({ section, label, parent, fixed = false, reord
             <ImageField name="about_hero_image" currentUrl={settings.about_hero_image || undefined} />
             <span className="body-small" style={{ color: "var(--text-tertiary)" }}>Shown beside the copy in Personal mode. If no image is uploaded, the personal logo is used.</span>
           </div>}
+          {aboutHero && settings && <CvUpload currentUrl={settings.about_cv} currentName={settings.about_cv_name} currentSize={settings.about_cv_size} />}
           <label className={adminStyles.field} data-section-copy="headline"><span className="label-small">Headline (wrap a word in #like this# for orange)</span><input name="headline" defaultValue={section.headline} required className={adminStyles.input} /></label>
           <label className={adminStyles.field} data-section-copy="description"><span className="label-small">Description</span><textarea name="description" defaultValue={section.description} className={adminStyles.textarea} /></label>
           {parent === "homepage" && section.key === "hero" && <>

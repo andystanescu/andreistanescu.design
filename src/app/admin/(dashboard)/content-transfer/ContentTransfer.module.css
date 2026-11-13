@@ -1,0 +1,19 @@
+.layout { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-400); margin-top:var(--space-600); }
+.panel { display:flex; flex-direction:column; align-items:flex-start; gap:var(--space-300); padding:var(--space-300); border:1px solid var(--border-subtle); border-radius:var(--radius-md); min-width:0; }
+.panel > div:first-child { display:grid; gap:var(--space-100); }
+.choices { display:grid; gap:var(--space-200); width:100%; padding:0; margin:0; border:0; }
+.choices legend { margin-bottom:var(--space-200); }
+.group { display:grid; border:1px solid var(--border-default); border-radius:var(--radius-md); background:var(--bg-surface); }
+.group.selected { border-color:var(--accent-foundation); }
+.cardOption { display:flex; align-items:center; justify-content:space-between; gap:var(--space-200); padding:var(--space-200); cursor:pointer; }
+.cardOption input { position:absolute; width:1px; height:1px; opacity:0; }
+.cardCopy { display:grid; gap:var(--space-50); }
+.cardDescription { color:var(--text-secondary); }
+.cardOption:has(input:focus-visible) { outline:2px solid var(--focus-ring); outline-offset:2px; border-radius:var(--radius-md); }
+.selectionIndicator { color:var(--accent-foundation); visibility:hidden; }
+.selected .selectionIndicator { visibility:visible; }
+.imageToggle { padding:var(--space-200); border-top:1px solid var(--border-default); cursor:pointer; }
+.fileLabel { display:grid; gap:var(--space-100); width:100%; }
+.fileLabel input { max-width:100%; }
+.status { margin-top:var(--space-300); }
+@media (max-width:767px) { .layout { grid-template-columns:1fr; } }

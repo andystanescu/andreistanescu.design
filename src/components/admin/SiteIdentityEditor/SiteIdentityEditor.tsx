@@ -45,6 +45,7 @@ function resolveAnchors(colors: ThemeColors): PaletteAnchors {
 }
 
 export function SiteIdentityEditor({
+  authorName,
   logoImage,
   logoIconImage,
   logoIdentity,
@@ -55,6 +56,7 @@ export function SiteIdentityEditor({
   saved,
   error,
 }: {
+  authorName: string;
   logoImage: string;
   logoIconImage: string;
   logoIdentity: "business" | "personal";
@@ -142,11 +144,19 @@ export function SiteIdentityEditor({
   }
 
   return <div className={adminStyles.form}>
-    {saved && <p className={styles.statusSuccess} role="status">{saved === "branding" ? "Branding saved." : saved === "reset" ? "The original site theme has been restored." : "Theme published."}</p>}
+    {saved && <p className={styles.statusSuccess} role="status">{saved === "details" ? "Site details saved." : saved === "branding" ? "Branding saved." : saved === "reset" ? "The original site theme has been restored." : "Theme published."}</p>}
     {error && <p className={styles.statusError} role="alert">{error}</p>}
 
     <div className={styles.identityLayout}>
       <div className={styles.controlsColumn}>
+        <form action="/api/admin/site-identity" method="POST">
+          <input type="hidden" name="form_type" value="details" />
+          <section className={`${adminStyles.panel} ${styles.identityPanel}`} aria-labelledby="identity-details">
+            <div className={styles.sectionHeading}><div><p className="label-eyebrow">SITE DETAILS</p><h2 id="identity-details" className="heading-03">Author</h2></div></div>
+            <label className={adminStyles.field}><span className="label-small">Author name</span><input type="text" name="author_name" defaultValue={authorName} maxLength={120} required className={adminStyles.input} /><span className="body-small">Applied to articles and case studies when they are saved.</span></label>
+            <div className={adminStyles.formActions}><button type="submit" className={adminStyles.submit}><span className="label-button">Save site details</span></button></div>
+          </section>
+        </form>
         <form action="/api/admin/site-identity" method="POST" encType="multipart/form-data">
           <input type="hidden" name="form_type" value="branding" />
           <section className={`${adminStyles.panel} ${styles.identityPanel}`} aria-labelledby="identity-branding">

@@ -1,0 +1,12 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon/CV">
+<mask id="stroke0_0_44" fill="white">
+<path d="M6 4H18V20H6V4Z"/>
+</mask>
+<rect id="Rectangle" x="6" y="4" width="12" height="16" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" stroke="#11161F" mask="url(#stroke0_0_44)"/>
+<path id="Vector" d="M9 9H15" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" stroke="#11161F"/>
+<path id="Vector_2" d="M9 12H15" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" stroke="#11161F"/>
+<path id="Vector_3" d="M9 15H13" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" stroke="#11161F"/>
+<circle id="Ellipse" cx="17" cy="6" r="2" fill="#11161F"/>
+</g>
+</svg>

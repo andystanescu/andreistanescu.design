@@ -39,6 +39,13 @@ export async function POST(
   }
 
   updatePage(slug, { eyebrow, title, body, showInNav, navLabel, visible, metaTitle, metaDescription, metaKeywords, canonicalUrl, ogImage, noIndex });
+  if (slug === "contact" && form.has("contact_settings_present")) {
+    updateSettings({
+      contact_email_to: String(form.get("contact_email_to") ?? "").trim(),
+      confirmation_title: String(form.get("confirmation_title") ?? "").trim(),
+      confirmation_body: String(form.get("confirmation_body") ?? "").trim(),
+    });
+  }
   if (slug === "work") {
     updateSettings({
       work_outcome_title: String(form.get("work_outcome_title") ?? "").trim(),

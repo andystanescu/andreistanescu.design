@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
       analyticsEvents?: ContentRecord[];
       assets?: { filename?: string; content?: string }[];
       configuration?: {
+        categories?: ContentRecord[];
         settings?: ContentRecord[];
         homepageSections?: ContentRecord[];
         services?: ContentRecord[];
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
     if (payload.format !== "conscept-content" || payload.version !== 1) {
       return NextResponse.json({ error: "This is not a compatible ConScept content export." }, { status: 400 });
     }
+
 
     const caseStudies = Array.isArray(payload.caseStudies) ? payload.caseStudies : [];
     const insights = Array.isArray(payload.insights) ? payload.insights : [];
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
       const parsedTheme = parsePublishedTheme(importedThemeConfig);
       if (!parsedTheme) return NextResponse.json({ error: "The export contains an invalid or unsupported theme configuration." }, { status: 400 });
       try {
-        const migratedTheme = createPublishedTheme(parsedTheme.anchors, parsedTheme.publishedAt);
+        const migratedTheme = createPublishedTheme(parsedTheme.anchors, parsedTheme.publishedAt, parsedTheme.overrides);
         importedTheme = { kind: "publish", config: JSON.stringify(migratedTheme), anchors: migratedTheme.anchors };
       } catch (error) {
         const message = error instanceof Error ? error.message : "The exported theme cannot be resolved safely.";
@@ -133,6 +135,13 @@ export async function POST(request: NextRequest) {
       }
 
       const homepageSections = Array.isArray(configuration.homepageSections) ? configuration.homepageSections : [];
+      for (const record of Array.isArray(configuration.categories) ? configuration.categories : []) {
+        const name = text(record, "name").trim();
+        if (!name) continue;
+        db.prepare("INSERT INTO categories(name, description, position) VALUES (?, ?, ?) ON CONFLICT(name) DO UPDATE SET description=excluded.description, position=excluded.position").run(name, text(record, "description"), integer(record, "position"));
+        const category = db.prepare("SELECT id FROM categories WHERE name = ? COLLATE NOCASE").get(name) as { id: number };
+        db.prepare("INSERT OR IGNORE INTO category_legacy_names(name, category_id) VALUES (?, ?)").run(name, category.id);
+      }
       const saveHomepageSection = db.prepare(`INSERT OR REPLACE INTO homepage_sections
         (key, eyebrow, headline, description, position, fixed, cta_primary_label,
          cta_primary_href, cta_secondary_label, cta_secondary_href, visible)
@@ -243,6 +252,17 @@ export async function POST(request: NextRequest) {
           text(record, "meta_title"), text(record, "meta_description"), text(record, "meta_keywords"),
           text(record, "canonical_url"), text(record, "og_image"), integer(record, "no_index")
         );
+        if (Array.isArray(record.category_names)) {
+          const study = db.prepare("SELECT id FROM case_studies WHERE slug = ?").get(slug) as { id: number };
+          db.prepare("DELETE FROM case_study_categories WHERE case_study_id = ?").run(study.id);
+          const names = [...new Set(record.category_names.filter((name): name is string => typeof name === "string" && Boolean(name.trim())).map((name) => name.trim()))];
+          names.forEach((name, position) => {
+            db.prepare("INSERT OR IGNORE INTO categories(name, position) VALUES (?, (SELECT COALESCE(MAX(position), -1) + 1 FROM categories))").run(name);
+            const category = db.prepare("SELECT id FROM categories WHERE name = ? COLLATE NOCASE").get(name) as { id: number };
+            db.prepare("INSERT OR IGNORE INTO category_legacy_names(name, category_id) VALUES (?, ?)").run(name, category.id);
+            db.prepare("INSERT OR IGNORE INTO case_study_categories(case_study_id, category_id, position) VALUES (?, ?, ?)").run(study.id, category.id, position);
+          });
+        }
       }
 
       const upsertInsight = db.prepare(
@@ -292,14 +312,22 @@ export async function POST(request: NextRequest) {
         const slug = text(record, "slug").trim();
         const title = text(record, "title").trim();
         if (!slug || !title) continue;
+        const currentNavigation = db.prepare("SELECT show_in_nav, visible, nav_label, position FROM pages WHERE slug = ?").get(slug) as { show_in_nav: number; visible: number; nav_label: string; position: number } | undefined;
         upsertPage.run(
           slug, text(record, "eyebrow"), title, text(record, "body"),
-          integer(record, "show_in_nav"), integer(record, "visible", 1),
-          text(record, "nav_label"), integer(record, "position"),
+          integer(record, "show_in_nav", currentNavigation?.show_in_nav ?? 0), integer(record, "visible", currentNavigation?.visible ?? 1),
+          text(record, "nav_label", currentNavigation?.nav_label ?? ""), integer(record, "position", currentNavigation?.position ?? 0),
           text(record, "meta_title"), text(record, "meta_description"),
           text(record, "meta_keywords"), text(record, "canonical_url"),
           text(record, "og_image"), integer(record, "no_index")
         );
+      }
+      if (Array.isArray(payload.pageConfiguration)) {
+        const updateNavigation = db.prepare("UPDATE pages SET show_in_nav = ?, visible = ?, nav_label = ?, position = ? WHERE slug = ?");
+        for (const record of payload.pageConfiguration) {
+          const slug = text(record, "slug").trim();
+          if (slug) updateNavigation.run(integer(record, "show_in_nav"), integer(record, "visible", 1), text(record, "nav_label"), integer(record, "position"), slug);
+        }
       }
 
       const upsertExperience = db.prepare(
