@@ -1,9 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
-import Image from "next/image";
-import { Logo } from "@/components/Logo/Logo";
+import { Fragment, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ChangeEvent, type CSSProperties } from "react";
 import { DEFAULT_PALETTE_ANCHORS, EDITABLE_THEME_GROUPS, generateThemePalette, isHexColor, resolveTheme, THEME_TONES, type PaletteAnchors, type ThemeOverrides, type ThemeTone } from "@/lib/themePalette";
 import adminStyles from "@/app/admin/(dashboard)/admin.module.css";
 import styles from "./SiteIdentityEditor.module.css";
@@ -25,8 +22,17 @@ const ROLES: Array<{ key: Role; palette: keyof PaletteAnchors; label: string; us
   { key: "theme_neutral_500", palette: "neutral", label: "Neutral", usage: "Page and panel backgrounds, text, borders and form fields." },
 ];
 
-function UploadIcon() {
-  return <span className={styles.uploadIcon} aria-hidden="true"><AdminIcon name="action-upload" /></span>;
+function subscribeToTheme(update: () => void) {
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+  const observer = new MutationObserver(update);
+  observer.observe(document.documentElement, {attributes: true, attributeFilter: ["data-theme"]});
+  media.addEventListener("change", update);
+  return () => { observer.disconnect(); media.removeEventListener("change", update); };
+}
+
+function activeTheme(): "light" | "dark" {
+  const selected = document.documentElement.dataset.theme;
+  return selected === "dark" || (!selected && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
 }
 
 function resolveAnchors(colors: ThemeColors): PaletteAnchors {
@@ -63,6 +69,7 @@ export function SiteIdentityEditor({
   const [overrides, setOverrides] = useState<ThemeOverrides>(initialOverrides ?? { light: {}, dark: {} });
   const [editMode, setEditMode] = useState<"light" | "dark">("light");
   const [editorOpen, setEditorOpen] = useState(false);
+  const activeMode = useSyncExternalStore<"light" | "dark">(subscribeToTheme, activeTheme, () => "light");
   const lastValidColors = useRef(initialColors);
   const [logoPreview, setLogoPreview] = useState(logoImage);
   const [iconPreview, setIconPreview] = useState(logoIconImage);
@@ -148,27 +155,9 @@ export function SiteIdentityEditor({
               <p className="body-small">Set a full logo for the header and footer, and a separate icon for the favicon. Upload a replacement whenever you want to change either image.</p>
             </div>
             <div className={styles.brandingGrid}>
-              <div className={styles.logoVariant}>
-                <span className={styles.logoVariantLabel}>Full logo</span>
-                <label className={`${styles.logoPreview} ${styles.fullLogoPreview}`}>
-                  {logoPreview ? <Image src={logoPreview} alt="Full logo preview" width={340} height={100} unoptimized /> : <Logo variant="primary" identity={logoIdentity} />}
-                  <input className={styles.logoUpload} type="file" name="logo_image" accept=".png,.svg,image/png,image/svg+xml" onChange={handleLogoChange} aria-label="Upload full logo" aria-describedby="full-logo-help" />
-                  <UploadIcon />
-                </label>
-                <span id="full-logo-help" className="body-small">PNG or SVG, up to 8 MB.</span>
-              </div>
-              <div className={styles.logoVariant}>
-                <span className={styles.logoVariantLabel}>Icon only · favicon</span>
-                <label className={`${styles.logoPreview} ${styles.iconLogoPreview}`}>
-                  {iconPreview ? <Image src={iconPreview} alt="Icon-only logo preview" width={72} height={72} unoptimized /> : <span className="body-small">Upload an icon</span>}
-                  <input className={styles.logoUpload} type="file" name="logo_icon_image" accept=".png,.svg,image/png,image/svg+xml" onChange={handleIconChange} aria-label="Upload icon" aria-describedby="icon-logo-help" />
-                  <UploadIcon />
-                </label>
-                <span id="icon-logo-help" className="body-small">PNG or SVG, up to 8 MB. This also becomes the browser favicon.</span>
-              </div>
+              <LogoColorEditor label="Full logo" source={logoPreview} isSvg={logoIsSvg} savedSource={logoImage} initialMapping={logoColorMapping} palettes={publishedLogoTheme.palettes} backgrounds={{light: publishedLogoTheme.semantic.light["--bg-canvas"], dark: publishedLogoTheme.semantic.dark["--bg-canvas"]}} foregrounds={{light: publishedLogoTheme.semantic.light["--text-primary"], dark: publishedLogoTheme.semantic.dark["--text-primary"]}} field="logo_color_mapping" uploadName="logo_image" onUpload={handleLogoChange} activeMode={activeMode} identity={logoIdentity} />
+              <LogoColorEditor label="Icon" source={iconPreview} isSvg={iconIsSvg} savedSource={logoIconImage} initialMapping={iconColorMapping} palettes={publishedLogoTheme.palettes} backgrounds={{light: publishedLogoTheme.semantic.light["--bg-canvas"], dark: publishedLogoTheme.semantic.dark["--bg-canvas"]}} foregrounds={{light: publishedLogoTheme.semantic.light["--text-primary"], dark: publishedLogoTheme.semantic.dark["--text-primary"]}} field="logo_icon_color_mapping" uploadName="logo_icon_image" onUpload={handleIconChange} activeMode={activeMode} identity={logoIdentity} icon />
             </div>
-            <LogoColorEditor label="Full logo" source={logoPreview} isSvg={logoIsSvg} savedSource={logoImage} initialMapping={logoColorMapping} palettes={publishedLogoTheme.palettes} backgrounds={{light: publishedLogoTheme.semantic.light["--bg-canvas"], dark: publishedLogoTheme.semantic.dark["--bg-canvas"]}} field="logo_color_mapping" />
-            <LogoColorEditor label="Icon" source={iconPreview} isSvg={iconIsSvg} savedSource={logoIconImage} initialMapping={iconColorMapping} palettes={publishedLogoTheme.palettes} backgrounds={{light: publishedLogoTheme.semantic.light["--bg-canvas"], dark: publishedLogoTheme.semantic.dark["--bg-canvas"]}} field="logo_icon_color_mapping" />
             <div className={adminStyles.formActions}>
               <button type="submit" className={adminStyles.submit}><span className="label-button">Save branding</span></button>
             </div>

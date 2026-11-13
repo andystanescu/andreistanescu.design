@@ -2,12 +2,9 @@
 .identityLayout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(360px,.8fr);gap:var(--space-400);align-items:start}
 .controlsColumn{display:grid;gap:var(--space-400);min-width:0}
 .controlsColumn>form{min-width:0}
-.logoMapping{display:grid;gap:var(--space-200);min-width:0}
-.logoMapping>p{color:var(--text-secondary)}
-.logoModePreviews{display:grid;gap:var(--space-150)}
-.logoModePreview{display:grid;gap:var(--space-200);justify-items:start;min-height:var(--space-1600);padding:var(--space-200);border:1px solid var(--border-default);border-radius:var(--radius-md);cursor:pointer}
-.logoModePreview img{max-width:100%;max-height:var(--space-800);object-fit:contain}
-.logoModeLabel{padding:var(--space-50) var(--space-100);border-radius:var(--radius-sm);background:var(--bg-surface);color:var(--text-primary);font:600 12px/1.4 var(--font-family-body);text-transform:uppercase}
+.logoPreviewGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-200);min-width:0}
+.logoPreviewColumn{display:grid;align-content:start;gap:var(--space-100);min-width:0}
+.logoPreviewTheme{color:var(--text-secondary);font:600 12px/1.4 var(--font-family-body);text-transform:uppercase}
 .logoColorControls{display:grid;gap:var(--space-150);padding:var(--space-200);border:1px solid var(--border-default);border-radius:var(--radius-md)}
 .previewPanel{position:sticky;top:var(--space-600);display:grid;gap:var(--space-300);min-width:0}
 .sectionHeading{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-300)}
@@ -15,13 +12,16 @@
 .sectionHeading>div p{margin:0;color:var(--text-accent)}
 .sectionHeading h2{margin:0}
 .sectionHeading>p{max-width:460px;margin:0;color:var(--text-secondary)}
-.brandingGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-400)}
-.logoVariant{display:grid;align-content:start;gap:var(--space-150);min-width:0}
+.brandingGrid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-400)}
+.logoVariant{display:grid;align-content:start;gap:var(--space-150);min-width:0;container-type:inline-size}
 .logoVariantLabel{color:var(--text-primary);font:600 14px/1.35 var(--font-family-body)}
-.logoPreview{position:relative;display:grid;min-height:132px;place-items:center;padding:var(--space-300);border:1px dashed var(--border-strong);border-radius:var(--radius-md);background:var(--bg-canvas);cursor:pointer}
+.logoPreview{position:relative;display:grid;min-width:0;min-height:132px;box-sizing:border-box;overflow:hidden;place-items:center;padding:var(--space-300);border:1px dashed var(--border-strong);border-radius:var(--radius-md);background:var(--bg-canvas);cursor:pointer}
+.logoFallback{display:flex;justify-content:center;width:100%;min-width:0;overflow:hidden}
+.logoFallback>span{flex-shrink:0;transform:scale(.65)}
 .logoPreview:hover{border-color:var(--text-accent)}
 .logoPreview:focus-within{outline:2px solid var(--border-focus);outline-offset:2px}
-.logoUpload{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.logoFileInput{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.logoVariant:has(.logoFileInput:focus-visible) .logoPreview{outline:2px solid var(--border-focus);outline-offset:2px}
 .uploadIcon{position:absolute;right:var(--space-200);bottom:var(--space-200);display:grid;place-items:center;width:var(--space-400);height:var(--space-400);border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface);color:var(--text-primary);pointer-events:none}
 .uploadIcon svg{width:var(--space-200);height:var(--space-200)}
 .logoPreview img{display:block;max-width:min(100%,340px);max-height:100px;object-fit:contain}
@@ -98,3 +98,5 @@
 @media(min-width:768px) and (max-width:1023px){.colorRoles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:920px){.previewModes{grid-template-columns:1fr}}
 @media(max-width:767px){.identityLayout,.controlsColumn{gap:var(--space-300)}.sectionHeading{flex-direction:column;gap:var(--space-200)}.brandingGrid,.colorRoles{grid-template-columns:1fr;gap:var(--space-300)}.colorRole,.previewMode,.previewCard{gap:var(--space-150);padding:var(--space-200)}.previewActions{flex-direction:column;gap:var(--space-150)}.previewActions button{width:100%;min-height:var(--space-600);flex:auto}}
+@media(max-width:360px){.logoPreviewGrid{grid-template-columns:1fr}}
+@container(max-width:400px){.logoPreviewGrid{grid-template-columns:1fr}}
