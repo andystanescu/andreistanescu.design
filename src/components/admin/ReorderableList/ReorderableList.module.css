@@ -6,6 +6,10 @@
   cursor: grabbing;
 }
 
+.editableRow, .editableRow:active { cursor: pointer; }
+.editableRow .handle { cursor: grab; }
+.editableRow .handle:active { cursor: grabbing; }
+
 /* The source slot while its row is being dragged — the actual "card" is
    the floating .dragImage clone following the cursor, so this becomes a
    quiet placeholder marking where it will land if dropped here. */

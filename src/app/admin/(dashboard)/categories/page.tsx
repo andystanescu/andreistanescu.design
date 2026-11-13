@@ -24,6 +24,7 @@ export default async function CategoriesPage({ searchParams }: { searchParams: P
     </form>
     <ReorderableList className={`${styles.list} ${styles.serviceCategoryList}`} itemClassName={`${styles.listItem} ${styles.serviceCategoryItem}`} reorderUrl="/api/admin/categories/reorder" items={categories.map((category, index) => ({
       id: String(category.id),
+      editHref: `/admin/categories/${category.id}`,
       node: <>
         <div className={styles.listItemMeta}><p className="body-default">{category.name}{Boolean(category.service_enabled && category.published && category.show_on_homepage) && <span className="body-small" style={{ color: "var(--text-accent)", marginLeft: "var(--space-150)" }}>on homepage</span>}</p><p className="body-small" style={{ color: "var(--text-tertiary)" }}>{category.slug ? `/services/${category.slug}` : "Category only"}</p></div>
         <div className={`${styles.listItemActions} ${styles.serviceCategoryActions}`}>

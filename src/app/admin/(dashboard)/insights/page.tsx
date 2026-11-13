@@ -40,11 +40,13 @@ export default async function AdminInsightsPage({ searchParams }: { searchParams
         </p>
       ) : (
         <ReorderableList
+          key={status}
           className={styles.list}
           itemClassName={styles.listItem}
           reorderUrl="/api/admin/insights/reorder"
           items={insights.map((insight, index) => ({
             id: String(insight.id),
+            editHref: `/admin/insights/${insight.id}`,
             node: (
               <>
                 <div className={styles.listItemMeta}>

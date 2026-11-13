@@ -38,11 +38,13 @@ export default async function AdminCaseStudiesPage({ searchParams }: { searchPar
         </p>
       ) : (
         <ReorderableList
+          key={status}
           className={styles.list}
           itemClassName={styles.listItem}
           reorderUrl="/api/admin/case-studies/reorder"
           items={caseStudies.map((study, index) => ({
             id: String(study.id),
+            editHref: `/admin/case-studies/${study.id}`,
             node: (
               <>
                 <div className={styles.listItemMeta}>

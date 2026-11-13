@@ -10,10 +10,12 @@ import {
   type ReactNode,
 } from "react";
 import styles from "./ReorderableList.module.css";
+import { useRouter } from "next/navigation";
 
 type ReorderableItem = {
   id: string;
   node: ReactNode;
+  editHref?: string;
 };
 
 type ReorderableListProps = {
@@ -46,6 +48,7 @@ export function ReorderableList({
   itemClassName,
   style,
 }: ReorderableListProps) {
+  const router = useRouter();
   const [items, setItems] = useState(initialItems);
   // dragId (state) drives the placeholder styling on re-render. dragIdRef
   // mirrors it for reads inside event handlers — dragstart's setDragId
@@ -60,7 +63,6 @@ export function ReorderableList({
   const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
   const dragImageRef = useRef<HTMLElement | null>(null);
   const orderRef = useRef(items);
-  orderRef.current = items;
 
   function captureRects() {
     const map = new Map<string, DOMRect>();
@@ -75,6 +77,7 @@ export function ReorderableList({
   // transform) then animate that back to zero, so the shift reads as a
   // slide instead of an instant cut.
   useLayoutEffect(() => {
+    orderRef.current = items;
     const nodes = listRef.current?.querySelectorAll<HTMLElement>("[data-item-id]");
     nodes?.forEach((el) => {
       const id = el.dataset.itemId!;
@@ -104,6 +107,7 @@ export function ReorderableList({
     const next = [...current];
     const [moved] = next.splice(fromIndex, 1);
     next.splice(toIndex, 0, moved);
+    orderRef.current = next;
     setItems(next);
   }
 
@@ -157,19 +161,23 @@ export function ReorderableList({
         <li
           key={item.id}
           data-item-id={item.id}
-          draggable
+          draggable={!item.editHref}
           onDragStart={(e) => handleDragStart(e, item.id)}
+          onClick={(e) => {
+            if (!item.editHref || dragIdRef.current || !(e.target instanceof Element) || e.target.closest("a, button, input, select, textarea, form, [data-reorder-handle]")) return;
+            router.push(item.editHref);
+          }}
           onDragOver={(e) => {
             e.preventDefault();
             moveDragged(item.id);
           }}
           onDragEnd={handleDragEnd}
           onDrop={handleDrop}
-          className={`${itemClassName ?? ""} ${styles.draggableRow} ${
+          className={`${itemClassName ?? ""} ${styles.draggableRow} ${item.editHref ? styles.editableRow : ""} ${
             dragId === item.id ? styles.dragging : ""
           }`}
         >
-          <span className={styles.handle} aria-hidden="true" title="Drag to reorder">
+          <span className={styles.handle} aria-hidden="true" title="Drag to reorder" data-reorder-handle draggable={Boolean(item.editHref)}>
             ⠿
           </span>
           {item.node}
