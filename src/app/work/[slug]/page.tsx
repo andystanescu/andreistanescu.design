@@ -12,7 +12,8 @@ import { assessmentCriteriaList, generateActivityRecommendations, getActivityDes
 import { addHeadingIds } from "@/lib/tableOfContents";
 import { TableOfContents } from "@/components/TableOfContents/TableOfContents";
 import styles from "./case-study.module.css";
-import { CaseStudyLockedContent } from "@/components/CaseStudyPasswordGate/CaseStudyLockedContent";
+import { CaseStudyPasswordGate } from "@/components/CaseStudyPasswordGate/CaseStudyPasswordGate";
+import { ContentViewTracker } from "@/components/ContentViewTracker/ContentViewTracker";
 import { caseStudyAccessCookieName, verifyCaseStudyAccessToken } from "@/lib/caseStudyAccess";
 import { contentMetadata, absoluteUrl } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
@@ -70,7 +71,6 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
   const preview = query.preview === "1" && verifySessionToken(cookieStore.get(SESSION_COOKIE_NAME)?.value);
   const study = getCaseStudyBySlug(slug, preview);
   if (!study) notFound();
-  const renderedBody = preview && study.body_draft !== null ? study.body_draft : study.body;
   const showInProgress = Boolean(study.in_progress) && !preview;
   const authorName = getSettings().author_name;
   const rawPublishedAt = "published_at" in study && typeof study.published_at === "string" ? study.published_at : "";
@@ -80,6 +80,7 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
   try { const parsed = JSON.parse(study.password_hashes || "[]"); passwordHashes = Array.isArray(parsed) ? parsed.map((value) => typeof value === "string" ? value : value && typeof value === "object" && typeof value.hash === "string" ? value.hash : null).filter((value): value is string => Boolean(value)) : []; } catch { passwordHashes = []; }
   const accessToken = cookieStore.get(caseStudyAccessCookieName(study.slug))?.value;
   const accessGranted = preview || !study.password_required || verifyCaseStudyAccessToken(accessToken, study.slug, passwordHashes);
+  const renderedBody = accessGranted ? (preview && study.body_draft !== null ? study.body_draft : study.body) : "";
   const { html: bodyHtml, toc } = addHeadingIds(renderedBody);
   const relatedReadings = resolveRelatedReadings(getRelatedReadingReferences(renderedBody));
   const studies = getCaseStudies();
@@ -120,11 +121,12 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
     }) }} />
     <Nav />
     {preview && <aside className={styles.previewBanner}><strong>Preview mode</strong><span>{study.body_draft !== null ? "Showing the saved body draft." : "Showing the current published body."}</span><Link href={`/admin/case-studies/${study.id}`}>Return to editor</Link></aside>}
-    <CaseStudyLockedContent slug={study.slug} locked={!accessGranted} error={query.accessError ? "That password was not recognised." : undefined}>
+    <ContentViewTracker contentType="case_study" contentId={study.slug} />
     <main className={styles.main}>
       <CaseStudyHero slug={study.slug} category={study.category} company={study.eyebrow} title={study.title} summary={study.description} author={authorName} publicationDetails={publicationDetails} tags={study.tags} role={study.project_role} contribution={study.contribution} timeline={study.timeline} scope={study.scope} team={study.team} coverImage={study.cover_image} impactEyebrow={study.outcome_eyebrow || "Impact"} impactTitle={study.outcome_title} metrics={metrics} />
       {showInProgress && <section className={`container ${styles.inProgress}`}><span className={styles.inProgressBadge}>Write-up in progress</span><h2>The results are in. The story behind them is still being written.</h2><p>This case study is being written up in full—the challenge, the shift in approach, and what was built. The outcomes above are real and already delivered; the full narrative is still being prepared.</p></section>}
-      {!showInProgress && <div className={`container ${styles.layout}`}>
+      {!showInProgress && !accessGranted && <CaseStudyPasswordGate slug={study.slug} error={query.accessError ? "That password was not recognised." : undefined} />}
+      {!showInProgress && accessGranted && <div className={`container ${styles.layout}`}>
         {(pageToc.length > 0 || relatedReadings.length > 0) && <aside className={styles.toc}><TableOfContents items={pageToc} relatedReadings={relatedReadings} /><RelatedReadingList items={relatedReadings} desktopOnly /></aside>}
         <article className={styles.articleBody}>{assessmentBlock && !assessmentSplit && assessmentBlock}{assessmentSplit ? <><RichContent html={assessmentSplit.before} />{assessmentBlock}<RichContent html={assessmentSplit.after} /></> : <RichContent html={bodyHtml} />}
       </article>
@@ -132,7 +134,6 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
       {(previous || next) && <nav className={`container ${styles.caseNav}`} aria-label="Case study navigation">{previous ? <Link href={`/work/${previous.slug}`}><span>Previous case study</span><strong>{previous.title}</strong></Link> : <span />}{next ? <Link href={`/work/${next.slug}`} className={styles.next}><span>Next case study</span><strong>{next.title}</strong></Link> : <span />}</nav>}
       {related.length > 0 && <section className={`container ${styles.related}`}><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>RELATED WORK</p><h2 className="heading-01">More case studies</h2><div className={styles.relatedGrid}>{related.map((item) => <ArticleCard key={item.slug} slug={item.slug} title={item.title} excerpt={item.description} thumbnail={item.thumbnail_image} variant="caseStudy" />)}</div><Link className={styles.allWork} href="/work">All case studies <span>→</span></Link></section>}
     </main>
-    </CaseStudyLockedContent>
     <Footer variant="compact" />
   </>;
 }
