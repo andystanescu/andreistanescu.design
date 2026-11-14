@@ -26,7 +26,6 @@ export default async function AdminHomePage({ searchParams }: { searchParams?: P
     : "Not started";
   const earlySample = overview.current.sessions < 20;
   const caseStudies = db.prepare("SELECT id, slug, title, description, body, tags, thumbnail_image, cover_image, published, body_draft_enabled, meta_title, meta_description, canonical_url, og_image FROM case_studies ORDER BY id DESC").all() as Array<{ id: number; slug: string; title: string; description: string; body: string; tags: string; thumbnail_image: string; cover_image: string; published: number; body_draft_enabled: number; meta_title: string; meta_description: string; canonical_url: string; og_image: string }>;
-  const caseStudiesBySlug = new Map(caseStudies.map((caseStudy) => [caseStudy.slug, caseStudy]));
   const insights = db.prepare("SELECT id, slug, title, excerpt, body, tags, thumbnail_image, cover_image, published, scheduled_at, meta_title, meta_description, canonical_url, og_image FROM insights ORDER BY id DESC").all() as Array<{ id: number; slug: string; title: string; excerpt: string; body: string; tags: string; thumbnail_image: string; cover_image: string; published: number; scheduled_at: string; meta_title: string; meta_description: string; canonical_url: string; og_image: string }>;
   const services = db.prepare("SELECT slug, title FROM service_items").all() as Array<{ slug: string; title: string }>;
   const contentTitles = Object.fromEntries([...caseStudies.map((item) => [`/work/${item.slug}`, item.title]), ...insights.map((item) => [`/insights/${item.slug}`, item.title]), ...services.map((item) => [`/services/${item.slug}`, item.title])]);
@@ -80,7 +79,7 @@ export default async function AdminHomePage({ searchParams }: { searchParams?: P
     </div>
     <section className={styles.engagementPanel} aria-labelledby="engagement-overview">
       <nav className={styles.rangeTabs} aria-label="Engagement date range">{(["7d", "30d", "90d", "all"] as EngagementRange[]).map((value) => <Link key={value} href={value === "30d" ? "/admin" : `/admin?range=${value}`} aria-current={range === value ? "page" : undefined} className={range === value ? styles.rangeActive : undefined}>{value === "all" ? "All time" : `Last ${value.slice(0, -1)} days`}</Link>)}</nav>
-      <p className={styles.coverageNote}>This range applies to engagement, content signals, chapter progression and journeys. Published and draft counts are all-time totals.</p>
+      <p className={styles.coverageNote}>This range applies to engagement, content signals and journeys. Published and draft counts are all-time totals.</p>
       <EngagementOverview data={overview} range={range} />
       <details className={styles.countingDetails}>
         <summary>How this is counted</summary>
@@ -96,7 +95,6 @@ export default async function AdminHomePage({ searchParams }: { searchParams?: P
       </details>
     </section>
     <ContentPerformance data={contentPerformance} range={range} titles={contentTitles} editLinks={contentEditLinks} journeyPage={engagement.journeyPage} />
-    {engagement.chapters.length > 0 && <section className={styles.panel} aria-labelledby="chapter-depth"><div className={styles.panelHeader}><h2 id="chapter-depth" className="heading-03">Case-study chapter progression</h2><span className={styles.panelNote}>Distinct likely-human + uncertain sessions reaching each chapter</span></div><div className={styles.chapterGrid}>{engagement.chapters.map((chapter) => { const caseStudy = caseStudiesBySlug.get(chapter.content_id); return <div className={styles.chapterRow} key={`${chapter.content_id}-${chapter.detail}`}><div className={styles.chapterInfo}><span>{chapter.detail}</span>{caseStudy ? <Link href={`/admin/case-studies/${caseStudy.id}`} className={styles.chapterTitle}>{caseStudy.title}</Link> : <span className={styles.chapterTitle}>Case study unavailable</span>}</div><strong>{chapter.count}</strong></div>;})}</div></section>}
     <VisitorJourneys journeys={engagement.journeys} total={engagement.journeyTotal} page={engagement.journeyPage} pageSize={engagement.journeyPageSize} range={range} contentType={contentPerformance.selectedGroup} contentPage={contentPerformance.page} titles={contentTitles} />
     <section className={`${styles.panel} ${styles.actionQueue}`} aria-labelledby="action-queue">
       <div className={styles.panelHeader}><h2 id="action-queue" className="heading-03">Needs attention</h2><span className={styles.panelNote}>Publishing, content quality, metadata and incoming submissions</span></div>

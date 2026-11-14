@@ -215,7 +215,6 @@ export function getEngagementDashboardData(range: EngagementRange, options: { co
     if (item.type === "service") item.evidenceOpened = (db.prepare(`SELECT COUNT(DISTINCT e.session_id) AS count FROM engagement_events e JOIN engagement_sessions s USING(session_id)
       WHERE s.actor_class IN ('likely_human','uncertain')${filterClause} AND e.event_type='action' AND e.detail='evidence_open' AND e.page_key = ?`).get(...filter.params, `/services/${item.id}`) as { count: number }).count;
   }
-  const chapterRows = db.prepare(`SELECT e.content_id, e.detail, COUNT(DISTINCT e.session_id) AS count FROM engagement_events e JOIN engagement_sessions s USING(session_id) WHERE e.event_type='chapter_view' AND s.actor_class IN ('likely_human','uncertain')${filter.clause} GROUP BY e.content_id,e.detail ORDER BY e.content_id,e.detail`).all(...filter.params) as Array<{ content_id: string; detail: string; count: number }>;
   const journeyPageSize = 10;
   const requestedJourneyPage = Math.max(1, Math.min(1_000_000, Math.floor(options.journeyPage || 1)));
   const journeyCondition = " AND ((SELECT COUNT(*) FROM engagement_pages p WHERE p.session_id=s.session_id) > 1 OR s.engagement_level='deep')";
@@ -246,7 +245,7 @@ export function getEngagementDashboardData(range: EngagementRange, options: { co
     };
   });
   const trackingStart = db.prepare("SELECT MIN(started_at) AS started FROM engagement_sessions").get() as { started: string | null };
-  return { counts, content, contentPage, contentPageSize, contentTotal, chapters: chapterRows, journeys, journeyPage, journeyPageSize, journeyTotal, trackingStart: trackingStart.started };
+  return { counts, content, contentPage, contentPageSize, contentTotal, journeys, journeyPage, journeyPageSize, journeyTotal, trackingStart: trackingStart.started };
 }
 
 export function recordAnalyticsEvent(eventType: "view" | "share" | "download", contentType: AnalyticsContentType, contentId = "", context?: VisitorContext) {
