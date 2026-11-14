@@ -34,7 +34,7 @@ export function RichContent({ html }: RichContentProps) {
     <div className={styles.content}>
       {segments.map((segment, index) =>
         segment.type === "live" ? (
-          <MediaContainer key={index} variant={segment.mediaVariant}><EmbedWrapper label={segment.label} help={segment.help}><LiveComponentBlock code={segment.code} chrome={segment.chrome} runtime={segment.runtime} language={segment.language} /></EmbedWrapper></MediaContainer>
+          <MediaContainer key={index} variant={segment.mediaVariant}><EmbedWrapper label={segment.label} help={segment.help} unbounded={segment.runtime !== "static"}><LiveComponentBlock code={segment.code} chrome={segment.chrome} runtime={segment.runtime} language={segment.language} publicInline /></EmbedWrapper></MediaContainer>
         ) : segment.type === "relatedInsight" ? (
           <RelatedInsightCard key={index} slug={segment.slug} contentType={segment.contentType} />
         ) : segment.type === "gallery" ? (
