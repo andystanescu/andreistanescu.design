@@ -33,7 +33,7 @@ export function ServiceEvidenceGrid({ category, items }: { category: string; ite
   }, [category, items]);
   const gridCountClass = selected.length === 1 ? styles.evidenceGridSingle : selected.length === 2 ? styles.evidenceGridTwo : styles.evidenceGridThree;
   return <div className={`${styles.evidenceGrid} ${gridCountClass}`}>
-    {selected.map((item) => <Link className={`${styles.evidenceItem} ${item.type === "article" ? styles.evidenceArticle : styles.evidenceCaseStudy}`} href={item.href} aria-label={`${item.type === "article" ? "Read article" : "View case study"}: ${item.title}`} key={`${item.type}-${item.href}`}>
+    {selected.map((item) => <Link className={`${styles.evidenceItem} ${item.type === "article" ? styles.evidenceArticle : styles.evidenceCaseStudy}`} href={item.href} aria-label={`${item.type === "article" ? "Read article" : "View case study"}: ${item.title}`} data-service-evidence key={`${item.type}-${item.href}`}>
       <article className={styles.evidenceContent}>
         <p className={`label-eyebrow ${styles.evidenceType}`}>{item.type === "case-study" ? "CASE STUDY" : "ARTICLE"}</p>
         <h3 className={styles.evidenceTitle}>{item.title}</h3>

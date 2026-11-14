@@ -20,7 +20,10 @@ type ReorderableItem = {
 
 type ReorderableListProps = {
   items: ReorderableItem[];
-  reorderUrl: string;
+  reorderUrl?: string;
+  onReorder?: (order: string[]) => void;
+  /** Restrict dragging to the handle without making rows navigable. */
+  handleOnly?: boolean;
   /** Class for the outer <ul>. */
   className?: string;
   /** Class for each <li> — pass the existing .listItem class; this
@@ -44,6 +47,8 @@ type ReorderableListProps = {
 export function ReorderableList({
   items: initialItems,
   reorderUrl,
+  onReorder,
+  handleOnly = false,
   className,
   itemClassName,
   style,
@@ -146,6 +151,9 @@ export function ReorderableList({
     if (!dragIdRef.current) return;
     const finalOrder = orderRef.current;
 
+    if (onReorder) { onReorder(finalOrder.map((item) => item.id)); return; }
+    if (!reorderUrl) return;
+
     startTransition(() => {
       fetch(reorderUrl, {
         method: "POST",
@@ -161,7 +169,7 @@ export function ReorderableList({
         <li
           key={item.id}
           data-item-id={item.id}
-          draggable={!item.editHref}
+          draggable={!item.editHref && !handleOnly}
           onDragStart={(e) => handleDragStart(e, item.id)}
           onClick={(e) => {
             if (!item.editHref || dragIdRef.current || !(e.target instanceof Element) || e.target.closest("a, button, input, select, textarea, form, [data-reorder-handle]")) return;
@@ -177,7 +185,7 @@ export function ReorderableList({
             dragId === item.id ? styles.dragging : ""
           }`}
         >
-          <span className={styles.handle} aria-hidden="true" title="Drag to reorder" data-reorder-handle draggable={Boolean(item.editHref)}>
+          <span className={styles.handle} aria-hidden="true" title="Drag to reorder" data-reorder-handle draggable={Boolean(item.editHref || handleOnly)}>
             ⠿
           </span>
           {item.node}

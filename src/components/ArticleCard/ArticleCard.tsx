@@ -12,16 +12,18 @@ type ArticleCardProps = {
   category?: string;
   meta?: string;
   showThumbnail?: boolean;
+  /** Keep illustrative examples from navigating to a placeholder article. */
+  previewOnly?: boolean;
 };
 
 // Resting/hover states per Figma (node 157:203) — thumbnail, title,
 // excerpt, "Read article" link. Used for an insight article's "More
 // articles" grid; kept separate from the homepage's larger featured-card
 // layout (LatestInsights), which has its own hover treatment.
-export function ArticleCard({ slug, title, excerpt, thumbnail, className, variant = "default", category = "", meta = "", showThumbnail = true }: ArticleCardProps) {
+export function ArticleCard({ slug, title, excerpt, thumbnail, className, variant = "default", category = "", meta = "", showThumbnail = true, previewOnly = false }: ArticleCardProps) {
   const isCaseStudy = variant === "caseStudy";
   return (
-    <Link href={`${isCaseStudy ? "/work" : "/insights"}/${slug}`} className={`${styles.card} ${isCaseStudy ? styles.caseStudy : ""}${className ? ` ${className}` : ""}`}>
+    <Link href={previewOnly ? "#" : `${isCaseStudy ? "/work" : "/insights"}/${slug}`} className={`${styles.card} ${isCaseStudy ? styles.caseStudy : ""}${className ? ` ${className}` : ""}`}>
       {showThumbnail && <div
         className={styles.thumb}
         style={thumbnail ? { backgroundImage: `url(${thumbnail})` } : undefined}

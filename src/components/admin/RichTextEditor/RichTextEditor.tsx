@@ -430,6 +430,8 @@ type RichTextEditorProps = {
   onContentChange?: (html: string) => void;
   relatedReadings?: RelatedReadingOption[];
   toolbarAddon?: ReactNode;
+  /** Keep uploaded media local when demonstrating the editor. */
+  previewOnly?: boolean;
 };
 
 type BlockType = "paragraph" | "eyebrow" | "h1" | "h2" | "h3" | "quote" | "code";
@@ -504,7 +506,10 @@ export function RichTextEditor({
   onContentChange,
   relatedReadings = [],
   toolbarAddon,
+  previewOnly = false,
 }: RichTextEditorProps) {
+  const demoUrls = useRef<string[]>([]);
+  useEffect(() => () => { demoUrls.current.forEach((url) => URL.revokeObjectURL(url)); }, []);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const comparisonBeforeInputRef = useRef<HTMLInputElement>(null);
@@ -680,6 +685,7 @@ export function RichTextEditor({
   };
 
   const handleImageFile = async (file: File) => {
+    if (previewOnly) { const url = URL.createObjectURL(file); demoUrls.current.push(url); editor.chain().focus().setImage({ src: url }).run(); return; }
     const formData = new FormData();
     formData.append("file", file);
     const res = await fetch("/api/admin/upload", {
@@ -695,6 +701,7 @@ export function RichTextEditor({
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
+    if (previewOnly) { const url = URL.createObjectURL(file); demoUrls.current.push(url); return url; }
     const formData = new FormData();
     formData.append("file", file);
     const res = await fetch("/api/admin/upload", { method: "POST", body: formData });

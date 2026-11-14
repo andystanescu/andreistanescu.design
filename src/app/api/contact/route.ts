@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSubmission, markSubmissionEmailResult } from "@/lib/submissions";
 import { getSettings } from "@/lib/settings";
 import { sendContactNotification } from "@/lib/email";
+import { recordEngagementBatch } from "@/lib/analytics";
+import { MEASUREMENT_VERSION } from "@/lib/engagementMeasurement";
+import { journeyCountryFromHeaders } from "@/lib/journeyContext";
+import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth";
+import { randomUUID } from "node:crypto";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
@@ -37,6 +42,15 @@ export async function POST(request: NextRequest) {
     markSubmissionEmailResult(id, result.ok, result.ok ? undefined : result.error);
   } else {
     markSubmissionEmailResult(id, false, "No destination address configured yet.");
+  }
+
+  // A conversion is recorded only after a real, non-honeypot submission is accepted.
+  // Analytics must never prevent an accepted enquiry from reaching the user.
+  const sessionId = typeof body?.engagementSession === "string" ? body.engagementSession : "";
+  if (sessionId && !verifySessionToken(request.cookies.get(SESSION_COOKIE_NAME)?.value)) {
+    try {
+      recordEngagementBatch(sessionId, [{ eventId: randomUUID(), type: "action", pageKey: "/contact", contentType: "contact", detail: "contact_submission" }], request.headers.get("user-agent") || "", "Direct", MEASUREMENT_VERSION, true, journeyCountryFromHeaders(request.headers));
+    } catch { /* The stored submission remains authoritative. */ }
   }
 
   return NextResponse.json({

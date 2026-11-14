@@ -1,14 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { Logo } from "@/components/Logo/Logo";
 import { LogoIcon } from "@/components/Logo/LogoIcon";
 import { AdminNav } from "@/components/admin/AdminNav/AdminNav";
 import { ViewSiteLink } from "@/components/admin/ViewSiteLink/ViewSiteLink";
 import styles from "@/app/admin/(dashboard)/dashboard.module.css";
+import navStyles from "@/components/admin/AdminNav/AdminNav.module.css";
+import { DESIGN_SYSTEM_GROUPS } from "@/lib/designSystemManifest";
 
 export function AdminSidebar({ logoIdentity, logoImage, logoIconImage }: { logoIdentity: "business" | "personal"; logoImage: string; logoIconImage: string }) {
+  const pathname = usePathname();
+  const inLibrary = pathname.startsWith("/admin/design-system");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const drawerRef = useRef<HTMLElement>(null);
@@ -120,9 +126,9 @@ export function AdminSidebar({ logoIdentity, logoImage, logoIconImage }: { logoI
       >
       <div className={styles.sidebarTop}>
         <div className={styles.brand}>
-          <div className={styles.brandLogo}>{collapsed && !mobileOpen ? logoIconImage ? <LogoIcon identity={logoIdentity} imageUrl={logoIconImage} /> : <span aria-label="Admin">A</span> : <Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} />}</div>
+          <Link href="/admin/design-system" className={styles.brandLogo} aria-label="Open design system" title="Open design system" onClick={() => closeDrawer(false)}>{collapsed && !mobileOpen ? logoIconImage ? <LogoIcon identity={logoIdentity} imageUrl={logoIconImage} /> : <span aria-hidden="true">A</span> : <Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} />}</Link>
           <p className={`${styles.brandLabel} label-eyebrow`} style={{ color: "var(--text-accent)" }}>
-            admin
+            {inLibrary ? "design system" : "admin"}
           </p>
         </div>
         <button
@@ -138,9 +144,9 @@ export function AdminSidebar({ logoIdentity, logoImage, logoIconImage }: { logoI
         </button>
         <button ref={closeButtonRef} type="button" className={styles.mobileNavClose} onClick={() => closeDrawer()} aria-label="Close admin navigation"><AdminIcon name="action-close" /></button>
       </div>
-      <ViewSiteLink />
+      {inLibrary ? <Link href="/admin" className={styles.viewSiteLink} aria-label="Return to dashboard" onClick={() => closeDrawer(false)}><AdminIcon name="direction-arrow-left" /><span>Return to dashboard</span></Link> : <ViewSiteLink />}
       <div className={styles.navWrap} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) closeDrawer(false); }}>
-        <AdminNav collapsed={collapsed && !mobileOpen} />
+        {inLibrary ? <nav className={`${navStyles.nav} ${collapsed && !mobileOpen ? navStyles.navCollapsed : ""}`} aria-label="Design system">{DESIGN_SYSTEM_GROUPS.map((group) => <div className={navStyles.group} key={group.label}><p className={navStyles.groupLabel}>{group.label}</p><div className={navStyles.groupItems}>{group.links.map(([label, id]) => <Link className={`${navStyles.navLink} ${pathname === `/admin/design-system/${id}` ? navStyles.navLinkActive : ""}`} key={id} href={`/admin/design-system/${id}`} aria-current={pathname === `/admin/design-system/${id}` ? "page" : undefined} aria-label={label} title={collapsed && !mobileOpen ? label : undefined}><span className={navStyles.icon} aria-hidden="true">·</span><span className={navStyles.linkLabel}>{label}</span></Link>)}</div></div>)}</nav> : <AdminNav collapsed={collapsed && !mobileOpen} />}
       </div>
       <form action="/api/admin/logout" method="POST">
         <button type="submit" className={styles.logout} aria-label="Sign out" title={collapsed && !mobileOpen ? "Sign out" : undefined}>

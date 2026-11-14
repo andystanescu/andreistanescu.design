@@ -1,13 +1,15 @@
 import { db } from "@/lib/db";
 import { createHmac, randomUUID } from "crypto";
 import { getSessionSecret } from "@/lib/auth";
+import { hasHumanEvidence, MEASUREMENT_VERSION } from "@/lib/engagementMeasurement";
+import { normalizeJourneyCountry, normalizeJourneySource } from "@/lib/journeyContext";
 
 export type AnalyticsContentType = "case_study" | "article" | "cv";
 
 export type VisitorContext = { source?: string; country?: string };
 
 export type EngagementContentType = "home" | "work_index" | "case_study" | "articles_index" | "article" | "services_index" | "service" | "about" | "contact" | "page";
-export type EngagementEventType = "page_view" | "interaction" | "attention" | "depth" | "chapter_view" | "action";
+export type EngagementEventType = "page_view" | "interaction" | "attention" | "depth" | "chapter_view" | "action" | "navigation" | "exposure_ready" | "exposure_seen" | "exposure_attended" | "exposure_return";
 export type EngagementInputEvent = {
   eventId: string;
   type: EngagementEventType;
@@ -35,13 +37,13 @@ const VERIFIED_BOT_UA = /googlebot|googleother|google-extended|bingbot|duckduckb
 function levelRank(level: string) { return level === "deep" ? 3 : level === "engaged" ? 2 : level === "explored" ? 1 : 0; }
 function maxLevel(...levels: string[]) { return levels.reduce((best, level) => levelRank(level) > levelRank(best) ? level : best, "visited"); }
 
-function pageEngagement(page: { content_type: string; active_seconds: number; max_depth: number; chapter_count: number; interaction_count: number }) {
+function pageEngagement(page: { content_type: string; active_seconds: number; max_depth: number; chapter_count: number; interaction_count: number }, version = 1, meaningfulAction = false, attendedSection = false) {
   const type = page.content_type;
   const isCase = type === "case_study";
   const isArticle = type === "article";
   const isService = type === "service";
   const rules: { engagedAttention: number; engagedDepth?: number; engagedChapters?: number; deepAttention: number; deepDepth?: number; deepChapters?: number } = isArticle ? ENGAGEMENT_RULES.article : isCase ? ENGAGEMENT_RULES.case_study : isService ? ENGAGEMENT_RULES.service : ENGAGEMENT_RULES.page;
-  const explored = page.active_seconds >= ENGAGEMENT_RULES.exploreAttentionSeconds || page.max_depth >= 25 || page.interaction_count >= 1 || page.chapter_count >= 1;
+  const explored = version >= MEASUREMENT_VERSION ? page.active_seconds >= ENGAGEMENT_RULES.exploreAttentionSeconds || meaningfulAction || attendedSection : page.active_seconds >= ENGAGEMENT_RULES.exploreAttentionSeconds || page.max_depth >= 25 || page.interaction_count >= 1 || page.chapter_count >= 1;
   const engaged = isCase
     ? (page.active_seconds >= rules.engagedAttention && page.chapter_count >= (rules.engagedChapters ?? 0)) || (page.active_seconds >= 120 && page.max_depth >= 50)
     : isArticle
@@ -66,16 +68,19 @@ function canonicalPageKey(value: string) {
 }
 
 /** Accept only derived, threshold-based events. Raw interaction streams are never stored. */
-export function recordEngagementBatch(sessionId: string, events: EngagementInputEvent[], userAgent: string, source = "Direct") {
+export function recordEngagementBatch(sessionId: string, events: EngagementInputEvent[], userAgent: string, source = "Direct", measurementVersion = 1, serverVerified = false, country = "") {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sessionId)) return false;
   const verifiedBot = VERIFIED_BOT_UA.test(userAgent);
-  const safeSource = ["Direct", "Google", "LinkedIn", "Other sources"].includes(source) ? source : "Other sources";
+  const safeSource = normalizeJourneySource(source);
+  const safeCountry = normalizeJourneyCountry(country);
   db.exec("BEGIN IMMEDIATE;");
   try {
-    db.prepare("INSERT OR IGNORE INTO engagement_sessions(session_id, actor_class, source) VALUES (?, ?, ?)").run(sessionId, verifiedBot ? "verified_bot" : "uncertain", safeSource);
+    db.prepare("INSERT OR IGNORE INTO engagement_sessions(session_id, actor_class, source, country, measurement_version) VALUES (?, ?, ?, ?, ?)").run(sessionId, verifiedBot ? "verified_bot" : "uncertain", safeSource, safeCountry, measurementVersion === MEASUREMENT_VERSION ? MEASUREMENT_VERSION : 1);
+    if (safeCountry) db.prepare("UPDATE engagement_sessions SET country = ? WHERE session_id = ? AND country = ''").run(safeCountry, sessionId);
     const insertEvent = db.prepare(`INSERT OR IGNORE INTO engagement_events(event_key, session_id, page_key, event_type, content_type, content_id, detail, value)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
-    const getSession = db.prepare("SELECT actor_class, started_at, interaction_count, page_count, active_seconds FROM engagement_sessions WHERE session_id = ?");
+    const getSession = db.prepare("SELECT actor_class, started_at, interaction_count, page_count, active_seconds, measurement_version FROM engagement_sessions WHERE session_id = ?");
+    const version = (getSession.get(sessionId) as { measurement_version: number }).measurement_version;
     const addSessionPage = db.prepare(`INSERT INTO engagement_pages(session_id, page_key, title, content_type, content_id)
       VALUES (?, ?, ?, ?, ?) ON CONFLICT(session_id, page_key) DO UPDATE SET last_seen_at = datetime('now'), title = CASE WHEN excluded.title <> '' THEN excluded.title ELSE engagement_pages.title END`);
     const updatePage = db.prepare(`UPDATE engagement_pages SET
@@ -91,24 +96,29 @@ export function recordEngagementBatch(sessionId: string, events: EngagementInput
       if (!event || typeof event.pageKey !== "string" || typeof event.eventId !== "string" || typeof event.type !== "string" || typeof event.contentType !== "string") continue;
       const pageKey = canonicalPageKey(event.pageKey);
       if (!pageKey || !validTypes.has(event.contentType) || !/^[0-9a-f-]{36}$/i.test(event.eventId)) continue;
-      if (!( ["page_view", "interaction", "attention", "depth", "chapter_view", "action"] as string[]).includes(event.type)) continue;
+      if (!( ["page_view", "interaction", "attention", "depth", "chapter_view", "action", "navigation", "exposure_ready", "exposure_seen", "exposure_attended", "exposure_return"] as string[]).includes(event.type)) continue;
       const contentId = (typeof event.contentId === "string" ? event.contentId : "").slice(0, 100);
       const detail = (typeof event.detail === "string" ? event.detail : "").replace(/[\r\n\u0000-\u001f]/g, " ").slice(0, 120);
+      if (event.type === "action" && detail === "contact_submission" && !serverVerified) continue;
+      if (event.type === "navigation" && !canonicalPageKey(detail)) continue;
       const value = Number.isFinite(event.value) ? Math.max(0, Math.min(event.type === "attention" ? 60 : 100, Math.floor(event.value || 0))) : 0;
       const existingPage = db.prepare("SELECT max_depth FROM engagement_pages WHERE session_id = ? AND page_key = ?").get(sessionId, pageKey) as { max_depth: number } | undefined;
       if (event.type === "depth" && existingPage && existingPage.max_depth >= value) continue;
       if (event.type === "chapter_view" && db.prepare("SELECT 1 FROM engagement_events WHERE session_id = ? AND page_key = ? AND event_type = 'chapter_view' AND detail = ? LIMIT 1").get(sessionId, pageKey, detail)) continue;
+      if (["exposure_seen", "exposure_attended", "exposure_return"].includes(event.type) && db.prepare("SELECT 1 FROM engagement_events WHERE session_id = ? AND page_key = ? AND event_type = ? AND detail = ? LIMIT 1").get(sessionId, pageKey, event.type, detail)) continue;
       const inserted = insertEvent.run(event.eventId, sessionId, pageKey, event.type, event.contentType, contentId, detail, value).changes > 0;
       if (!inserted) continue;
       addSessionPage.run(sessionId, pageKey, (typeof event.title === "string" ? event.title : "").slice(0, 180), event.contentType, contentId);
       const chapter = event.type === "chapter_view" ? 1 : 0;
       const interaction = event.type === "interaction" || event.type === "action" ? 1 : 0;
       const page = db.prepare("SELECT content_type, active_seconds, max_depth, chapter_count, interaction_count FROM engagement_pages WHERE session_id = ? AND page_key = ?").get(sessionId, pageKey) as { content_type: string; active_seconds: number; max_depth: number; chapter_count: number; interaction_count: number };
-      updatePage.run(event.type === "attention" ? value : 0, event.type === "depth" ? value : 0, chapter, interaction, pageEngagement({ ...page, active_seconds: page.active_seconds + (event.type === "attention" ? value : 0), max_depth: Math.max(page.max_depth, event.type === "depth" ? value : 0), chapter_count: page.chapter_count + chapter, interaction_count: page.interaction_count + interaction }), sessionId, pageKey);
+      const meaningfulAction = version >= MEASUREMENT_VERSION && Boolean(db.prepare("SELECT 1 FROM engagement_events WHERE session_id=? AND page_key=? AND event_type='action' AND detail IN ('category_filter','evidence_open','related_open','chapter_navigation','contact_cta','cv_download','contact_submission') LIMIT 1").get(sessionId, pageKey));
+      const attendedSection = version >= MEASUREMENT_VERSION && Boolean(db.prepare("SELECT 1 FROM engagement_events WHERE session_id=? AND page_key=? AND event_type='exposure_attended' LIMIT 1").get(sessionId, pageKey));
+      updatePage.run(event.type === "attention" ? value : 0, event.type === "depth" ? value : 0, chapter, interaction, pageEngagement({ ...page, active_seconds: page.active_seconds + (event.type === "attention" ? value : 0), max_depth: Math.max(page.max_depth, event.type === "depth" ? value : 0), chapter_count: page.chapter_count + chapter, interaction_count: page.interaction_count + interaction }, version, meaningfulAction, attendedSection), sessionId, pageKey);
       if (event.type === "page_view") db.prepare("UPDATE engagement_sessions SET page_count = (SELECT COUNT(*) FROM engagement_pages WHERE session_id = ?), last_seen_at = datetime('now') WHERE session_id = ?").run(sessionId, sessionId);
       else db.prepare("UPDATE engagement_sessions SET last_seen_at = datetime('now'), interaction_count = interaction_count + ?, active_seconds = active_seconds + ? WHERE session_id = ?").run(interaction, event.type === "attention" ? value : 0, sessionId);
     }
-    const session = getSession.get(sessionId) as { actor_class: string; started_at: string; interaction_count: number; page_count: number; active_seconds: number };
+    const session = getSession.get(sessionId) as { actor_class: string; started_at: string; interaction_count: number; page_count: number; active_seconds: number; measurement_version: number };
     const pageRows = db.prepare("SELECT * FROM engagement_pages WHERE session_id = ?").all(sessionId) as Array<{ content_type: string; active_seconds: number; max_depth: number; chapter_count: number; interaction_count: number; engagement_level: string; page_key: string }>;
     const elapsed = Math.max(0, Math.floor((Date.now() - Date.parse(`${session.started_at.replace(" ", "T")}Z`)) / 1000));
     let actor = verifiedBot ? "verified_bot" : session.actor_class;
@@ -119,11 +129,15 @@ export function recordEngagementBatch(sessionId: string, events: EngagementInput
       // input while the tab remains focused, so a modest attention threshold
       // is also useful for readers who do not continue interacting. A single
       // chapter observation is content-specific evidence of active reading.
-      else if (session.interaction_count >= 1 || session.active_seconds >= 20 || pageRows.some((page) => page.chapter_count > 0)) actor = "likely_human";
+      else if (session.measurement_version >= MEASUREMENT_VERSION) {
+        const inputs = db.prepare("SELECT COUNT(DISTINCT detail) AS count FROM engagement_events WHERE session_id=? AND event_type IN ('interaction','action') AND detail <> 'contact_submission'").get(sessionId) as { count: number };
+        actor = hasHumanEvidence(session.active_seconds, session.interaction_count, inputs.count) ? "likely_human" : "uncertain";
+      } else if (session.interaction_count >= 1 || session.active_seconds >= 20 || pageRows.some((page) => page.chapter_count > 0)) actor = "likely_human";
     }
     const groups = new Set(pageRows.map((page) => page.content_type));
     let engagement = pageRows.reduce((level, page) => maxLevel(level, page.engagement_level), "visited");
-    if (session.page_count >= 2 || session.active_seconds >= ENGAGEMENT_RULES.exploreAttentionSeconds || pageRows.some((page) => page.max_depth >= 25 || page.chapter_count > 0)) engagement = maxLevel(engagement, "explored");
+    if (session.measurement_version < MEASUREMENT_VERSION && (session.page_count >= 2 || session.active_seconds >= ENGAGEMENT_RULES.exploreAttentionSeconds || pageRows.some((page) => page.max_depth >= 25 || page.chapter_count > 0))) engagement = maxLevel(engagement, "explored");
+    if (session.measurement_version >= MEASUREMENT_VERSION && session.active_seconds >= ENGAGEMENT_RULES.exploreAttentionSeconds) engagement = maxLevel(engagement, "explored");
     if ((groups.size >= 3 && session.active_seconds >= 60) || pageRows.some((page) => page.engagement_level === "engaged" || page.engagement_level === "deep")) engagement = maxLevel(engagement, "engaged");
     if ((groups.size >= 5 && session.page_count >= 5 && session.active_seconds >= 180) || pageRows.some((page) => page.engagement_level === "deep")) engagement = maxLevel(engagement, "deep");
     db.prepare("UPDATE engagement_sessions SET actor_class = ?, engagement_level = ?, duration_seconds = ?, last_seen_at = datetime('now') WHERE session_id = ?").run(actor, engagement, elapsed, sessionId);
@@ -208,19 +222,27 @@ export function getEngagementDashboardData(range: EngagementRange, options: { co
   const journeyTotal = (db.prepare(`SELECT COUNT(*) AS total FROM engagement_sessions s WHERE s.actor_class IN ('likely_human','uncertain')${filter.clause}${journeyCondition}`).get(...filter.params) as { total: number }).total;
   const journeyPage = Math.min(requestedJourneyPage, Math.max(1, Math.ceil(journeyTotal / journeyPageSize)));
   const journeyOffset = (journeyPage - 1) * journeyPageSize;
-  const journeySessions = db.prepare(`SELECT s.session_id, s.source, s.engagement_level, s.started_at, s.duration_seconds FROM engagement_sessions s WHERE s.actor_class IN ('likely_human','uncertain')${filter.clause}${journeyCondition} ORDER BY s.started_at DESC LIMIT ? OFFSET ?`).all(...filter.params, journeyPageSize, journeyOffset) as Array<{ session_id: string; source: string; engagement_level: string; started_at: string; duration_seconds: number }>;
+  const journeySessions = db.prepare(`SELECT s.session_id, s.source, s.country, s.actor_class, s.engagement_level, s.started_at, s.duration_seconds, s.active_seconds, s.measurement_version FROM engagement_sessions s WHERE s.actor_class IN ('likely_human','uncertain')${filter.clause}${journeyCondition} ORDER BY s.started_at DESC LIMIT ? OFFSET ?`).all(...filter.params, journeyPageSize, journeyOffset) as Array<{ session_id: string; source: string; country: string; actor_class: string; engagement_level: string; started_at: string; duration_seconds: number; active_seconds: number; measurement_version: number }>;
   const journeys = journeySessions.map((session) => {
     const pageCount = (db.prepare("SELECT COUNT(*) AS count FROM engagement_pages WHERE session_id = ?").get(session.session_id) as { count: number }).count;
     const actionCount = (db.prepare("SELECT COUNT(*) AS count FROM engagement_events WHERE session_id = ? AND event_type='action'").get(session.session_id) as { count: number }).count;
     return {
       source: session.source,
+      country: session.country,
+      classification: session.actor_class,
+      measurementVersion: session.measurement_version,
       engagement: session.engagement_level,
       started: session.started_at,
       duration: session.duration_seconds,
+      activeSeconds: session.active_seconds,
       pageCount,
       actionCount,
-      pages: db.prepare("SELECT page_key, title, content_type, active_seconds, max_depth, chapter_count FROM engagement_pages WHERE session_id = ? ORDER BY id LIMIT 50").all(session.session_id) as Array<{ page_key: string; title: string; content_type: string; active_seconds: number; max_depth: number; chapter_count: number }>,
-      actions: db.prepare("SELECT detail FROM engagement_events WHERE session_id = ? AND event_type='action' ORDER BY id DESC LIMIT 30").all(session.session_id).reverse() as Array<{ detail: string }>,
+      pages: db.prepare(`SELECT p.page_key, p.title, p.content_type, p.active_seconds, p.max_depth, p.chapter_count, p.engagement_level,
+        (SELECT MAX(value) FROM engagement_events e WHERE e.session_id=p.session_id AND e.page_key=p.page_key AND e.event_type='exposure_ready') AS eligible,
+        (SELECT COUNT(DISTINCT detail) FROM engagement_events e WHERE e.session_id=p.session_id AND e.page_key=p.page_key AND e.event_type='exposure_attended') AS attended
+        FROM engagement_pages p WHERE p.session_id = ? ORDER BY p.id LIMIT 50`).all(session.session_id) as Array<{ page_key: string; title: string; content_type: string; active_seconds: number; max_depth: number; chapter_count: number; engagement_level: string; eligible: number | null; attended: number }>,
+      actions: db.prepare("SELECT page_key, detail FROM engagement_events WHERE session_id = ? AND event_type='action' ORDER BY id DESC LIMIT 30").all(session.session_id).reverse() as Array<{ page_key: string; detail: string }>,
+      contacted: Boolean(db.prepare("SELECT 1 FROM engagement_events WHERE session_id=? AND event_type='action' AND detail='contact_submission' LIMIT 1").get(session.session_id)),
     };
   });
   const trackingStart = db.prepare("SELECT MIN(started_at) AS started FROM engagement_sessions").get() as { started: string | null };

@@ -120,8 +120,10 @@ function initializeDatabase() {
 
   CREATE TABLE IF NOT EXISTS engagement_sessions (
     session_id TEXT PRIMARY KEY,
+    measurement_version INTEGER NOT NULL DEFAULT 1,
     actor_class TEXT NOT NULL DEFAULT 'uncertain',
     source TEXT NOT NULL DEFAULT 'Direct',
+    country TEXT NOT NULL DEFAULT '',
     started_at TEXT NOT NULL DEFAULT (datetime('now')),
     last_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
     page_count INTEGER NOT NULL DEFAULT 0,
@@ -165,6 +167,7 @@ function initializeDatabase() {
   CREATE INDEX IF NOT EXISTS engagement_sessions_actor ON engagement_sessions(actor_class, started_at);
   CREATE INDEX IF NOT EXISTS engagement_pages_content ON engagement_pages(content_type, content_id, first_seen_at);
   CREATE INDEX IF NOT EXISTS engagement_events_session ON engagement_events(session_id, created_at);
+  CREATE INDEX IF NOT EXISTS engagement_events_signal ON engagement_events(session_id, page_key, event_type, detail);
 
   CREATE TABLE IF NOT EXISTS pages (
     slug TEXT PRIMARY KEY,
@@ -284,6 +287,8 @@ addColumnIfMissing("analytics_events", "source", "source TEXT NOT NULL DEFAULT '
 addColumnIfMissing("analytics_events", "country", "country TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("analytics_events", "visitor_hash", "visitor_hash TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("analytics_events", "event_key", "event_key TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("engagement_sessions", "measurement_version", "measurement_version INTEGER NOT NULL DEFAULT 1");
+addColumnIfMissing("engagement_sessions", "country", "country TEXT NOT NULL DEFAULT ''");
 db.exec(`
   UPDATE analytics_events SET event_key = lower(hex(randomblob(16))) WHERE event_key = '';
   CREATE UNIQUE INDEX IF NOT EXISTS analytics_events_event_key ON analytics_events(event_key);

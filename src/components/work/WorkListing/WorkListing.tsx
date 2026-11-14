@@ -13,6 +13,10 @@ export function WorkListing({ studies, categories }: { studies: Study[]; categor
   const drag = useRef({ active: false, startX: 0, scrollLeft: 0 });
   const visibleStudies = selected === null ? studies : studies.filter((study) => study.categoryIds.includes(selected));
   const selectedName = categories.find((category) => category.id === selected)?.name;
+  const selectCategory = (category: number | null) => {
+    if (category !== selected) window.dispatchEvent(new Event("conscept:category-filter"));
+    setSelected(category);
+  };
 
   const startDrag = (event: PointerEvent<HTMLDivElement>) => {
     drag.current.active = event.pointerType !== "touch" && event.button === 0 && event.currentTarget.scrollWidth > event.currentTarget.clientWidth;
@@ -31,14 +35,14 @@ export function WorkListing({ studies, categories }: { studies: Study[]; categor
 
   return <div className={styles.listing}>
     <div className={filterStyles.filters} role="group" aria-label="Filter case studies by category" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
-      <button type="button" aria-pressed={selected === null} className={selected === null ? filterStyles.filterActive : filterStyles.filter} onClick={() => setSelected(null)}>All</button>
-      {categories.map((category) => <button key={category.id} type="button" aria-pressed={selected === category.id} className={selected === category.id ? filterStyles.filterActive : filterStyles.filter} onClick={() => setSelected(category.id)}>{category.name}</button>)}
+      <button type="button" aria-pressed={selected === null} className={selected === null ? filterStyles.filterActive : filterStyles.filter} onClick={() => selectCategory(null)}>All</button>
+      {categories.map((category) => <button key={category.id} type="button" aria-pressed={selected === category.id} className={selected === category.id ? filterStyles.filterActive : filterStyles.filter} onClick={() => selectCategory(category.id)}>{category.name}</button>)}
     </div>
     {visibleStudies.length > 0 ? <ProjectCollection studies={visibleStudies} resultClassName={filterStyles.filterResults} /> : <section key={selected} className={`${styles.empty} ${filterStyles.filterResults}`} role="status">
       <p className="label-eyebrow">NO MATCHES</p>
       <h2 className="heading-02">Nothing published in {selectedName} yet</h2>
       <p className={`body-default ${styles.emptyDescription}`}>I’m still writing up this work. Browse another category, or view all case studies.</p>
-      <button type="button" className={styles.showAll} onClick={() => setSelected(null)}>Show all case studies <span aria-hidden="true">→</span></button>
+      <button type="button" className={styles.showAll} onClick={() => selectCategory(null)}>Show all case studies <span aria-hidden="true">→</span></button>
     </section>}
   </div>;
 }

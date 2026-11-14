@@ -23,6 +23,8 @@ export function ContactForm({ personal = true }: { personal?: boolean }) {
     setState({ status: "sending" });
 
     try {
+      let engagementSession = "";
+      try { engagementSession = sessionStorage.getItem("conscept_engagement_session") || ""; } catch { /* Tracking remains optional. */ }
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -32,6 +34,7 @@ export function ContactForm({ personal = true }: { personal?: boolean }) {
           message: data.get("message"),
           company_website: data.get("company_website"),
           newsletter: data.get("newsletter") === "on",
+          engagementSession,
         }),
       });
 

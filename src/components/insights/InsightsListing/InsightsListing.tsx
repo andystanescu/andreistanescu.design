@@ -31,6 +31,7 @@ export function InsightsListing({ insights }: { insights: Insight[] }) {
   const visibleArticles = additional.slice(0, visibleCount);
 
   const selectTag = (tag: string) => {
+    if (tag !== selectedTag) window.dispatchEvent(new Event("conscept:category-filter"));
     setSelectedTag(tag);
     setVisibleCount(9);
   };

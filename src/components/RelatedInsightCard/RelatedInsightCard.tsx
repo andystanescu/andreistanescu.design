@@ -11,7 +11,7 @@ export function RelatedInsightCard({ slug, contentType = "article" }: { slug: st
   const readingMinutes = calculateReadingTime(content.body);
   const label = contentType === "case_study" ? "Case study" : "Article";
   const href = contentType === "case_study" ? `/work/${encodeURIComponent(content.slug)}` : `/insights/${encodeURIComponent(content.slug)}`;
-  return <Link href={href} className={styles.card}>
+  return <Link href={href} className={styles.card} data-related-reading>
     <div className={styles.thumbnail} style={content.thumbnail_image ? { backgroundImage: `url(${content.thumbnail_image})` } : undefined} aria-hidden="true" />
     <div className={styles.copy}><span className={styles.eyebrow}>Related reading</span><h3>{content.title}</h3><div className={styles.meta}><span>{label} · {readingMinutes} min read</span><strong>{contentType === "case_study" ? "View case study" : "Read article"} <ArrowIcon size={14} /></strong></div></div>
   </Link>;

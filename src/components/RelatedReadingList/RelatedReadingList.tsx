@@ -7,7 +7,7 @@ import styles from "./RelatedReadingList.module.css";
 export function RelatedReadingList({ items, desktopOnly = false, onNavigate }: { items: ResolvedRelatedReading[]; desktopOnly?: boolean; onNavigate?: (href: string) => void }) {
   if (!items.length) return null;
 
-  return <section className={`${styles.section} ${desktopOnly ? styles.desktopOnly : ""}`} aria-label="Related reading">
+  return <section className={`${styles.section} ${desktopOnly ? styles.desktopOnly : ""}`} aria-label="Related reading" data-related-reading>
     <h2>Related reading</h2>
     <ol>
       {items.map((item, index) => <li key={`${item.contentType}-${item.slug}-${index}`}>

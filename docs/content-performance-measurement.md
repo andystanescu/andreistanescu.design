@@ -1,0 +1,24 @@
+# Content performance measurement
+
+## Audit and scope
+
+The existing tab-scoped engagement tracker and SQLite event, page and session tables already provide the reporting architecture. Existing depth records indicate the furthest position reached, not reading. A short page can report 100% immediately; lost lifecycle events, rapid browsing and automation are other possible explanations. Historical records cannot distinguish those causes. Previously, a single input could establish likely-human status, and multiple pages or scroll alone could establish exploration. Attention was sampled and flushed, but residual time could be lost around navigation or visibility changes. Existing chapter events measured visibility, not necessarily attention. Historical submissions were not associated with a session.
+
+## New measurements
+
+- New sessions use measurement version 2. A likely-human estimate requires either 20 seconds of attentive time and an interaction, or five seconds and two distinct input signals. Known automation and rapid interaction-free sweeps retain their existing checks. Uncertain sessions are excluded from the new overview and content performance; existing journey diagnostics still include them. This is a heuristic, not identity verification.
+- Attention accrues only while visible and focused, for up to 45 seconds after an input. Pending whole seconds are flushed on navigation, visibility and focus changes, and page hide. Wheel, touch movement, selected navigation keys and pointer interactions are signals; raw scroll position changes alone do not count as interaction. Browsers can still suspend a page or prevent delivery.
+- Eligible page sections generate a reach signal and, separately, an attentive-exposure signal after a cumulative five seconds of visibility with recent activity. The visibility threshold adapts to small and large sections. Sampling is once per second, gaps are capped, section signals are deduplicated, and a return after leaving is recorded separately. At most 40 sections are measured. Headings provide section boundaries where available; outcomes are reported only where identifiable. Reach and exposure are not proof that text was read or understood.
+- The report shows the mean proportion of eligible sections receiving attentive exposure, only with at least 20 measurable page sessions. Engagement rates similarly require 20 page sessions. Older visits without exposure signals are not counted as zero exposure.
+- New same-origin navigation records source and destination paths for relevant public pages. Related reading, service evidence, category selection, chapter links, CV and contact actions are separately recorded. Accepted non-honeypot contact enquiries can be linked to the existing anonymous tab session when available; email delivery is a separate outcome. A same-session enquiry is not attributed to a page. No additional visitor identifier, session recording or typed text is collected.
+- Content performance includes likely-human sessions started in the selected period and their recorded page signals, ranks within each content type by engaged page sessions, and uses median attentive time per page session. Type-level session counts are deduplicated within each type and may overlap between types.
+
+## Historical data and limits
+
+Visitor journeys record the first referral source for a session, using a coarse named source or the referring hostname. They also record a country code only when a supported hosting or proxy header supplies one; no IP address is stored. The first available country is retained. Existing sessions without a country remain unavailable unless that same tab session later sends an event with a country header. Hostnames and country are not independently verified, and a missing header is not evidence of any location.
+
+Existing sessions retain version 1 and their stored classifications. New sessions use version 2; reopening an existing tab session does not rewrite its rules. Comparisons are hidden if their two periods contain different rule versions. The historical and new measures can coexist in a report, so interpretation should account for changing coverage. Exposure and action coverage is shown for each item. Because this is browser-side collection, blocked scripts, delivery failures and browsers without focus/lifecycle support may leave gaps. Changes to page structure can alter what a section represents between visits. No backfill is invented.
+
+## Validation
+
+Automated tests cover session filtering and aggregation, ranking, exposure coverage, rapid reach without attention, inactive time, suspended-sample caps, returning to a section and human-confidence thresholds. A full end-to-end check with real browser focus, mobile interruptions, navigation, CV and contact delivery remains necessary before treating the new data as complete.
