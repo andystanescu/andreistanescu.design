@@ -8,6 +8,7 @@
 .previewError{color:var(--text-error);margin-bottom:var(--space-200)}
 .previewContent{max-height:640px;overflow:auto;border:1px solid var(--border-default);background:var(--bg-canvas)}
 .previewContent :global(a),.previewContent :global(button){cursor:default}
+.previewContent :global(a[data-value-evidence])::after{pointer-events:none}
 .liveEditor[data-inline-ready="true"] > form [data-section-copy]{display:none}
 .previewContent [contenteditable="plaintext-only"]{cursor:text;border-radius:var(--radius-sm);outline:2px solid transparent;outline-offset:4px;min-width:0}
 .previewContent [contenteditable="plaintext-only"]:hover,.previewContent [contenteditable="plaintext-only"]:focus-visible{outline-color:var(--border-focus)}

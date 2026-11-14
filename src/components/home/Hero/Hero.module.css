@@ -191,6 +191,16 @@
     padding-block: var(--space-600) var(--hero-space-after);
   }
 
+  .diagram {
+    flex-basis: 100%;
+    justify-content: center;
+  }
+
+  .diagram > div:first-child {
+    display: flex;
+    justify-content: center;
+  }
+
   .copy,
   .headline,
   .copy > p {

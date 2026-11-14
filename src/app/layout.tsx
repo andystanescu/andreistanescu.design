@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { ScrollToTop } from "@/components/ScrollToTop/ScrollToTop";
 import { PageTransition } from "@/components/PageTransition/PageTransition";
 import { EngagementTracker } from "@/components/EngagementTracker/EngagementTracker";
+import { ScrollParallax } from "@/components/ScrollParallax/ScrollParallax";
 import { FaviconTheme } from "@/components/Logo/FaviconTheme";
 import { SITE_URL } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ScrollToTop />
         <FaviconTheme />
         <EngagementTracker />
+        <ScrollParallax />
         <PageTransition>{children}</PageTransition>
       </body>
     </html>
