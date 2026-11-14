@@ -9,6 +9,8 @@ type LogoProps = {
   theme?: "default" | "inverted";
   identity?: "business" | "personal";
   imageUrl?: string;
+  /** Use the smaller navigation lockup at the mobile breakpoint or in a mobile preview. */
+  navMobile?: "responsive" | "always";
 };
 
 const SIZES = {
@@ -17,17 +19,18 @@ const SIZES = {
   primary: { icon: 44, text: 36 },
 };
 
-export function Logo({ variant = "compact", theme = "default", identity = "business", imageUrl = "" }: LogoProps) {
+export function Logo({ variant = "compact", theme = "default", identity = "business", imageUrl = "", navMobile }: LogoProps) {
   const { icon, text } = SIZES[variant];
   const canSwapNavIcon = variant === "compact" && theme === "default" && identity === "business";
 
+  const mobileClass = navMobile === "always" ? styles.mobileAlways : navMobile === "responsive" ? styles.mobileResponsive : "";
   if (imageUrl) {
-    return <span className={`${styles.logo} ${variant === "primary" ? styles.primary : ""}`}><ThemedLogoImage variant="full" forceDark={theme === "inverted"} className={styles.logoImage} src={imageUrl} alt="Site logo" width={variant === "primary" ? 260 : 180} height={variant === "primary" ? 48 : 32} /></span>;
+    return <span className={`${styles.logo} ${variant === "primary" ? styles.primary : ""} ${mobileClass}`}><ThemedLogoImage variant="full" forceDark={theme === "inverted"} className={styles.logoImage} src={imageUrl} alt="Site logo" width={variant === "primary" ? 260 : 180} height={variant === "primary" ? 48 : 32} /></span>;
   }
 
   if (identity === "personal") {
     return (
-      <span className={`${styles.logo} ${styles.personal}`}>
+      <span className={`${styles.logo} ${styles.personal} ${mobileClass}`}>
         <PersonalLogoMark size={icon} />
         <span className={styles.wordmark} style={{ fontSize: text, letterSpacing: -text * 0.02 }}>AndreiStanescu</span>
       </span>
@@ -38,7 +41,7 @@ export function Logo({ variant = "compact", theme = "default", identity = "busin
       ? "/assets/logo-icon-footer.svg"
       : "/assets/logo-icon-nav.svg";
   return (
-    <span className={styles.logo}>
+    <span className={`${styles.logo} ${mobileClass}`}>
       {canSwapNavIcon ? (
         <span className={styles.iconSwap} style={{ width: icon, height: icon }}>
           <img

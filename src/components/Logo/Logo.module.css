@@ -8,6 +8,15 @@
 .logoImage{display:block;width:220px;height:32px;max-width:100%;object-fit:contain;object-position:left center}
 .primary .logoImage{width:340px;height:48px}
 
+.mobileAlways .logoImage{width:160px;height:24px}
+.mobileAlways .wordmark{font-size:18px!important}
+.mobileAlways svg,.mobileAlways .iconSwap{width:24px!important;height:24px!important}
+@media(max-width:900px){
+  .mobileResponsive .logoImage{width:160px;height:24px}
+  .mobileResponsive .wordmark{font-size:18px!important}
+  .mobileResponsive svg,.mobileResponsive .iconSwap{width:24px!important;height:24px!important}
+}
+
 .personal .wordmark {
   transition: color 0.15s ease;
 }

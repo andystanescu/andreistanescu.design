@@ -1,12 +1,12 @@
 .identityPanel,.themePanel{display:grid;gap:var(--space-300);margin:0}
-.identityLayout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(360px,.8fr);gap:var(--space-400);align-items:start}
+.identityLayout{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-400);align-items:start}
 .controlsColumn{display:grid;gap:var(--space-400);min-width:0}
 .controlsColumn>form{min-width:0}
 .logoPreviewGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-200);min-width:0}
 .logoPreviewColumn{display:grid;align-content:start;gap:var(--space-100);min-width:0}
 .logoPreviewTheme{color:var(--text-secondary);font:600 12px/1.4 var(--font-family-body);text-transform:uppercase}
 .logoColorControls{display:grid;gap:var(--space-150);padding:var(--space-200);border:1px solid var(--border-default);border-radius:var(--radius-md)}
-.previewPanel{position:sticky;top:var(--space-600);display:grid;gap:var(--space-300);min-width:0}
+.previewPanel{display:grid;gap:var(--space-300);min-width:0}
 .sectionHeading{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-300)}
 .sectionHeading>div{display:grid;gap:var(--space-200)}
 .sectionHeading>div p{margin:0;color:var(--text-accent)}

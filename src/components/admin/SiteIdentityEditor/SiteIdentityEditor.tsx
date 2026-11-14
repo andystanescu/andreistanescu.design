@@ -1,6 +1,7 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ChangeEvent, type CSSProperties } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ChangeEvent, type CSSProperties, type ReactNode } from "react";
+import { AdminContentTabs } from "@/components/admin/AdminContentTabs/AdminContentTabs";
 import { DEFAULT_PALETTE_ANCHORS, EDITABLE_THEME_GROUPS, generateThemePalette, isHexColor, resolveTheme, THEME_TONES, type PaletteAnchors, type ThemeOverrides, type ThemeTone } from "@/lib/themePalette";
 import adminStyles from "@/app/admin/(dashboard)/admin.module.css";
 import styles from "./SiteIdentityEditor.module.css";
@@ -45,6 +46,8 @@ function resolveAnchors(colors: ThemeColors): PaletteAnchors {
 }
 
 export function SiteIdentityEditor({
+  header,
+  initialTab,
   authorName,
   logoImage,
   logoIconImage,
@@ -56,6 +59,8 @@ export function SiteIdentityEditor({
   saved,
   error,
 }: {
+  header: ReactNode;
+  initialTab?: string;
   authorName: string;
   logoImage: string;
   logoIconImage: string;
@@ -143,12 +148,13 @@ export function SiteIdentityEditor({
     setColors((current) => ({ ...current, [key]: value }));
   }
 
-  return <div className={adminStyles.form}>
+  const status = <>
     {saved && <p className={styles.statusSuccess} role="status">{saved === "details" ? "Site details saved." : saved === "branding" ? "Branding saved." : saved === "reset" ? "The original site theme has been restored." : "Theme published."}</p>}
     {error && <p className={styles.statusError} role="alert">{error}</p>}
+  </>;
 
-    <div className={styles.identityLayout}>
-      <div className={styles.controlsColumn}>
+  return <AdminContentTabs header={header} initialTab={initialTab} tabs={[
+    { id: "author", label: "Author", content: <div className={adminStyles.form}>{status}
         <form action="/api/admin/site-identity" method="POST">
           <input type="hidden" name="form_type" value="details" />
           <section className={`${adminStyles.panel} ${styles.identityPanel}`} aria-labelledby="identity-details">
@@ -157,6 +163,8 @@ export function SiteIdentityEditor({
             <div className={adminStyles.formActions}><button type="submit" className={adminStyles.submit}><span className="label-button">Save site details</span></button></div>
           </section>
         </form>
+    </div> },
+    { id: "branding", label: "Branding", content: <div className={adminStyles.form}>{status}
         <form action="/api/admin/site-identity" method="POST" encType="multipart/form-data">
           <input type="hidden" name="form_type" value="branding" />
           <section className={`${adminStyles.panel} ${styles.identityPanel}`} aria-labelledby="identity-branding">
@@ -173,14 +181,16 @@ export function SiteIdentityEditor({
             </div>
           </section>
         </form>
-
+    </div> },
+    { id: "theme", label: "Theme", content: <div className={adminStyles.form}>{status}<div className={styles.identityLayout}>
+      <div className={styles.controlsColumn}>
         <form action="/api/admin/site-identity" method="POST">
           <input type="hidden" name="form_type" value="theme" />
           <input type="hidden" name="theme_overrides" value={JSON.stringify(overrides)} />
           <section className={`${adminStyles.panel} ${styles.themePanel}`} aria-labelledby="identity-theme">
             <div className={styles.sectionHeading}>
               <div><p className="label-eyebrow">THEME</p><h2 id="identity-theme" className="heading-03">Brand colour palettes</h2></div>
-              <p className="body-small">Set one exact 500 anchor per palette. Its OKLCH tonal scale and accessible semantic colours are previewed alongside the controls.</p>
+              <p className="body-small">Set one exact 500 anchor per palette. Its OKLCH tonal scale and accessible semantic colours are previewed below the controls.</p>
             </div>
             <div className={styles.colorRoles}>
               {ROLES.map(({ key, palette: paletteRole, label, usage }) => {
@@ -278,6 +288,6 @@ export function SiteIdentityEditor({
           })}
         </div>
       </aside>}
-    </div>
-  </div>;
+    </div></div> },
+  ]} />;
 }

@@ -7,8 +7,8 @@ import { parseLogoColorMapping } from "@/lib/logoColors";
 
 const LOGO_TYPES = new Set(["image/svg+xml", "image/png"]);
 
-function redirectError(message: string) {
-  return relativeRedirect(`/admin/site-identity?error=${encodeURIComponent(message)}`);
+function redirectError(message: string, tab: "author" | "branding" | "theme" = "author") {
+  return relativeRedirect(`/admin/site-identity?tab=${tab}&error=${encodeURIComponent(message)}`);
 }
 
 export async function POST(request: NextRequest) {
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     let logoIconImage = current.logo_icon_image;
     for (const [file, name] of [[fullLogoFile, "full logo"], [iconFile, "icon"]] as const) {
       if (file instanceof File && file.size > 0 && !LOGO_TYPES.has(file.type)) {
-        return redirectError(`Upload a PNG or SVG ${name}.`);
+        return redirectError(`Upload a PNG or SVG ${name}.`, "branding");
       }
     }
     try {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       if (iconFile instanceof File && iconFile.size > 0) logoIconImage = await saveUploadedImage(iconFile);
     } catch (error) {
       const message = error instanceof UploadError ? error.message : "The logo files could not be uploaded.";
-      return redirectError(message);
+      return redirectError(message, "branding");
     }
     updateSettings({
       logo_image: logoImage, logo_icon_image: logoIconImage,
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     neutral: String(form.get("theme_neutral_500") ?? "").trim().toUpperCase(),
   };
   const invalidRole = (Object.entries(anchors) as [keyof PaletteAnchors, string][]).find(([, color]) => !isHexColor(color))?.[0];
-  if (invalidRole) return redirectError(`${invalidRole[0].toUpperCase()}${invalidRole.slice(1)} must use a six-digit hex code.`);
+  if (invalidRole) return redirectError(`${invalidRole[0].toUpperCase()}${invalidRole.slice(1)} must use a six-digit hex code.`, "theme");
 
   try {
     const overrides = parseThemeOverrides(JSON.parse(String(form.get("theme_overrides") ?? '{"light":{},"dark":{}}')));
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     publishThemeConfiguration(JSON.stringify(theme), anchors);
   } catch (error) {
     const message = error instanceof Error ? error.message : "This theme could not be resolved safely.";
-    return redirectError(message);
+    return redirectError(message, "theme");
   }
   return relativeRedirect("/admin/site-identity?saved=theme");
 }

@@ -5,17 +5,18 @@ import styles from "../admin.module.css";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminSiteIdentityPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string }> }) {
+export default async function AdminSiteIdentityPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string; tab?: string }> }) {
   const query = await searchParams;
   const settings = getSettings();
   const publishedTheme = settings.theme_config ? parsePublishedTheme(settings.theme_config) : null;
   const anchors = publishedTheme?.anchors;
-  return <>
-    <div className={`${styles.pageHeader} ${styles.pageHeaderStacked}`}>
+  const initialTab = ["author", "branding", "theme"].includes(query.tab || "") ? query.tab : query.saved === "branding" ? "branding" : query.saved === "theme" || query.saved === "reset" ? "theme" : "author";
+  return <SiteIdentityEditor
+      header={<div className={`${styles.pageHeader} ${styles.pageHeaderStacked}`}>
       <h1 className="heading-01">Site identity</h1>
       <p className={`body-small ${styles.helper}`}>Manage the author, logos and colours shared across the site.</p>
-    </div>
-    <SiteIdentityEditor
+    </div>}
+      initialTab={initialTab}
       authorName={settings.author_name}
       logoImage={settings.logo_image}
       logoIconImage={settings.logo_icon_image}
@@ -31,6 +32,5 @@ export default async function AdminSiteIdentityPage({ searchParams }: { searchPa
       }}
       saved={query.saved ?? ""}
       error={query.error}
-    />
-  </>;
+    />;
 }
