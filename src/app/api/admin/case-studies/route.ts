@@ -6,6 +6,9 @@ import { applyHeadingAccents } from "@/lib/headingAccents";
 import { getSettings } from "@/lib/settings";
 import { dateInputValue } from "@/lib/dateUtils";
 import { readCategorySelection, replaceCaseStudyCategories } from "@/lib/categories";
+import bcrypt from "bcryptjs";
+import { getSessionSecret } from "@/lib/auth";
+import { encryptCaseStudyPassword } from "@/lib/caseStudyPasswordEncryption";
 
 export async function POST(request: NextRequest) {
   const form = await request.formData();
@@ -34,6 +37,14 @@ export async function POST(request: NextRequest) {
   const inProgress = form.get("in_progress") === "on" ? 1 : 0;
   const author = getSettings().author_name;
   const publishedAt = dateInputValue(String(form.get("published_at") ?? "").trim());
+  const passwordRequired = form.get("password_required") === "on" ? 1 : 0;
+  let additions: Array<{ name: string; password: string }> = [];
+  try {
+    const parsed: unknown = JSON.parse(String(form.get("password_add") ?? "[]"));
+    if (Array.isArray(parsed)) additions = parsed.filter((entry): entry is { name: string; password: string } => Boolean(entry) && typeof entry.password === "string" && Boolean(entry.password.trim())).map((entry) => ({ name: typeof entry.name === "string" && entry.name.trim() ? entry.name.trim() : "Unnamed guest", password: entry.password.trim() }));
+  } catch { additions = []; }
+  const uniqueAdditions = additions.filter((entry, index) => additions.findIndex((other) => other.password === entry.password) === index);
+  const passwordHashes = await Promise.all(uniqueAdditions.map(async (entry) => ({ ...entry, hash: await bcrypt.hash(entry.password, 12) })));
 
   if (!slug || !title || !description) {
     const url = new URL("/admin/case-studies/new", request.url);
@@ -82,6 +93,11 @@ export async function POST(request: NextRequest) {
       noIndex
     );
     if (categories) replaceCaseStudyCategories(Number(result.lastInsertRowid), categories);
+    if (passwordRequired || passwordHashes.length) {
+      const studyId = String(result.lastInsertRowid);
+      const entries = passwordHashes.map(({ name, password, hash }) => ({ name, hash, encrypted: encryptCaseStudyPassword(password, getSessionSecret(), studyId) }));
+      db.prepare("UPDATE case_studies SET password_required = ?, password_hashes = ? WHERE id = ?").run(passwordRequired, JSON.stringify(entries), studyId);
+    }
     db.exec("COMMIT");
   } catch {
     if (db.isTransaction) db.exec("ROLLBACK");

@@ -64,6 +64,14 @@
 .passwordCard button{flex:0 0 auto;padding:var(--space-100) var(--space-100);border:1px solid var(--border-default);border-radius:var(--radius-md);background:transparent;color:var(--text-secondary);font:500 12px/1 var(--font-family-body);cursor:pointer}
 .passwordCard button:hover,.passwordCard button:focus-visible{border-color:var(--accent-foundation);color:var(--text-primary)}
 @media (max-width:600px){.passwordCard{align-items:flex-start;flex-direction:column}.passwordCard button{width:100%}}
+.passwordFields{display:flex;min-width:0;flex-direction:column;gap:var(--space-200);margin:0;padding:0;border:0}
+.passwordCard>div.passwordCardActions{display:flex;flex-direction:row;flex-wrap:wrap;gap:var(--space-100)}
+.passwordCard small{color:var(--text-tertiary);font:12px/1.4 var(--font-family-body)}
+.passwordInput{display:flex;min-width:0;flex:1;align-items:center;gap:var(--space-100)}
+.passwordInput input{min-width:0;flex:1}
+.passwordInput button{padding:var(--space-100);border:1px solid var(--border-default);border-radius:var(--radius-md);background:transparent;color:var(--text-secondary);cursor:pointer}
+.passwordError{margin:0;color:var(--text-error);font:12px/1.4 var(--font-family-body)}
+@media(max-width:600px){.passwordInput{width:100%}.passwordCard>div.passwordCardActions{width:100%}.passwordCardActions button{flex:1}}
 
 /* Keep the editor header and right rail on the same desktop grid. */
 .editorHeader{align-self:stretch;width:100%;box-sizing:border-box;grid-template-columns:minmax(0,1fr) 360px;isolation:isolate}

@@ -30,7 +30,7 @@ export default async function EditCaseStudyPage({
   }
   // Database drivers can return objects with a null prototype. Normalize the
   // values before passing them across the Server/Client Component boundary.
-  const clientStudy = { ...study };
+  const clientStudy = { ...study, password_hashes: "[]" };
   const metrics = getCaseStudyMetrics(study).map((metric) => ({ ...metric }));
   const storedAssessment = getCaseStudyAssessment(study);
   const categories = getCategories();
@@ -43,10 +43,10 @@ export default async function EditCaseStudyPage({
     conductedEngagementIds: [...storedAssessment.conductedEngagementIds],
     engagements: storedAssessment.engagements ? Object.fromEntries(Object.entries(storedAssessment.engagements).map(([key, items]) => [key, items?.map((item) => ({ ...item })) ?? []])) : undefined,
   };
-  let passwordEntries: Array<{ name: string; masked: string }> = [];
+  let passwordEntries: Array<{ name: string; masked: string; revealable: boolean }> = [];
   try {
     const hashes = JSON.parse(study.password_hashes || "[]");
-    passwordEntries = Array.isArray(hashes) ? hashes.map((entry, index) => ({ name: typeof entry === "object" && entry && "name" in entry && typeof entry.name === "string" ? entry.name : `Password ${index + 1}`, masked: "••••••••" })) : [];
+    passwordEntries = Array.isArray(hashes) ? hashes.map((entry, index) => ({ name: typeof entry === "object" && entry && "name" in entry && typeof entry.name === "string" ? entry.name : `Password ${index + 1}`, masked: "••••••••", revealable: Boolean(typeof entry === "object" && entry && typeof entry.encrypted === "string") })) : [];
   } catch { passwordEntries = []; }
 
   return (

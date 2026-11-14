@@ -18,7 +18,7 @@ import type { RelatedReadingOption } from "@/lib/relatedReadings";
 import { addHeadingIds } from "@/lib/tableOfContents";
 
 type CategoryOption = { id: number; name: string };
-type PasswordEntry = { name: string; masked: string };
+type PasswordEntry = { name: string; masked: string; revealable?: boolean };
 type Props = { study: CaseStudy; metrics: CaseStudyMetric[]; assessment: CaseStudyAssessment; categories: CategoryOption[]; selectedCategoryIds: number[]; relatedReadings: RelatedReadingOption[]; existingTags: string[]; passwordRequired: boolean; passwordEntries: PasswordEntry[]; authorAvatarUrl?: string; action?: string };
 type Tab = "details" | "outcomes" | "assessment" | "content" | "metadata" | "visibility";
 
@@ -30,6 +30,9 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
   const formRef = useRef<HTMLFormElement>(null);
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saved" | "saving" | "error">("idle");
+  const [savedPasswords, setSavedPasswords] = useState(passwordEntries);
+  const [pendingPasswords, setPendingPasswords] = useState<Array<{ name: string; password: string }>>([]);
+  const [removedPasswords, setRemovedPasswords] = useState<number[]>([]);
   const initialWorkingBody = study.body_draft ?? study.body;
   const [bodyValue, setBodyValue] = useState(initialWorkingBody);
   const [bodyDraftEnabled, setBodyDraftEnabled] = useState(Boolean(study.body_draft_enabled));
@@ -125,6 +128,8 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
     try {
       const response = await fetch(form.action, { method: "POST", body: formData });
       if (!response.ok) throw new Error("Draft save failed");
+      const result = await response.json() as { passwordEntries?: PasswordEntry[] };
+      if (Array.isArray(result.passwordEntries)) { setSavedPasswords(result.passwordEntries); setPendingPasswords([]); setRemovedPasswords([]); }
       setSaveState("saved");
       if (saveStatusTimerRef.current) clearTimeout(saveStatusTimerRef.current);
       saveStatusTimerRef.current = setTimeout(() => setSaveState("idle"), 5000);
@@ -259,7 +264,7 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
         <div className={styles.sectionIntro}><span className="label-eyebrow">Visibility</span><p className="body-default">Control what visitors can see while you develop and publish this case study.</p></div>
         <label className={styles.visibilitySwitch}><span><strong>In progress</strong><small>Keep the introduction and outcomes live, while replacing the assessment and full write-up with an In Progress message.</small></span><input type="checkbox" name="in_progress" defaultChecked={Boolean(study.in_progress)} /><span aria-hidden="true" /></label>
         <label className={styles.visibilitySwitch}><span><strong>Password required</strong><small>When enabled, visitors can see the hero and outcomes, but must enter a password to read the case study.</small></span><input type="checkbox" name="password_required" defaultChecked={passwordRequired} /><span aria-hidden="true" /></label>
-        <div className={styles.passwordManager}><div className={styles.passwordManagerHeader}><div><h2 className="heading-03">Accepted passwords</h2><p className="body-small">{passwordEntries.length} active {passwordEntries.length === 1 ? "password" : "passwords"}. New passwords remain visible until this draft is saved.</p></div></div><PasswordManager passwordEntries={passwordEntries} onCommit={markUnsaved} /></div>
+        <div className={styles.passwordManager}><div className={styles.passwordManagerHeader}><div><h2 className="heading-03">Accepted passwords</h2><p className="body-small">{savedPasswords.length - removedPasswords.length} active {savedPasswords.length - removedPasswords.length === 1 ? "password" : "passwords"}. Save to apply changes.</p></div></div><PasswordManager studyId={study.id} passwordEntries={savedPasswords} pending={pendingPasswords} setPending={setPendingPasswords} removed={removedPasswords} setRemoved={setRemovedPasswords} disabled={saveState === "saving"} onCommit={markUnsaved} /></div>
       </section>
 
       </div>
@@ -308,13 +313,34 @@ function TagEditor({ initialValue, existingTags, onCommit }: { initialValue: str
   return <div className={adminStyles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Tags</span><input type="hidden" name="tags" value={tags.join(" · ")} /><div className={styles.tagComposer}><input aria-label="Add tags" value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addTags(); } }} placeholder="Add one tag or paste several separated by commas" className={adminStyles.input} /><button type="button" className={styles.addTagButton} onClick={addTags}>Add tags</button></div><TagSuggestions draft={draft} existingTags={existingTags} selectedTags={tags} onSelect={(tag) => { setTags((current) => [...current, tag]); setDraft(""); onCommit(); }} /><div className={styles.tagList} aria-label="Added tags">{tags.map((tag) => <span className={styles.tag} key={tag}>{tag}<button type="button" aria-label={`Remove ${tag}`} onClick={() => removeTag(tag)}><AdminIcon name="action-close" /></button></span>)}</div><small className={styles.tagHint}>Only tags shown here are published. Separate multiple tags with commas, semicolons, or new lines.</small></div>;
 }
 
-function PasswordManager({ passwordEntries, onCommit }: { passwordEntries: PasswordEntry[]; onCommit: () => void }) {
+function PasswordManager({ studyId, passwordEntries, pending, setPending, removed, setRemoved, disabled, onCommit }: { studyId: number; passwordEntries: PasswordEntry[]; pending: Array<{ name: string; password: string }>; setPending: React.Dispatch<React.SetStateAction<Array<{ name: string; password: string }>>>; removed: number[]; setRemoved: React.Dispatch<React.SetStateAction<number[]>>; disabled: boolean; onCommit: () => void }) {
   const [draft, setDraft] = useState("");
   const [draftName, setDraftName] = useState("");
-  const [pending, setPending] = useState<Array<{ name: string; password: string }>>([]);
-  const [removed, setRemoved] = useState<number[]>([]);
+  const [showDraft, setShowDraft] = useState(false);
+  const [revealed, setRevealed] = useState<Record<number, string>>({});
+  const [revealedPending, setRevealedPending] = useState<string[]>([]);
+  const [revealError, setRevealError] = useState("");
   const addPasswords = () => { const incoming = draft.split(/[,;\n|]+/).map((password) => password.trim()).filter(Boolean); if (!incoming.length) return; const name = draftName.trim() || "Unnamed guest"; setPending((current) => [...current, ...incoming.filter((password) => !current.some((item) => item.password === password)).map((password) => ({ name, password }))]); setDraft(""); setDraftName(""); onCommit(); };
   const removePending = (password: string) => { setPending((current) => current.filter((item) => item.password !== password)); onCommit(); };
   const removeExisting = (index: number) => { setRemoved((current) => [...current, index]); onCommit(); };
-  return <><input type="hidden" name="password_add" value={JSON.stringify(pending)} />{removed.map((index) => <input type="hidden" name="password_remove" value={index} key={index} />)}{passwordEntries.length > 0 && <div className={styles.passwordCards} aria-label="Accepted passwords">{passwordEntries.map((entry, index) => !removed.includes(index) && <div className={styles.passwordCard} key={`${entry.name}-${index}`}><div><strong>{entry.name}</strong><span>{entry.masked}</span></div><button type="button" aria-label={`Remove password for ${entry.name}`} onClick={() => removeExisting(index)}>Remove</button></div>)}</div>}<div className={styles.passwordComposer}><input type="text" value={draftName} onChange={(event) => setDraftName(event.target.value)} placeholder="Name or person" className={adminStyles.input} /><input type="text" value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addPasswords(); } }} placeholder="Enter a password" className={adminStyles.input} autoComplete="new-password" /><button type="button" className={styles.addTagButton} onClick={addPasswords}>Add password</button></div>{pending.length > 0 && <div className={styles.passwordCards} aria-label="Passwords queued to add">{pending.map((entry) => <div className={styles.passwordCard} key={entry.password}><div><strong>{entry.name}</strong><span>{entry.password}</span></div><button type="button" aria-label={`Remove pending password for ${entry.name}`} onClick={() => removePending(entry.password)}>Remove</button></div>)}</div>}<small className={styles.tagHint}>Give each password a name. New passwords are visible while editing and become masked after saving.</small></>;
+  const toggleReveal = async (index: number) => {
+    if (revealed[index] !== undefined) { setRevealed((current) => { const next = { ...current }; delete next[index]; return next; }); return; }
+    setRevealError("");
+    try {
+      const response = await fetch(`/api/admin/case-studies/${studyId}/password-reveal`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ index }), cache: "no-store" });
+      const result = await response.json() as { password?: string; error?: string };
+      if (!response.ok || typeof result.password !== "string") throw new Error(result.error || "Password could not be revealed.");
+      setRevealed((current) => ({ ...current, [index]: result.password! }));
+    } catch (error) { setRevealError(error instanceof Error ? error.message : "Password could not be revealed."); }
+  };
+  return <fieldset className={styles.passwordFields} disabled={disabled}>
+    <input type="hidden" name="password_add" value={JSON.stringify(pending)} />{removed.map((index) => <input type="hidden" name="password_remove" value={index} key={index} />)}
+    {(passwordEntries.length > removed.length || pending.length > 0) && <div className={styles.passwordCards} aria-label="Accepted and pending passwords">
+      {passwordEntries.map((entry, index) => !removed.includes(index) && <div className={styles.passwordCard} key={`${entry.name}-${index}`}><div><strong>{entry.name}</strong><span>{revealed[index] ?? entry.masked}</span>{!entry.revealable && <small>Saved before reveal was available; replace to reveal.</small>}</div><div className={styles.passwordCardActions}>{entry.revealable && <button type="button" aria-label={`${revealed[index] !== undefined ? "Hide" : "Reveal"} password for ${entry.name}`} onClick={() => void toggleReveal(index)}>{revealed[index] !== undefined ? "Hide" : "Reveal"}</button>}<button type="button" aria-label={`Remove password for ${entry.name}`} onClick={() => { setRevealed({}); removeExisting(index); }}>Remove</button></div></div>)}
+      {pending.map((entry) => <div className={styles.passwordCard} key={entry.password}><div><strong>{entry.name} · Unsaved</strong><span>{revealedPending.includes(entry.password) ? entry.password : "••••••••"}</span></div><div className={styles.passwordCardActions}><button type="button" onClick={() => setRevealedPending((current) => current.includes(entry.password) ? current.filter((value) => value !== entry.password) : [...current, entry.password])}>{revealedPending.includes(entry.password) ? "Hide" : "Reveal"}</button><button type="button" aria-label={`Remove pending password for ${entry.name}`} onClick={() => removePending(entry.password)}>Remove</button></div></div>)}
+    </div>}
+    {revealError && <p className={styles.passwordError} role="alert">{revealError}</p>}
+    <div className={styles.passwordComposer}><input type="text" value={draftName} onChange={(event) => setDraftName(event.target.value)} placeholder="Name or person" className={adminStyles.input} /><div className={styles.passwordInput}><input type={showDraft ? "text" : "password"} value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addPasswords(); } }} placeholder="Enter a password" className={adminStyles.input} autoComplete="new-password" /><button type="button" onClick={() => setShowDraft((current) => !current)} aria-label={`${showDraft ? "Hide" : "Reveal"} new password`}>{showDraft ? "Hide" : "Reveal"}</button></div><button type="button" className={styles.addTagButton} onClick={addPasswords}>Add password</button></div>
+    <small className={styles.tagHint}>New passwords can be revealed after saving. Older passwords cannot be recovered; replace them if needed.</small>
+  </fieldset>;
 }

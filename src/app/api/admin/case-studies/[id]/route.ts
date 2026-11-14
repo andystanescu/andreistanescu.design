@@ -9,6 +9,8 @@ import { getSettings } from "@/lib/settings";
 import { dateInputValue } from "@/lib/dateUtils";
 import { addHeadingIds } from "@/lib/tableOfContents";
 import { readCategorySelection, replaceCaseStudyCategories } from "@/lib/categories";
+import { getSessionSecret } from "@/lib/auth";
+import { encryptCaseStudyPassword } from "@/lib/caseStudyPasswordEncryption";
 
 export async function POST(
   request: NextRequest,
@@ -143,10 +145,10 @@ export async function POST(
     "thumbnail_image",
     existing?.thumbnail_image ?? ""
   );
-  let existingPasswordHashes: Array<{ name: string; hash: string }> = [];
+  let existingPasswordHashes: Array<{ name: string; hash: string; encrypted?: string }> = [];
   try {
     const parsed = JSON.parse(existing?.password_hashes || "[]");
-    existingPasswordHashes = Array.isArray(parsed) ? parsed.map((value, index) => typeof value === "string" ? { name: `Password ${index + 1}`, hash: value } : value && typeof value === "object" && typeof value.hash === "string" ? { name: typeof value.name === "string" && value.name.trim() ? value.name.trim() : `Password ${index + 1}`, hash: value.hash } : null).filter((value): value is { name: string; hash: string } => Boolean(value)) : [];
+    existingPasswordHashes = Array.isArray(parsed) ? parsed.map((value, index) => typeof value === "string" ? { name: `Password ${index + 1}`, hash: value } : value && typeof value === "object" && typeof value.hash === "string" ? { name: typeof value.name === "string" && value.name.trim() ? value.name.trim() : `Password ${index + 1}`, hash: value.hash, ...(typeof value.encrypted === "string" ? { encrypted: value.encrypted } : {}) } : null).filter((value): value is { name: string; hash: string; encrypted?: string } => Boolean(value)) : [];
   } catch { existingPasswordHashes = []; }
   let passwordAdditions: Array<{ name: string; password: string }> = [];
   try {
@@ -155,8 +157,14 @@ export async function POST(
   } catch {
     passwordAdditions = rawPasswordAdditions.split(/[,;\n|]+/).map((password) => password.trim()).filter(Boolean).map((password) => ({ name: "Unnamed guest", password }));
   }
-  const addedPasswordHashes = await Promise.all(passwordAdditions.map(async ({ name, password }) => ({ name, hash: await bcrypt.hash(password, 12) })));
-  const passwordHashes = JSON.stringify([...existingPasswordHashes.filter((_, index) => !passwordRemovals.includes(index)), ...addedPasswordHashes]);
+  const retainedPasswords = existingPasswordHashes.filter((_, index) => !passwordRemovals.includes(index));
+  const addedPasswordHashes: Array<{ name: string; hash: string; encrypted: string }> = [];
+  for (const { name, password } of passwordAdditions) {
+    const matches = await Promise.all([...retainedPasswords, ...addedPasswordHashes].map((entry) => bcrypt.compare(password, entry.hash)));
+    if (!matches.some(Boolean)) addedPasswordHashes.push({ name, hash: await bcrypt.hash(password, 12), encrypted: encryptCaseStudyPassword(password, getSessionSecret(), id) });
+  }
+  const savedPasswords = [...retainedPasswords, ...addedPasswordHashes];
+  const passwordHashes = JSON.stringify(savedPasswords);
 
   try {
     db.exec("BEGIN IMMEDIATE");
@@ -210,7 +218,7 @@ export async function POST(
   }
 
   if (intent === "draft") {
-    return NextResponse.json({ saved: true, published: Boolean(published) });
+    return NextResponse.json({ saved: true, published: Boolean(published), passwordEntries: savedPasswords.map((entry) => ({ name: entry.name, masked: "••••••••", revealable: Boolean(entry.encrypted) })) });
   }
 
   return relativeRedirect("/admin/case-studies");

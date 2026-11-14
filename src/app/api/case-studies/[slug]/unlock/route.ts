@@ -14,7 +14,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   let valid = false;
   for (const hash of hashes) { if (await bcrypt.compare(password, hash)) { valid = true; break; } }
   if (!valid) {
-    if (request.headers.get("x-card-unlock") === "1") return NextResponse.json({ error: "That password was not recognised." }, { status: 401 });
+    if (request.headers.get("x-card-unlock") === "1") return NextResponse.json({ error: "That password didn’t work. Check it and try again, or ask me for a new one." }, { status: 401 });
     return NextResponse.redirect(new URL(`/work/${encodeURIComponent(slug)}?accessError=1`, request.url), 303);
   }
   const response = request.headers.get("x-card-unlock") === "1"
