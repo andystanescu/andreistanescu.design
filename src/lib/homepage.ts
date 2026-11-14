@@ -12,6 +12,7 @@ export type HomepageSection = {
   cta_primary_href: string;
   cta_secondary_label: string;
   cta_secondary_href: string;
+  content: string;
 };
 
 export function getSection(key: string): HomepageSection | undefined {
@@ -39,7 +40,7 @@ export function getSectionOrder(): string[] {
         "SELECT key FROM homepage_sections WHERE fixed = 0 AND visible = 1 ORDER BY position ASC"
       )
       .all() as { key: string }[]
-  ).map((r) => r.key).filter((key) => ["services", "approach", "selected_impact", "latest_insights"].includes(key));
+  ).map((r) => r.key).filter((key) => ["value", "services", "approach", "selected_impact", "latest_insights"].includes(key));
 }
 
 export function updateSection(
@@ -53,13 +54,14 @@ export function updateSection(
     ctaSecondaryLabel?: string;
     ctaSecondaryHref?: string;
     visible?: boolean;
+    content?: string;
   }
 ) {
   db.prepare(
     `UPDATE homepage_sections
      SET eyebrow = ?, headline = ?, description = ?,
          cta_primary_label = ?, cta_primary_href = ?,
-         cta_secondary_label = ?, cta_secondary_href = ?, visible = ?
+         cta_secondary_label = ?, cta_secondary_href = ?, visible = ?, content = COALESCE(?, content)
      WHERE key = ?`
   ).run(
     update.eyebrow,
@@ -70,6 +72,7 @@ export function updateSection(
     update.ctaSecondaryLabel ?? "",
     update.ctaSecondaryHref ?? "",
     update.visible === false ? 0 : 1,
+    update.content ?? null,
     key
   );
 }

@@ -8,6 +8,7 @@ import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import styles from "./InlineSectionCard.module.css";
 import { SectionLivePreview } from "./SectionLivePreview";
 import { CvUpload } from "@/components/admin/CvUpload/CvUpload";
+import { getValueEvidenceOptions, parseValueContent } from "@/lib/homepageValue";
 
 type Props = {
   section: HomepageSection | AboutSection;
@@ -22,6 +23,8 @@ export function InlineSectionCard({ section, label, parent, fixed = false, reord
   const aboutHero = parent === "about" && section.key === "hero";
   const action = `/api/admin/${parent}/${section.key}`;
   const settings = aboutHero ? getSettings() : null;
+  const valueItems = parent === "homepage" && section.key === "value" ? parseValueContent((section as HomepageSection).content) : null;
+  const valueOptions = valueItems ? getValueEvidenceOptions() : [];
   return (
     <div className={styles.card}>
       <details className={styles.details}>
@@ -43,6 +46,15 @@ export function InlineSectionCard({ section, label, parent, fixed = false, reord
           {aboutHero && settings && <CvUpload currentUrl={settings.about_cv} currentName={settings.about_cv_name} currentSize={settings.about_cv_size} />}
           <label className={adminStyles.field} data-section-copy="headline"><span className="label-small">Headline (wrap a word in #like this# for orange)</span><input name="headline" defaultValue={section.headline} required className={adminStyles.input} /></label>
           <label className={adminStyles.field} data-section-copy="description"><span className="label-small">Description</span><textarea name="description" defaultValue={section.description} className={adminStyles.textarea} /></label>
+          {valueItems && <><p className="body-small">Edit each value proposition in the preview and choose an optional published case study or article as evidence.</p>{valueItems.map((item, index) => {
+            const selected = item.evidence ? `${item.evidence.type}:${item.evidence.id}` : "";
+            const available = valueOptions.some((option) => `${option.type}:${option.id}` === selected);
+            return <div className={adminStyles.field} key={index}>
+              <input type="hidden" name={`value_${index}_title`} defaultValue={item.title} />
+              <input type="hidden" name={`value_${index}_description`} defaultValue={item.description} />
+              <label className={adminStyles.field}><span className="label-small">Evidence for proposition {index + 1}</span><select name={`value_${index}_evidence`} defaultValue={selected} className={adminStyles.input}><option value="">No evidence selected</option>{selected && !available && <option value={selected}>Previously selected item is unavailable</option>}{valueOptions.map((option) => <option key={`${option.type}:${option.id}`} value={`${option.type}:${option.id}`} data-href={option.href} data-type={option.type === "case_study" ? "Case study" : "Article"}>{option.type === "case_study" ? "Case study" : "Article"} · {option.title}</option>)}</select></label>
+            </div>;
+          })}</>}
           {parent === "homepage" && section.key === "hero" && <>
             <p className="body-small">Edit button labels in the preview and set their destinations here. Leave a destination empty to hide that button.</p>
             <label className={adminStyles.field}><span className="label-small">Primary button destination</span><input name="cta_primary_href" defaultValue={(section as HomepageSection).cta_primary_href} className={adminStyles.input} /></label>

@@ -5,6 +5,7 @@ import { Services } from "@/components/home/Services/Services";
 import { Approach } from "@/components/home/Approach/Approach";
 import { SelectedImpact } from "@/components/home/SelectedImpact/SelectedImpact";
 import { LatestInsights } from "@/components/home/LatestInsights/LatestInsights";
+import { Value } from "@/components/home/Value/Value";
 import { Footer } from "@/components/Footer/Footer";
 import { getSectionOrder } from "@/lib/homepage";
 import styles from "./page.module.css";
@@ -22,6 +23,7 @@ export function generateMetadata(): Metadata {
 }
 
 const SECTION_COMPONENTS: Record<string, ComponentType> = {
+  value: Value,
   services: Services,
   approach: Approach,
   selected_impact: SelectedImpact,

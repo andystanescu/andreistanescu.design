@@ -1,5 +1,5 @@
 export const LAYOUT_SECTIONS = {
-  homepage: { hero: "Hero", services: "Services", approach: "Approach", selected_impact: "Selected Impact", latest_insights: "Latest Insights" },
+  homepage: { hero: "Hero", value: "The Value I Bring", services: "Services", approach: "Approach", selected_impact: "Selected Impact", latest_insights: "Latest Insights" },
   about: { hero: "Hero", drives_me: "What Drives Me", philosophy: "Philosophy", highlights: "Highlights", latest_insights: "Latest Insights", before_conscept: "Before ConScept" },
 };
 export type LayoutPage = keyof typeof LAYOUT_SECTIONS;

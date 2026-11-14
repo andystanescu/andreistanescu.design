@@ -53,7 +53,19 @@ export async function GET(request: NextRequest) {
   const configuration = {
     categories: db.prepare("SELECT name, description, position FROM categories ORDER BY position, id").all(),
     settings: db.prepare("SELECT key, value FROM settings WHERE key NOT IN ('admin_credentials', 'session_secret', 'shared_categories_v1') ORDER BY key").all(),
-    homepageSections: db.prepare("SELECT * FROM homepage_sections ORDER BY position, key").all(),
+    homepageSections: (db.prepare("SELECT * FROM homepage_sections ORDER BY position, key").all() as Array<Record<string, unknown>>).map((section) => {
+      if (section.key !== "value" || typeof section.content !== "string") return section;
+      try {
+        const content = JSON.parse(section.content) as { propositions?: Array<{ evidence?: { type?: string; id?: number; slug?: string } | null }> };
+        for (const proposition of content.propositions ?? []) {
+          const evidence = proposition.evidence;
+          if (!evidence || !Number.isSafeInteger(evidence.id)) continue;
+          const table = evidence.type === "case_study" ? "case_studies" : evidence.type === "article" ? "insights" : null;
+          if (table) evidence.slug = (db.prepare(`SELECT slug FROM ${table} WHERE id = ?`).get(evidence.id!) as { slug: string } | undefined)?.slug;
+        }
+        return { ...section, content: JSON.stringify(content) };
+      } catch { return section; }
+    }),
     services: db.prepare("SELECT * FROM service_items ORDER BY position, id").all(),
     approachSteps: db.prepare("SELECT * FROM approach_steps ORDER BY position, id").all(),
     aboutSections: db.prepare("SELECT * FROM about_sections ORDER BY position, key").all(),

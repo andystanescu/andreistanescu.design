@@ -391,6 +391,7 @@ addColumnIfMissing(
   "cta_secondary_href TEXT NOT NULL DEFAULT ''"
 );
 addColumnIfMissing("homepage_sections", "visible", "visible INTEGER NOT NULL DEFAULT 1");
+addColumnIfMissing("homepage_sections", "content", "content TEXT NOT NULL DEFAULT '{}'");
 addColumnIfMissing("about_sections", "visible", "visible INTEGER NOT NULL DEFAULT 1");
 addColumnIfMissing("about_sections", "cta_label", "cta_label TEXT NOT NULL DEFAULT ''");
 
@@ -669,6 +670,18 @@ for (const section of SEED_HOMEPAGE_SECTIONS) {
       section.fixed
     );
   }
+}
+
+if (!getSectionStmt.get("value")) {
+  const applicant = db.prepare("SELECT id FROM case_studies WHERE slug = ? AND published = 1 AND password_required = 0").get("mobile-first-applicant-center") as { id: number } | undefined;
+  const content = JSON.stringify({ propositions: [
+    { title: "Better decisions", description: "I look beyond the initial brief to understand the underlying problem, challenge assumptions and help teams focus on what will make the greatest difference.", evidence: applicant ? { type: "case_study", id: applicant.id } : null },
+    { title: "Connected thinking", description: "I connect product, design, engineering and business considerations, building systems that allow teams to solve today’s problems without compromising their ability to solve tomorrow’s.", evidence: null },
+    { title: "Practical delivery", description: "I turn product decisions into functioning, maintainable solutions, working across design and implementation and applying AI where it genuinely adds value.", evidence: null },
+  ] });
+  const firstPosition = (db.prepare("SELECT COALESCE(MIN(position), 0) AS position FROM homepage_sections WHERE fixed = 0").get() as { position: number }).position;
+  db.prepare("UPDATE homepage_sections SET position = ? WHERE key = 'selected_impact'").run(firstPosition - 1);
+  db.prepare(`INSERT INTO homepage_sections (key, eyebrow, headline, description, position, fixed, content) VALUES ('value', 'THE VALUE I BRING', ?, ?, ?, 0, ?)`).run("Experience is valuable. What you do with it matters more.", "I bring over 15 years of product design experience, but the value isn’t simply in the years. It’s in knowing which assumptions to challenge, how to make complex decisions manageable, and how to turn those decisions into products that work.", firstPosition - 2, content);
 }
 
 // One-time backfill for the hero CTA buttons (columns added after "hero"

@@ -37,11 +37,17 @@ export function SectionLivePreview({ sectionKey, page, preview, children, photoI
       if (!eyebrow) { eyebrow = document.createElement("p"); eyebrow.className = "label-eyebrow"; container.insertBefore(eyebrow, heading); }
       mark(eyebrow, "eyebrow", "Section eyebrow");
     }
-    if (page === "about" || ["hero", "approach", "selected_impact"].includes(sectionKey)) {
+    if (page === "about" || ["hero", "value", "approach", "selected_impact"].includes(sectionKey)) {
       const descriptionClass = sectionKey === "hero" || (page === "about" && sectionKey === "before_conscept") ? "body-large" : page === "about" ? "body-default" : "body-small";
       let description = container.querySelector<HTMLElement>(`p.${descriptionClass}`);
       if (!description) { description = document.createElement("p"); description.className = descriptionClass; heading.insertAdjacentElement("afterend", description); }
       mark(description, "description", "Section description");
+    }
+    if (page === "homepage" && sectionKey === "value") {
+      root.querySelectorAll<HTMLElement>("[data-value-field]").forEach((node) => {
+        const name = node.dataset.valueField;
+        if (name) mark(node, name, name.endsWith("_title") ? "Proposition title" : "Proposition description");
+      });
     }
     const markLinkLabel = (link: Element | null, name: string, label: string) => {
       if (!link) return;
@@ -145,7 +151,7 @@ export function SectionLivePreview({ sectionKey, page, preview, children, photoI
       }
       if (eyebrow) { eyebrow.textContent = value("eyebrow"); eyebrow.hidden = !value("eyebrow"); }
     }
-    if (event.target.name === "description" && (page === "about" || ["hero", "approach", "selected_impact"].includes(sectionKey))) {
+    if (event.target.name === "description" && (page === "about" || ["hero", "value", "approach", "selected_impact"].includes(sectionKey))) {
       const className = sectionKey === "hero" || (page === "about" && sectionKey === "before_conscept") ? "body-large" : page === "about" ? "body-default" : "body-small";
       let description = container.querySelector<HTMLElement>(`p.${className}`);
       if (!description && value("description")) {
@@ -164,7 +170,23 @@ export function SectionLivePreview({ sectionKey, page, preview, children, photoI
       setInlineError("Add a headline before saving this section.");
       previewRef.current?.querySelector<HTMLElement>('[data-edit-field="headline"]')?.focus();
     }
-  }} onChange={(event) => { if (event.target instanceof HTMLInputElement && event.target.type === "file") updatePreview(event); }}>
+  }} onChange={(event) => {
+    if (event.target instanceof HTMLInputElement && event.target.type === "file") updatePreview(event);
+    if (sectionKey === "value" && event.target instanceof HTMLSelectElement && /^value_\d_evidence$/.test(event.target.name)) {
+      const index = event.target.name.split("_")[1];
+      const link = previewRef.current?.querySelector<HTMLAnchorElement>(`[data-value-evidence="${index}"]`);
+      const option = event.target.selectedOptions[0];
+      if (link) {
+        const href = option?.dataset.href;
+        link.hidden = !href;
+        if (href) link.href = href;
+        const type = link.querySelector("span");
+        const title = link.querySelector("strong");
+        if (type) type.textContent = option?.dataset.type || "";
+        if (title) title.textContent = option?.textContent?.replace(/^(Case study|Article) · /, "") || "";
+      }
+    }
+  }}>
     {children}
     <div className={styles.livePreview} aria-label="Live section preview">
       <p className={styles.previewLabel}>{inlineReady ? "Live preview · Select text to edit. In headings, wrap words in # to add an accent colour." : "Live preview"}</p>
@@ -200,7 +222,7 @@ export function SectionLivePreview({ sectionKey, page, preview, children, photoI
         const node = event.target;
         if (!(node instanceof HTMLElement) || !node.hasAttribute("data-edit-field")) return;
         if (event.key === "Escape") { event.preventDefault(); node.textContent = originalValue.current; const input = field(node.getAttribute("data-edit-field")!); if (input) input.value = originalValue.current; node.blur(); }
-        if (event.key === "Enter" && node.getAttribute("data-edit-field") !== "description") { event.preventDefault(); node.blur(); }
+        if (event.key === "Enter" && !node.getAttribute("data-edit-field")?.endsWith("description")) { event.preventDefault(); node.blur(); }
       }}>
         {preview}
         {photoTarget && createPortal(<label className={styles.photoUpload} title="Upload About photo"><input type="file" name="about_hero_image" form={`section-${page}-${sectionKey}`} accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml" aria-label="Upload About photo" aria-describedby="about-photo-help" /><span className={styles.photoUploadIcon} aria-hidden="true"><AdminIcon name="action-upload" /></span></label>, photoTarget)}

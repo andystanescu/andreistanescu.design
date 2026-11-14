@@ -144,11 +144,11 @@ export async function POST(request: NextRequest) {
       }
       const saveHomepageSection = db.prepare(`INSERT OR REPLACE INTO homepage_sections
         (key, eyebrow, headline, description, position, fixed, cta_primary_label,
-         cta_primary_href, cta_secondary_label, cta_secondary_href, visible)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+         cta_primary_href, cta_secondary_label, cta_secondary_href, visible, content)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
       for (const record of homepageSections) {
         const key = text(record, "key").trim();
-        if (key) saveHomepageSection.run(key, text(record, "eyebrow"), text(record, "headline"), text(record, "description"), integer(record, "position"), integer(record, "fixed"), text(record, "cta_primary_label"), text(record, "cta_primary_href"), text(record, "cta_secondary_label"), text(record, "cta_secondary_href"), integer(record, "visible", 1));
+        if (key) saveHomepageSection.run(key, text(record, "eyebrow"), text(record, "headline"), text(record, "description"), integer(record, "position"), integer(record, "fixed"), text(record, "cta_primary_label"), text(record, "cta_primary_href"), text(record, "cta_secondary_label"), text(record, "cta_secondary_href"), integer(record, "visible", 1), text(record, "content", "{}"));
       }
 
       const services = Array.isArray(configuration.services) ? configuration.services : [];
@@ -293,6 +293,22 @@ export async function POST(request: NextRequest) {
           text(record, "meta_title"), text(record, "meta_description"), text(record, "meta_keywords"),
           text(record, "canonical_url"), text(record, "og_image"), integer(record, "no_index")
         );
+      }
+
+      // Database IDs differ between installations. Reconnect exported value
+      // evidence by slug after the referenced content has been imported.
+      const importedValue = homepageSections.find((record) => text(record, "key") === "value");
+      if (importedValue) {
+        try {
+          const content = JSON.parse(text(importedValue, "content", "{}")) as { propositions?: Array<{ evidence?: { type?: string; slug?: string; id?: number } | null }> };
+          for (const proposition of content.propositions ?? []) {
+            const evidence = proposition.evidence;
+            const table = evidence?.type === "case_study" ? "case_studies" : evidence?.type === "article" ? "insights" : null;
+            const item = table && evidence?.slug ? db.prepare(`SELECT id FROM ${table} WHERE slug = ?`).get(evidence.slug) as { id: number } | undefined : undefined;
+            proposition.evidence = item && evidence ? { type: evidence.type, id: item.id } : null;
+          }
+          db.prepare("UPDATE homepage_sections SET content = ? WHERE key = 'value'").run(JSON.stringify(content));
+        } catch { /* Preserve malformed content for correction in the editor. */ }
       }
 
       const upsertPage = db.prepare(

@@ -7,6 +7,7 @@ import { Services } from "@/components/home/Services/Services";
 import { Approach } from "@/components/home/Approach/Approach";
 import { SelectedImpact } from "@/components/home/SelectedImpact/SelectedImpact";
 import { LatestInsights } from "@/components/home/LatestInsights/LatestInsights";
+import { Value } from "@/components/home/Value/Value";
 import { LayoutEditor } from "@/components/admin/LayoutEditor/LayoutEditor";
 import { getLayoutConfiguration } from "@/lib/layoutConfiguration";
 import { MetadataFields } from "@/components/admin/MetadataFields/MetadataFields";
@@ -19,6 +20,7 @@ export const dynamic = "force-dynamic";
 
 const LABELS: Record<string, string> = {
   hero: "Hero",
+  value: "The Value I Bring",
   services: "Services",
   approach: "Approach",
   selected_impact: "Selected Impact",
@@ -35,7 +37,7 @@ export default async function AdminHomepagePage({
   const settings = getSettings();
   const fixedSections = sections.filter((s) => s.fixed);
   const reorderable = sections.filter((s) => !s.fixed);
-  const previews: Record<string, React.ReactNode> = { hero: <Hero preview />, services: <Services />, approach: <Approach />, selected_impact: <SelectedImpact />, latest_insights: <LatestInsights /> };
+  const previews: Record<string, React.ReactNode> = { hero: <Hero preview />, value: <Value />, services: <Services />, approach: <Approach />, selected_impact: <SelectedImpact />, latest_insights: <LatestInsights /> };
 
   return (
     <>
