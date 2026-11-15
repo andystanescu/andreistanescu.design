@@ -26,6 +26,16 @@
 .spacingRow code{width:100px;flex-shrink:0}.spacingRow>span:nth-child(2){height:var(--space-200);background:var(--accent-foundation);border-radius:var(--radius-sm)}
 .spacingRow>span:last-child{color:var(--text-secondary);font-size:12px}
 .actionRow{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-200)}
+.radiusSample{display:grid;place-items:center;min-width:var(--space-1200);min-height:var(--space-800);padding:var(--space-200);border:1px solid var(--border-default);background:var(--bg-subtle)}
+.brandSamples{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-600)}
+.brandSamples>div{display:flex;align-items:center;gap:var(--space-200)}
+.tokenList{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-150)}
+.tokenList>div{display:flex;align-items:center;gap:var(--space-100);min-width:0}
+.tokenList span{flex:0 0 var(--space-300);height:var(--space-300);border:1px solid var(--border-default);border-radius:var(--radius-sm)}
+.tokenList code{font:500 12px/1.4 var(--font-family-mono);overflow-wrap:anywhere}
+.benefitIcons{display:flex;gap:var(--space-300);padding:var(--space-300);background:var(--bg-deep)}
+.benefitIcons svg{width:44px;height:44px}
+.exampleCode{min-width:0}
 .demoStatus{color:var(--text-tertiary);font-size:14px}
 .formDemo{display:grid;gap:var(--space-300);max-width:640px}
 .tags{display:flex;flex-wrap:wrap;gap:var(--space-100)}.tags button{padding:var(--space-50) var(--space-150);border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-primary);cursor:pointer}

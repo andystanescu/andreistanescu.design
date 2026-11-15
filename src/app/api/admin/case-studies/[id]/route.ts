@@ -1,4 +1,5 @@
 import { relativeRedirect } from "@/lib/relativeRedirect";
+import { overviewFromForm } from "@/lib/caseStudyOverview";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resolveImageField } from "@/lib/uploads";
@@ -170,7 +171,7 @@ export async function POST(
     db.exec("BEGIN IMMEDIATE");
     db.prepare(
       `UPDATE case_studies
-       SET slug = ?, eyebrow = ?, category = ?, year = ?, project_role = ?, contribution = ?, timeline = ?, scope = ?, team = ?, title = ?, description = ?, tags = ?, body = ?, body_draft = ?, body_draft_enabled = ?, cover_image = ?, thumbnail_image = ?, outcome_eyebrow = ?, outcome_title = ?, metrics = ?, assessment = ?, password_required = ?, password_hashes = ?, published = ?, in_progress = ?, author = ?, published_at = ?, meta_title = ?, meta_description = ?, meta_keywords = ?, canonical_url = ?, og_image = ?, no_index = ?
+       SET slug = ?, eyebrow = ?, category = ?, year = ?, project_role = ?, contribution = ?, timeline = ?, scope = ?, team = ?, title = ?, description = ?, tags = ?, body = ?, body_draft = ?, body_draft_enabled = ?, cover_image = ?, thumbnail_image = ?, outcome_eyebrow = ?, outcome_title = ?, metrics = ?, assessment = ?, overview = ?, password_required = ?, password_hashes = ?, published = ?, in_progress = ?, author = ?, published_at = ?, meta_title = ?, meta_description = ?, meta_keywords = ?, canonical_url = ?, og_image = ?, no_index = ?
        WHERE id = ?`
     ).run(
       slug,
@@ -194,6 +195,7 @@ export async function POST(
       outcomeTitle,
       metrics,
       assessment,
+      overviewFromForm(form),
       passwordRequired,
       passwordHashes,
       published,

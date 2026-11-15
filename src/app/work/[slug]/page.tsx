@@ -25,6 +25,8 @@ import { RelatedReadingList } from "@/components/RelatedReadingList/RelatedReadi
 import { resolveRelatedReadings } from "@/lib/relatedReadings";
 import { CaseStudyHero } from "@/components/work/CaseStudyHero/CaseStudyHero";
 import { AssessmentDisclosure } from "./AssessmentDisclosure";
+import { CaseStudyOverview } from "@/components/work/CaseStudyOverview/CaseStudyOverview";
+import { canShowCaseStudyOverview, parseCaseStudyOverview } from "@/lib/caseStudyOverview";
 
 export const dynamic = "force-dynamic";
 
@@ -80,6 +82,7 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
   try { const parsed = JSON.parse(study.password_hashes || "[]"); passwordHashes = Array.isArray(parsed) ? parsed.map((value) => typeof value === "string" ? value : value && typeof value === "object" && typeof value.hash === "string" ? value.hash : null).filter((value): value is string => Boolean(value)) : []; } catch { passwordHashes = []; }
   const accessToken = cookieStore.get(caseStudyAccessCookieName(study.slug))?.value;
   const accessGranted = preview || !study.password_required || verifyCaseStudyAccessToken(accessToken, study.slug, passwordHashes);
+  const overview = parseCaseStudyOverview(study.overview);
   const renderedBody = accessGranted ? (preview && study.body_draft !== null ? study.body_draft : study.body) : "";
   const { html: bodyHtml, toc } = addHeadingIds(renderedBody);
   const relatedReadings = resolveRelatedReadings(getRelatedReadingReferences(renderedBody));
@@ -124,11 +127,12 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
     <ContentViewTracker contentType="case_study" contentId={study.slug} />
     <main className={styles.main}>
       <CaseStudyHero slug={study.slug} category={study.category} company={study.eyebrow} title={study.title} summary={study.description} author={authorName} publicationDetails={publicationDetails} tags={study.tags} role={study.project_role} contribution={study.contribution} timeline={study.timeline} scope={study.scope} team={study.team} coverImage={study.cover_image} impactEyebrow={study.outcome_eyebrow || "Impact"} impactTitle={study.outcome_title} metrics={metrics} />
-      {showInProgress && <section className={`container ${styles.inProgress}`}><span className={styles.inProgressBadge}>Write-up in progress</span><h2>The results are in. The story behind them is still being written.</h2><p>This case study is being written up in full—the challenge, the shift in approach, and what was built. The outcomes above are real and already delivered; the full narrative is still being prepared.</p></section>}
+      {canShowCaseStudyOverview(overview, accessGranted) && <CaseStudyOverview overview={overview} target={showInProgress || accessGranted ? "case-study-story" : "protected-story-title"} followsOutcomes={metrics.length > 0} />}
+      {showInProgress && <section id="case-study-story" className={`container ${styles.inProgress}`}><span className={styles.inProgressBadge}>Write-up in progress</span><h2>The results are in. The story behind them is still being written.</h2><p>This case study is being written up in full—the challenge, the shift in approach, and what was built. The outcomes above are real and already delivered; the full narrative is still being prepared.</p></section>}
       {!showInProgress && !accessGranted && <CaseStudyPasswordGate slug={study.slug} error={query.accessError ? "That password was not recognised." : undefined} />}
       {!showInProgress && accessGranted && <div className={`container ${styles.layout}`}>
         {(pageToc.length > 0 || relatedReadings.length > 0) && <aside className={styles.toc}><TableOfContents items={pageToc} relatedReadings={relatedReadings} /><RelatedReadingList items={relatedReadings} desktopOnly /></aside>}
-        <article className={styles.articleBody}>{assessmentBlock && !assessmentSplit && assessmentBlock}{assessmentSplit ? <><RichContent html={assessmentSplit.before} />{assessmentBlock}<RichContent html={assessmentSplit.after} /></> : <RichContent html={bodyHtml} />}
+        <article id="case-study-story" className={styles.articleBody}>{assessmentBlock && !assessmentSplit && assessmentBlock}{assessmentSplit ? <><RichContent html={assessmentSplit.before} />{assessmentBlock}<RichContent html={assessmentSplit.after} /></> : <RichContent html={bodyHtml} />}
       </article>
       </div>}
       {(previous || next) && <nav className={`container ${styles.caseNav}`} aria-label="Case study navigation">{previous ? <Link href={`/work/${previous.slug}`}><span>Previous case study</span><strong>{previous.title}</strong></Link> : <span />}{next ? <Link href={`/work/${next.slug}`} className={styles.next}><span>Next case study</span><strong>{next.title}</strong></Link> : <span />}</nav>}

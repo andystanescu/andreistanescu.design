@@ -27,6 +27,7 @@ export type CaseStudy = {
   in_progress: number;
   outcome_eyebrow: string;
   outcome_title: string;
+  overview: string;
   metrics: string;
   assessment: string;
   password_required: number;

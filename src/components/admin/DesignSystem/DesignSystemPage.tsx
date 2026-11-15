@@ -4,6 +4,7 @@ import { getSettings } from "@/lib/settings";
 import { generateThemePalette, parsePublishedTheme } from "@/lib/themePalette";
 import { DESIGN_SYSTEM_FILES } from "@/lib/designSystemManifest";
 import { DesignSystem } from "./DesignSystem";
+import { ArticleHero } from "@/components/insights/ArticleHero/ArticleHero";
 
 export function DesignSystemPage({ section }: { section?: string }) {
   const settings = getSettings();
@@ -16,5 +17,6 @@ export function DesignSystemPage({ section }: { section?: string }) {
     catch { return { path, code: "", unavailable: true }; }
   });
   const iconSources = section === "icons" ? Object.fromEntries(icons.map((name) => [name, readFileSync(join(process.cwd(), "public", "assets", "lattice", `${name}.svg`), "utf8")])) : {};
-  return <DesignSystem palettes={palettes} icons={icons} iconSources={iconSources} section={section} sources={sources} />;
+  const articleHero = section === "layouts" ? <ArticleHero slug="example" title="A clearer way to make decisions" excerpt="A short introduction to the article." author="Example author" publishedAt="2025-01-01" dateLabel="1 Jan 2025" readingMinutes={5} /> : undefined;
+  return <DesignSystem palettes={palettes} icons={icons} iconSources={iconSources} section={section} sources={sources} identity={settings.logo_identity} logoImage={settings.logo_image} logoIconImage={settings.logo_icon_image} navigationStyle={settings.navigation_style} articleHero={articleHero} />;
 }

@@ -1,4 +1,5 @@
 import { relativeRedirect } from "@/lib/relativeRedirect";
+import { overviewFromForm } from "@/lib/caseStudyOverview";
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { resolveImageField } from "@/lib/uploads";
@@ -62,8 +63,8 @@ export async function POST(request: NextRequest) {
   try {
     db.exec("BEGIN IMMEDIATE");
     const result = db.prepare(
-      `INSERT INTO case_studies (slug, eyebrow, category, year, project_role, contribution, timeline, scope, team, title, description, tags, body, cover_image, thumbnail_image, position, published, in_progress, author, published_at, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index)
-       VALUES (${Array(26).fill("?").join(",")})`
+      `INSERT INTO case_studies (slug, eyebrow, category, year, project_role, contribution, timeline, scope, team, title, description, tags, body, cover_image, thumbnail_image, position, published, in_progress, author, published_at, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index, overview)
+       VALUES (${Array(27).fill("?").join(",")})`
     ).run(
       slug,
       eyebrow,
@@ -90,7 +91,8 @@ export async function POST(request: NextRequest) {
       metaKeywords,
       canonicalUrl,
       ogImage,
-      noIndex
+      noIndex,
+      overviewFromForm(form)
     );
     if (categories) replaceCaseStudyCategories(Number(result.lastInsertRowid), categories);
     if (passwordRequired || passwordHashes.length) {

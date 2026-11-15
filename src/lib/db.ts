@@ -302,6 +302,7 @@ addColumnIfMissing("case_studies", "scope", "scope TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "team", "team TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "outcome_eyebrow", "outcome_eyebrow TEXT NOT NULL DEFAULT 'OUTCOMES'");
 addColumnIfMissing("case_studies", "outcome_title", "outcome_title TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("case_studies", "overview", "overview TEXT NOT NULL DEFAULT '{}'");
 addColumnIfMissing("case_studies", "metrics", "metrics TEXT NOT NULL DEFAULT '[]'");
 addColumnIfMissing("case_studies", "assessment", "assessment TEXT NOT NULL DEFAULT '{}'");
 addColumnIfMissing("case_studies", "password_required", "password_required INTEGER NOT NULL DEFAULT 0");

@@ -16,14 +16,16 @@ import { MetadataFields } from "@/components/admin/MetadataFields/MetadataFields
 import Link from "next/link";
 import type { RelatedReadingOption } from "@/lib/relatedReadings";
 import { addHeadingIds } from "@/lib/tableOfContents";
+import { parseCaseStudyOverview } from "@/lib/caseStudyOverview";
 
 type CategoryOption = { id: number; name: string };
 type PasswordEntry = { name: string; masked: string; revealable?: boolean };
 type Props = { study: CaseStudy; metrics: CaseStudyMetric[]; assessment: CaseStudyAssessment; categories: CategoryOption[]; selectedCategoryIds: number[]; relatedReadings: RelatedReadingOption[]; existingTags: string[]; passwordRequired: boolean; passwordEntries: PasswordEntry[]; authorAvatarUrl?: string; action?: string };
-type Tab = "details" | "outcomes" | "assessment" | "content" | "metadata" | "visibility";
+type Tab = "details" | "outcomes" | "overview" | "assessment" | "content" | "metadata" | "visibility";
 
 export function CaseStudyEditor({ study, metrics, assessment, categories, selectedCategoryIds, relatedReadings, existingTags, passwordRequired, passwordEntries, authorAvatarUrl, action }: Props) {
   const editing = study.id > 0;
+  const overview = parseCaseStudyOverview(study.overview);
   const [tab, setTab] = useState<Tab>(editing ? "content" : "details");
   const studyAuthor = "author" in study && typeof study.author === "string" ? study.author : "";
   const publishedDate = "published_at" in study && typeof study.published_at === "string" ? study.published_at : "";
@@ -166,9 +168,9 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
           <div className={styles.editorHeading}><p className={styles.editorEyebrow}>ADMIN · CASE STUDY</p><h1>{editing ? study.title : "New case study"}</h1></div>
           <div className={styles.editorActions}>{saveState !== "idle" && <span className={styles.saveStatus}>{saveState === "saving" ? "Saving…" : saveState === "error" ? "Save failed" : "Saved"}</span>}{editing && <><button type="button" className={adminStyles.secondaryButton} onClick={() => void saveDraft()}>Save</button><Link href={`/work/${encodeURIComponent(study.slug)}?preview=1`} target="_blank" className={adminStyles.secondaryButton}>Preview</Link></>}<Link href="/admin/case-studies" className={adminStyles.tertiaryButton}>Cancel</Link><button type="submit" name="intent" value={editing ? "publish" : "draft"} className={adminStyles.submit}>{editing ? "Publish" : "Create case study"}</button></div>
         <div className={styles.tabs} role="tablist" aria-label="Case study details">
-        {(["details", "outcomes", "assessment", "content", "metadata", "visibility"] as const).map((value) => (
+        {(["details", "outcomes", "overview", "assessment", "content", "metadata", "visibility"] as const).map((value) => (
           <button key={value} id={`case-study-tab-${value}`} type="button" role="tab" aria-selected={tab === value} aria-controls={`case-study-panel-${value}`} tabIndex={tab === value ? 0 : -1} className={tab === value ? styles.tabActive : styles.tab} onClick={() => setTab(value)}>
-            {value === "details" ? "Details" : value === "outcomes" ? "Outcomes" : value === "assessment" ? "Assessment" : value === "metadata" ? "Metadata and SEO" : value === "visibility" ? "Visibility" : "Content"}
+            {value === "details" ? "Details" : value === "outcomes" ? "Outcomes" : value === "overview" ? "Overview" : value === "assessment" ? "Assessment" : value === "metadata" ? "Metadata and SEO" : value === "visibility" ? "Visibility" : "Content"}
           </button>
         ))}
         </div>
@@ -196,6 +198,17 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
         <Field label="Outcomes eyebrow"><input name="outcome_eyebrow" defaultValue={study.outcome_eyebrow || "OUTCOMES"} className={adminStyles.input} /></Field>
         <Field label="Outcomes title"><input name="outcome_title" defaultValue={study.outcome_title} className={adminStyles.input} /></Field>
         <div className={adminStyles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Metrics (up to 6)</span>{Array.from({ length: 6 }, (_, i) => { const metric = metrics[i]; return <div key={i} className={styles.metricRow}><input name={`metric_${i + 1}_value`} defaultValue={metric?.value} placeholder="40+" className={adminStyles.input} /><input name={`metric_${i + 1}_label`} defaultValue={metric?.label} placeholder="Reusable components" className={adminStyles.input} /></div>; })}</div>
+      </section>
+
+      <section id="case-study-panel-overview" role="tabpanel" aria-labelledby="case-study-tab-overview" hidden={tab !== "overview"} className={styles.panel} aria-label="Overview">
+        <div className={styles.sectionIntro}><span className="label-eyebrow">Overview</span><p className="body-default">Give readers a concise summary. The overview is hidden when the title and all three descriptions are empty.</p></div>
+        <Field label="Eyebrow"><input name="overview_eyebrow" defaultValue={overview.eyebrow} className={adminStyles.input} /></Field>
+        <Field label="Overview title"><textarea name="overview_title" defaultValue={overview.title} className={adminStyles.textarea} rows={2} /></Field>
+        <Field label="The situation"><textarea name="overview_situation" defaultValue={overview.situation} className={adminStyles.textarea} rows={4} /></Field>
+        <Field label="What I did"><textarea name="overview_contribution" defaultValue={overview.contribution} className={adminStyles.textarea} rows={4} /></Field>
+        <Field label="What changed"><textarea name="overview_change" defaultValue={overview.change} className={adminStyles.textarea} rows={4} /></Field>
+        <label className={adminStyles.checkboxField}><input type="checkbox" name="overview_public" role="switch" defaultChecked={overview.publicWhenProtected} /><span className={adminStyles.switch} aria-hidden="true" /><span>Show overview without a password</span></label>
+        <p className="body-small">When off, the overview is visible only after a protected case study is unlocked. Unprotected case studies show it normally.</p>
       </section>
 
       <section id="case-study-panel-assessment" role="tabpanel" aria-labelledby="case-study-tab-assessment" hidden={tab !== "assessment"} className={styles.panel} aria-label="Assessment">

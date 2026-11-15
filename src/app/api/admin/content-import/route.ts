@@ -252,6 +252,7 @@ export async function POST(request: NextRequest) {
           text(record, "meta_title"), text(record, "meta_description"), text(record, "meta_keywords"),
           text(record, "canonical_url"), text(record, "og_image"), integer(record, "no_index")
         );
+        if (typeof record.overview === "string") db.prepare("UPDATE case_studies SET overview = ? WHERE slug = ?").run(record.overview, slug);
         if (Array.isArray(record.category_names)) {
           const study = db.prepare("SELECT id FROM case_studies WHERE slug = ?").get(slug) as { id: number };
           db.prepare("DELETE FROM case_study_categories WHERE case_study_id = ?").run(study.id);
