@@ -382,7 +382,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           eyebrowClassName={styles.deliveryEyebrow}
           titleClassName={`heading-02 ${styles.deliveryHeading}`}
         />
-        <ul className={styles.deliverables}>{sectionContent.workItems.map((item, index) => <li key={index}>{item}</li>)}</ul>
+        <ul className={styles.deliverables}>{sectionContent.workItems.map((item, index) => <li key={index}><span>{item}</span></li>)}</ul>
       </ServiceSection> : <ServiceSection labelledBy="service-deliverables-title" width={workLayout !== "collaboration-alignment" ? "wide" : "contained"} className={`${styles.delivery} ${workLayout === "product-architecture" && !aiWorkLayout ? styles.architectureDelivery : ""} ${aiWorkLayout ? styles.aiOperationsDelivery : ""} ${workLayout === "governance-scale" ? styles.governanceDelivery : ""} ${workLayout === "collaboration-alignment" ? styles.collaborationDelivery : ""}`}>
         <div className={styles.deliveryCopy}>
           <ServiceSectionHeader
@@ -392,7 +392,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             eyebrowClassName={styles.deliveryEyebrow}
             titleClassName={`heading-02 ${styles.deliveryHeading}`}
           />
-          <ul className={styles.deliverables}>{sectionContent.workItems.map((item, index) => <li key={index}>{item}</li>)}</ul>
+          <ul className={styles.deliverables}>{sectionContent.workItems.map((item, index) => <li key={index}><span>{item}</span></li>)}</ul>
         </div>
         {aiWorkLayout ? <AiOperationsGraphic /> : workLayout === "product-architecture" ? <ProductArchitectureGraphic /> : null}
       </ServiceSection>)),

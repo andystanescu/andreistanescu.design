@@ -34,7 +34,7 @@ export function WorkListing({ studies, categories }: { studies: Study[]; categor
   };
 
   return <div className={styles.listing}>
-    <div className={filterStyles.filters} role="group" aria-label="Filter case studies by category" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
+    <div className={filterStyles.filters} role="group" aria-label="Filter case studies by category" data-scroll-group onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
       <button type="button" aria-pressed={selected === null} className={selected === null ? filterStyles.filterActive : filterStyles.filter} onClick={() => selectCategory(null)}>All</button>
       {categories.map((category) => <button key={category.id} type="button" aria-pressed={selected === category.id} className={selected === category.id ? filterStyles.filterActive : filterStyles.filter} onClick={() => selectCategory(category.id)}>{category.name}</button>)}
     </div>

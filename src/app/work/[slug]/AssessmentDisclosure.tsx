@@ -6,7 +6,7 @@ import styles from "./case-study.module.css";
 type Dimension = { label: string; score: number };
 
 export function AssessmentDisclosure({ overall, interpretation, dimensions, children }: { overall: string; interpretation: string; dimensions: Dimension[]; children: ReactNode }) {
-  return <details id="assessment-overview" className={styles.assessmentDisclosure}>
+  return <details id="assessment-overview" className={styles.assessmentDisclosure} data-story-entrance>
     <summary className={styles.assessmentCompact}>
       <span className={styles.assessmentCompactEyebrow}>Assessment</span>
       <strong>{overall || "Complexity assessment"}</strong>

@@ -48,7 +48,7 @@ export default function WorkPage() {
         )}
 
         <section className={`${styles.outcome} section-dark`} aria-labelledby="work-outcome-title">
-          <div className="container">
+          <div className="container" data-scroll-group>
             <p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>THE OUTCOME</p>
             <div className={styles.outcomeGrid}>
               <h2 id="work-outcome-title" className="heading-02">{settings.work_outcome_title}</h2>

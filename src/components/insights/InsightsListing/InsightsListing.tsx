@@ -63,7 +63,7 @@ export function InsightsListing({ insights }: { insights: Insight[] }) {
   return (
     <>
       <section className={styles.featuredSection}>
-        <div className={styles.filters} role="list" aria-label="Filter articles by tag" onPointerDown={startFilterDrag} onPointerMove={moveFilterDrag} onPointerUp={endFilterDrag} onPointerCancel={endFilterDrag}>
+        <div className={styles.filters} role="list" aria-label="Filter articles by tag" data-scroll-group onPointerDown={startFilterDrag} onPointerMove={moveFilterDrag} onPointerUp={endFilterDrag} onPointerCancel={endFilterDrag}>
           <button type="button" aria-pressed={selectedTag === "All"} className={selectedTag === "All" ? styles.filterActive : styles.filter} onClick={() => selectTag("All")}>All</button>
           {tags.map((tag) => (
             <button key={tag} type="button" aria-pressed={selectedTag === tag} className={selectedTag === tag ? styles.filterActive : styles.filter} onClick={() => selectTag(tag)}>{tag}</button>

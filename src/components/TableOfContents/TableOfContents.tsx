@@ -118,7 +118,7 @@ export function TableOfContents({ items, relatedReadings = [] }: { items: TocIte
   return (
     <>
       {items.length > 0 && (
-        <nav className={styles.desktopNavigator} aria-label="On this page">
+        <nav className={styles.desktopNavigator} aria-label="On this page" data-story-entrance>
           <div className={styles.desktopHeader}>
             <span>ON THIS PAGE</span>
             <span>{String(activeIndex + 1).padStart(digits, "0")} / {String(items.length).padStart(digits, "0")}</span>
@@ -138,7 +138,7 @@ export function TableOfContents({ items, relatedReadings = [] }: { items: TocIte
           </ol>
         </nav>
       )}
-      <div ref={responsiveRef} className={`${styles.navigator} ${open ? styles.navigatorOpen : ""}`}>
+      <div ref={responsiveRef} className={`${styles.navigator} ${open ? styles.navigatorOpen : ""}`} data-story-entrance>
         <button ref={toggleRef} type="button" className={styles.navigatorToggle} aria-expanded={open} aria-controls="chapter-navigator-panel" onClick={() => open ? closeNavigator() : openNavigator()}>
           <span className={styles.position}>{items.length > 0 ? `${String(activeIndex + 1).padStart(digits, "0")} / ${String(items.length).padStart(digits, "0")}` : "Related"}</span>
           <span className={styles.current}>{activeItem?.text || "Reading"}</span>

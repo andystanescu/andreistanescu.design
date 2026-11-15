@@ -22,7 +22,7 @@ export function ProjectCard({ slug, title, description, thumbnail, category = "C
   const Heading = headingLevel;
   const statuses = [inProgress ? "In progress" : "", protectedStudy ? "Protected" : ""].filter(Boolean);
   return (
-    <Link className={`${styles.card} ${featured ? styles.featured : ""} ${className}`} href={`/work/${encodeURIComponent(slug)}`}>
+    <Link className={`${styles.card} ${featured ? styles.featured : ""} ${className}`} href={`/work/${encodeURIComponent(slug)}`} data-scroll-group>
       <p className={`label-eyebrow ${styles.kicker}`}>{category || "Case study"} / {String(index).padStart(2, "0")}</p>
       <Heading className={`${featured ? "heading-01" : "heading-03"} ${styles.title}`}>{title}</Heading>
       <p className={`body-small ${styles.description}`}>{description}</p>

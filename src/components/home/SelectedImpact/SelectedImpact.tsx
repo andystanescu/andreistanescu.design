@@ -28,7 +28,7 @@ export function SelectedImpact() {
         <div className={styles.grid}>
           <ProjectCollection studies={caseStudies} limit={4} responsivePreview />
           {featuredMetrics.length > 0 && (
-            <div className={styles.impactSummary}>
+            <div className={styles.impactSummary} data-scroll-group>
               <p className="label-eyebrow">Featured project results</p>
               <ImpactMetrics
                 metrics={featuredMetrics}

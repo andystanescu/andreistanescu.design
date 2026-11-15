@@ -11,7 +11,7 @@ type ServiceIndexItemProps = {
 
 export function ServiceIndexItem({ slug, title, description, capabilities, index }: ServiceIndexItemProps) {
   return (
-    <li className={styles.row}>
+    <li className={styles.row} data-scroll-group>
       <Link href={`/services/${slug}`} className={styles.item}>
         <span className={styles.index}>{String(index).padStart(2, "0")}</span>
         <h2 className={`heading-02 ${styles.title}`}>{title}</h2>

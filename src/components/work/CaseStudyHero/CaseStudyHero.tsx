@@ -58,7 +58,7 @@ export function CaseStudyHero({ slug, category, company, title, summary, author,
       </section>
       {metrics.length > 0 && (
         <section className={`${styles.impact} section-dark`} aria-label={`${title} impact`}>
-          <div className={`container ${styles.impactInner}`}>
+          <div className={`container ${styles.impactInner}`} data-story-entrance>
             <div className={styles.impactIntro}>
               <p className={`label-eyebrow ${styles.impactEyebrow}`}>{impactEyebrow}</p>
               {impactTitle && <h2 className={styles.impactTitle}>{impactTitle}</h2>}

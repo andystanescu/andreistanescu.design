@@ -31,7 +31,7 @@ export function RichContent({ html }: RichContentProps) {
   }
 
   return (
-    <div className={styles.content}>
+    <div className={styles.content} data-story-content>
       {segments.map((segment, index) =>
         segment.type === "live" ? (
           <MediaContainer key={index} variant={segment.mediaVariant}><EmbedWrapper label={segment.label} help={segment.help} unbounded={segment.runtime !== "static"}><LiveComponentBlock code={segment.code} chrome={segment.chrome} runtime={segment.runtime} language={segment.language} publicInline /></EmbedWrapper></MediaContainer>
