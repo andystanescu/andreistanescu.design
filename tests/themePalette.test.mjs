@@ -7,6 +7,7 @@ import {
   DEFAULT_PALETTE_ANCHORS,
   generateThemePalette,
   isHexColor,
+  locateThemeContrastIssues,
   parsePublishedTheme,
   perceptualDistance,
   resolveClosestContrastShade,
@@ -145,4 +146,21 @@ test("blocks unsafe or invalid overrides before publishing", () => {
   assert.ok(resolveTheme(DEFAULT_PALETTE_ANCHORS, unsafe).issues.length);
   assert.throws(() => createPublishedTheme(DEFAULT_PALETTE_ANCHORS, undefined, unsafe));
   assert.throws(() => resolveTheme(DEFAULT_PALETTE_ANCHORS, { light: { "--not-a-role": "#FFFFFF" }, dark: {} }));
+});
+
+test("locates contrast errors beside the overridden colours in the affected theme", () => {
+  const overrides = { light: { "--text-primary": "#FFFFFF" }, dark: {} };
+  const automatic = resolveTheme(DEFAULT_PALETTE_ANCHORS);
+  const locations = locateThemeContrastIssues(automatic, resolveTheme(DEFAULT_PALETTE_ANCHORS, overrides), overrides);
+  assert.ok(locations.tokens.light["--text-primary"].some((message) => message.includes("required")));
+  assert.equal(Object.keys(locations.tokens.dark).length, 0);
+  assert.equal(locations.tokens.light["--bg-canvas"], undefined);
+});
+
+test("locates contrast errors at both edited sides of a colour pair", () => {
+  const overrides = { light: { "--text-primary": "#FFFFFF", "--bg-canvas": "#FFFFFF" }, dark: {} };
+  const automatic = resolveTheme(DEFAULT_PALETTE_ANCHORS);
+  const locations = locateThemeContrastIssues(automatic, resolveTheme(DEFAULT_PALETTE_ANCHORS, overrides), overrides);
+  assert.ok(locations.tokens.light["--text-primary"].length);
+  assert.ok(locations.tokens.light["--bg-canvas"].length);
 });

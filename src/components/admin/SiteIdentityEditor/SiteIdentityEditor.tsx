@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ChangeEvent, type CSSProperties, type ReactNode } from "react";
 import { AdminContentTabs } from "@/components/admin/AdminContentTabs/AdminContentTabs";
-import { DEFAULT_PALETTE_ANCHORS, EDITABLE_THEME_GROUPS, generateThemePalette, isHexColor, resolveTheme, THEME_TONES, type PaletteAnchors, type ThemeOverrides, type ThemeTone } from "@/lib/themePalette";
+import { DEFAULT_PALETTE_ANCHORS, EDITABLE_THEME_GROUPS, generateThemePalette, isHexColor, locateThemeContrastIssues, resolveTheme, THEME_TONES, type PaletteAnchors, type ThemeOverrides, type ThemeTone } from "@/lib/themePalette";
 import adminStyles from "@/app/admin/(dashboard)/admin.module.css";
 import styles from "./SiteIdentityEditor.module.css";
 import { LogoColorEditor } from "./LogoColorEditor";
@@ -88,6 +88,7 @@ export function SiteIdentityEditor({
   const overridesValid = Object.values(overrides).every((mode) => Object.values(mode).every(isHexColor));
   const resolution = useMemo(() => colorsValid && overridesValid ? resolveTheme(resolveAnchors(colors), overrides) : null, [colors, colorsValid, overrides, overridesValid]);
   const automatic = useMemo(() => colorsValid ? resolveTheme(resolveAnchors(colors)) : null, [colors, colorsValid]);
+  const contrastLocations = useMemo(() => automatic && resolution ? locateThemeContrastIssues(automatic, resolution, overrides) : null, [automatic, resolution, overrides]);
   const publishedLogoTheme = useMemo(() => resolveTheme(resolveAnchors(initialColors), initialOverrides), [initialColors, initialOverrides]);
 
   function updateOverride(token: string, value?: string) {
@@ -197,14 +198,16 @@ export function SiteIdentityEditor({
                 const valid = isHexColor(colors[key]);
                 const seed = valid ? colors[key] : isHexColor(initialColors[key]) ? initialColors[key] : DEFAULT_PALETTE_ANCHORS[paletteRole];
                 const palette = generateThemePalette(seed);
+                const paletteIssues = contrastLocations?.palettes[paletteRole] ?? [];
+                const errorId = `${key}-errors`;
                 return <fieldset className={styles.colorRole} key={key}>
                   <legend>{label}</legend>
                   <p className={styles.roleUsage}>{usage}</p>
                   <div className={styles.colorInputRow}>
                     <input type="color" aria-label={`${label} color picker`} value={valid ? colors[key] : initialColors[key]} onChange={(event) => updateColor(key, event.target.value.toUpperCase())} />
-                    <label><span className="label-small">{label} 500</span><input type="text" name={key} value={colors[key]} onChange={(event) => updateColor(key, event.target.value)} pattern="#[\da-fA-F]{6}" maxLength={7} required aria-label={`${label} 500 hex code`} className={adminStyles.input} /></label>
+                    <label><span className="label-small">{label} 500</span><input type="text" name={key} value={colors[key]} onChange={(event) => updateColor(key, event.target.value)} pattern="#[\da-fA-F]{6}" maxLength={7} required aria-label={`${label} 500 hex code`} aria-invalid={!valid || paletteIssues.length > 0} aria-describedby={!valid || paletteIssues.length ? errorId : undefined} className={adminStyles.input} /></label>
                   </div>
-                  {!valid && <small className={styles.colorError}>Use a six-digit hex code, such as #E8441C.</small>}
+                  {(!valid || paletteIssues.length > 0) && <div id={errorId} className={styles.colorError} role="alert">{!valid && <p>Use a six-digit hex code, such as #E8441C.</p>}{paletteIssues.map((issue) => <p key={issue}>{issue} Try a different {label.toLowerCase()} or related palette colour.</p>)}</div>}
                   <div className={styles.palette} aria-label={`${label} generated color tones`}>
                     {THEME_TONES.map((tone: ThemeTone) => <div className={styles.tone} key={tone} title={`${label} ${tone}: ${palette[tone]}`}><span style={{ backgroundColor: palette[tone] }} /><small>{tone}</small></div>)}
                   </div>
@@ -214,7 +217,7 @@ export function SiteIdentityEditor({
 
             {resolution && <section className={styles.validation} aria-labelledby="theme-validation">
               <h3 id="theme-validation" className="heading-04">Contrast review</h3>
-              {resolution.issues.length ? <ul className={styles.issueList} role="alert">{resolution.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul> : <p className="body-small">Required text, action and focus contrast checks pass for light and dark themes.</p>}
+              {resolution.issues.length ? <div className={styles.contrastSummary} role="status"><p>Some colours need attention before publishing. Review the messages beside the affected palettes and theme controls.</p>{(["light", "dark"] as const).map((mode) => Object.keys(contrastLocations?.tokens[mode] ?? {}).length > 0 && <button key={mode} type="button" className={styles.resetToken} onClick={() => { setEditMode(mode); setEditorOpen(true); window.setTimeout(() => document.getElementById(`theme-${mode}-fine-tuning`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }}>Review {mode} theme colour errors</button>)}</div> : <p className="body-small">Required text, action and focus contrast checks pass for light and dark themes.</p>}
             </section>}
 
             <div className={adminStyles.formActions}>
@@ -253,7 +256,7 @@ export function SiteIdentityEditor({
               "--preview-pressed-border": tokens["--action-secondary-pressed-border"],
             } as CSSProperties;
             return <Fragment key={mode}><div className={`${styles.previewMode} ${mode === "dark" ? styles.previewDark : ""} ${editorOpen && editMode === mode ? styles.previewSelected : ""}`} style={style} onClick={() => { setEditMode(mode); setEditorOpen(true); }}>
-              <button type="button" className={styles.modeSelect} aria-pressed={editorOpen && editMode === mode} onClick={() => { setEditMode(mode); setEditorOpen(true); }}><span className={styles.modeLabel}>{mode} theme</span><span>{editorOpen && editMode === mode ? "Editing" : "Edit colours"}</span></button>
+              <button type="button" className={styles.modeSelect} aria-pressed={editorOpen && editMode === mode} onClick={() => { setEditMode(mode); setEditorOpen(true); }}><span className={styles.modeLabel}>{mode} theme{Object.keys(contrastLocations?.tokens[mode] ?? {}).length > 0 && ` · ${Object.keys(contrastLocations?.tokens[mode] ?? {}).length} colour${Object.keys(contrastLocations?.tokens[mode] ?? {}).length === 1 ? "" : "s"} need${Object.keys(contrastLocations?.tokens[mode] ?? {}).length === 1 ? "s" : ""} attention`}</span><span>{editorOpen && editMode === mode ? "Editing" : "Edit colours"}</span></button>
               <div className={styles.previewCard} style={{ backgroundColor: tokens["--bg-surface"], borderColor: tokens["--border-default"] }}>
                 <strong style={{ color: tokens["--text-primary"] }}>A representative content panel</strong>
                 <p style={{ color: tokens["--text-secondary"] }}>Primary and secondary text sit on the same surface.</p>
@@ -266,20 +269,23 @@ export function SiteIdentityEditor({
                 <div className={styles.previewNav} style={{ borderColor: tokens["--border-default"] }}><span>Navigation</span><span style={{ color: tokens["--text-accent"], borderColor: tokens["--border-focus"] }}>Selected item</span></div>
               </div>
             </div>
-        {editorOpen && editMode === mode && <section className={styles.fineTuning} aria-label={`${mode} theme colour controls`}>
+        {editorOpen && editMode === mode && <section id={`theme-${mode}-fine-tuning`} className={styles.fineTuning} aria-label={`${mode} theme colour controls`}>
           <div className={styles.fineTuningHeader}><h3>Fine-tune interface colours</h3><button type="button" className={styles.resetToken} onClick={() => setEditorOpen(false)}>Close</button></div>
           <p className="body-small">Editing the {editMode} theme. Select colours from the generated palettes; select the other preview to edit that theme.</p>
           <button type="button" className={adminStyles.tertiaryButton} onClick={() => setOverrides((current) => ({ ...current, [editMode]: {} }))}>Reset {editMode} colours to automatic</button>
-          {EDITABLE_THEME_GROUPS.map((group) => <details className={styles.tokenGroup} key={group.label}>
-            <summary>{group.label}</summary>
+          {EDITABLE_THEME_GROUPS.map((group) => <details className={styles.tokenGroup} key={`${mode}-${group.label}`} open={group.roles.some(([token]) => (contrastLocations?.tokens[mode][token]?.length ?? 0) > 0) || undefined}>
+            <summary>{group.label}{group.roles.some(([token]) => (contrastLocations?.tokens[mode][token]?.length ?? 0) > 0) && <span className={styles.colorError}>Needs attention</span>}</summary>
             <div className={styles.tokenList}>{group.roles.map(([token, label]) => {
               const selected = overrides[editMode][token];
               const autoValue = automatic.semantic[editMode][token];
               const value = selected ?? autoValue;
+              const tokenIssues = contrastLocations?.tokens[mode][token] ?? [];
+              const errorId = `${mode}-${token.slice(2)}-error`;
               const inPalette = value === "#FFFFFF" || value === "#000000" || ROLES.some((role) => THEME_TONES.some((tone) => automatic.palettes[role.palette][tone] === value));
               return <div className={styles.tokenRow} key={token}>
                 <div className={styles.tokenName}><span>{label}</span><code>{token}</code></div>
-                <div className={styles.tokenValue}><i style={{ background: value }} /><select aria-label={`${editMode} ${group.label} ${label} palette shade`} className={adminStyles.input} value={value} onChange={(event) => updateOverride(token, event.target.value)}>{!inPalette && <option value={value}>Previously saved · {value}</option>}{ROLES.map((role) => <optgroup key={role.palette} label={role.label}>{role.palette === "neutral" && <><option value="#FFFFFF">White · #FFFFFF</option><option value="#000000">Black · #000000</option></>}{THEME_TONES.map((tone) => <option key={tone} value={automatic.palettes[role.palette][tone]}>{role.label} {tone} · {automatic.palettes[role.palette][tone]}</option>)}</optgroup>)}</select></div>
+                <div className={styles.tokenValue}><i style={{ background: value }} /><select aria-label={`${editMode} ${group.label} ${label} palette shade`} aria-invalid={tokenIssues.length > 0} aria-describedby={tokenIssues.length ? errorId : undefined} className={adminStyles.input} value={value} onChange={(event) => updateOverride(token, event.target.value)}>{!inPalette && <option value={value}>Previously saved · {value}</option>}{ROLES.map((role) => <optgroup key={role.palette} label={role.label}>{role.palette === "neutral" && <><option value="#FFFFFF">White · #FFFFFF</option><option value="#000000">Black · #000000</option></>}{THEME_TONES.map((tone) => <option key={tone} value={automatic.palettes[role.palette][tone]}>{role.label} {tone} · {automatic.palettes[role.palette][tone]}</option>)}</optgroup>)}</select></div>
+                {tokenIssues.length > 0 && <div id={errorId} className={styles.colorError} role="alert">{tokenIssues.map((issue) => <p key={issue}>{issue}</p>)}</div>}
                 {selected !== undefined && <button type="button" className={styles.resetToken} onClick={() => updateOverride(token)}>Reset to suggested colour</button>}
               </div>;
             })}</div>

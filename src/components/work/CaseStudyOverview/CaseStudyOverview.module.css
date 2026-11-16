@@ -1,7 +1,7 @@
 .wrapper{width:100%;background:var(--bg-deep)}
 .withSeparator{border-top:1px solid var(--border-default)}
 .overview{display:flex;flex-direction:column;gap:var(--space-300);width:100%;box-sizing:border-box;padding-block:var(--space-400)}
-.eyebrow{color:var(--text-on-deep-accent)}
+.eyebrow{color:var(--text-accent)}
 .title{max-width:620px;color:var(--text-on-deep-primary);white-space:pre-line}
 .rows{width:100%;margin:0}
 .row{display:grid;grid-template-columns:144px minmax(0,1fr);gap:var(--space-400);padding-block:var(--space-200);border-top:1px solid var(--border-default)}

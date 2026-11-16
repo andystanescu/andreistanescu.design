@@ -36,6 +36,10 @@ export type ContrastCheck = {
   background: string;
   ratio: number;
   required: number;
+  foregroundToken?: string;
+  backgroundToken?: string;
+  passes?: boolean;
+  relatedTokens?: string[];
 };
 
 export type ThemeResolution = {
@@ -44,6 +48,37 @@ export type ThemeResolution = {
   checks: ContrastCheck[];
   issues: string[];
 };
+
+/** Map failed checks to editable controls without guessing which of a pair is at fault. */
+export function locateThemeContrastIssues(automatic: ThemeResolution, resolution: ThemeResolution, overrides: ThemeOverrides) {
+  const palettes: Record<PaletteRole, string[]> = { primary: [], secondary: [], accent: [], neutral: [] };
+  const tokens: Record<"light" | "dark", Record<string, string[]>> = { light: {}, dark: {} };
+  for (const issue of automatic.issues) {
+    const related: PaletteRole[] = ["neutral"];
+    if (/primary action|secondary action (?:hover|pressed)/i.test(issue)) related.push("primary");
+    if (/secondary action/i.test(issue)) related.push("secondary");
+    if (/accent|link|focus|primary action (?:hover|pressed)/i.test(issue)) related.push("accent");
+    for (const role of new Set(related)) palettes[role].push(issue);
+  }
+  const labels = new Map<string, string>(EDITABLE_THEME_GROUPS.flatMap((group) => group.roles.map(([token, label]) => [token, `${group.label}: ${label}`] as [string, string])));
+  for (const check of resolution.checks) {
+    if (check.passes !== false || !check.foregroundToken || !check.backgroundToken) continue;
+    const pair = [check.foregroundToken, check.backgroundToken];
+    const involved = [...pair, ...(check.relatedTokens ?? [])];
+    const changed = involved.filter((token) => EDITABLE_TOKENS.has(token) && overrides[check.mode][token] !== undefined);
+    const targets = changed.length ? changed : involved.filter((token) => EDITABLE_TOKENS.has(token));
+    for (const token of new Set(targets)) {
+      const other = token === check.backgroundToken ? check.foregroundToken : check.backgroundToken;
+      const counterpart = labels.get(other) ?? (other === "--bg-subtle" ? "subtle background" : other.replace(/^--/, "").replaceAll("-", " "));
+      const remedy = labels.has(other) ? `Choose a different shade for this colour or ${counterpart.toLowerCase()}.` : "Choose a different shade for this colour.";
+      const roleName = labels.get(check.role) ?? check.role.replaceAll("--", "").replaceAll("-", " ");
+      const message = `${roleName} against ${counterpart}: ${check.ratio.toFixed(2)}:1; at least ${check.required}:1 is required. ${remedy}`;
+      const entries = tokens[check.mode][token] ??= [];
+      if (!entries.includes(message)) entries.push(message);
+    }
+  }
+  return { palettes, tokens };
+}
 
 export type PublishedTheme = {
   schemaVersion: 1;
@@ -394,7 +429,9 @@ export function resolveTheme(anchors: PaletteAnchors, overrides?: ThemeOverrides
       }
       for (const [role, foreground, background, required] of pairs) {
         const ratio = contrastRatio(t[foreground], t[background]);
-        checks.push({ mode, role, foreground: t[foreground], background: t[background], ratio: Number(ratio.toFixed(2)), required });
+        const secondaryBoundary = /^secondary button(-hover|-pressed)? boundary$/.exec(role);
+        const relatedTokens = secondaryBoundary ? [`--action-secondary${secondaryBoundary[1] ?? ""}-border`, `--action-secondary${secondaryBoundary[1] ?? "-bg"}`] : undefined;
+        checks.push({ mode, role, foreground: t[foreground], background: t[background], foregroundToken: foreground, backgroundToken: background, relatedTokens, ratio: Number(ratio.toFixed(2)), required, passes: ratio >= required });
         if (ratio < required) issues.push(`${mode}: ${role} on ${background.replace("--bg-", "")} is ${ratio.toFixed(2)}:1; ${required}:1 is required.`);
       }
     }

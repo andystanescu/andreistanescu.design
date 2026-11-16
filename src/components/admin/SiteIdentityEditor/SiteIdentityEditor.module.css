@@ -43,6 +43,10 @@
 .tone>span{width:100%;height:22px;border:1px solid color-mix(in srgb,var(--text-primary) 12%,transparent);border-radius:var(--radius-sm)}
 .tone small{color:var(--text-tertiary);font:10px/1 var(--font-family-mono)}
 .colorError{display:block;color:var(--text-error);font:12px/1.35 var(--font-family-body)}
+.colorError p{margin:0}.colorError p+p{margin-top:var(--space-100)}
+.contrastSummary{display:grid;justify-items:start;gap:var(--space-100)}
+.tokenGroup>summary .colorError{margin-left:auto;font-weight:500}
+.colorRole [aria-invalid="true"],.tokenValue [aria-invalid="true"]{border-color:var(--border-error)}
 .validation{display:grid;gap:var(--space-200);padding-top:var(--space-200);border-top:1px solid var(--border-default)}
 .validation h3,.previewHeading h2{margin:0}
 .validation p,.previewHeading p{margin:0;color:var(--text-secondary)}
