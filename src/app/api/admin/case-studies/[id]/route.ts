@@ -2,16 +2,17 @@ import { relativeRedirect } from "@/lib/relativeRedirect";
 import { overviewFromForm } from "@/lib/caseStudyOverview";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { saveHeroVisualCode } from "@/lib/heroVisual";
 import { resolveImageField } from "@/lib/uploads";
 import { applyHeadingAccents } from "@/lib/headingAccents";
-import { assessmentCriteriaList, getPrimaryComplexityDrivers, type EditableEngagement } from "@/data/caseStudyAssessment";
+import { assessmentCriteriaList, getPrimaryComplexityDrivers, parseAssessmentActivityCategories } from "@/data/caseStudyAssessment";
 import bcrypt from "bcryptjs";
 import { getSettings } from "@/lib/settings";
 import { dateInputValue } from "@/lib/dateUtils";
-import { addHeadingIds } from "@/lib/tableOfContents";
 import { readCategorySelection, replaceCaseStudyCategories } from "@/lib/categories";
 import { getSessionSecret } from "@/lib/auth";
 import { encryptCaseStudyPassword } from "@/lib/caseStudyPasswordEncryption";
+import { markEditorAssessmentPlacement } from "@/lib/assessmentPlacement";
 
 export async function POST(
   request: NextRequest,
@@ -28,25 +29,16 @@ export async function POST(
     const row = db.prepare("SELECT assessment FROM case_studies WHERE id = ?").get(id) as { assessment: string } | undefined;
     if (!row) return NextResponse.json({ error: "Case study not found." }, { status: 404 });
     let currentAssessment: Record<string, unknown> = {};
-    let parsedEngagements: unknown;
+    let activityCategories;
     try {
       currentAssessment = JSON.parse(row.assessment || "{}") as Record<string, unknown>;
-      parsedEngagements = JSON.parse(String(form.get("assessment_engagements") ?? "{}"));
+      activityCategories = parseAssessmentActivityCategories(JSON.parse(String(form.get("assessment_activity_categories") ?? "[]")));
     } catch {
       return NextResponse.json({ error: "Engagement data could not be read." }, { status: 400 });
     }
-    const engagements = Object.fromEntries(assessmentCriteriaList.map(({ key }) => [key, (Array.isArray((parsedEngagements as Record<string, unknown> | null)?.[key]) ? (parsedEngagements as Record<string, unknown[]>)[key] : [])
-      .filter((item: unknown): item is EditableEngagement => Boolean(item) && typeof item === "object" && typeof (item as EditableEngagement).id === "string" && typeof (item as EditableEngagement).title === "string" && typeof (item as EditableEngagement).description === "string")
-      .map((item: EditableEngagement) => ({ id: item.id.slice(0, 180), title: item.title.trim().slice(0, 180), description: item.description.trim().slice(0, 2000) }))
-      .filter((item: EditableEngagement) => item.id && item.title)]));
-    const conductedIds = form.getAll("assessment_conducted_engagement_id").map(String).filter(Boolean);
-    const flattened = Object.values(engagements).flat();
     const nextAssessment = {
       ...currentAssessment,
-      engagements,
-      likelyEngagement: flattened.map((item) => item.title),
-      conductedEngagementIds: conductedIds,
-      conducted: flattened.filter((item) => conductedIds.includes(item.id)).map((item) => item.title),
+      activityCategories,
     };
     db.prepare("UPDATE case_studies SET assessment = ? WHERE id = ?").run(JSON.stringify(nextAssessment), id);
     return NextResponse.json({ saved: true });
@@ -67,9 +59,8 @@ export async function POST(
   const publishedAt = dateInputValue(String(form.get("published_at") ?? "").trim());
   const author = getSettings().author_name;
   const tags = String(form.get("tags") ?? "").trim();
-  const body = applyHeadingAccents(String(form.get("body") ?? "").trim());
-  const requestedAssessmentPlacement = String(form.get("assessment_placement") ?? "start");
-  const assessmentPlacement = requestedAssessmentPlacement === "start" || addHeadingIds(body).toc.some((heading) => heading.id === requestedAssessmentPlacement) ? requestedAssessmentPlacement : "start";
+  const body = markEditorAssessmentPlacement(applyHeadingAccents(String(form.get("body") ?? "").trim()));
+  const assessmentPlacement = String(form.get("assessment_placement") ?? "start");
   const metaTitle = String(form.get("meta_title") ?? "").trim();
   const metaDescription = String(form.get("meta_description") ?? "").trim();
   const metaKeywords = String(form.get("meta_keywords") ?? "").trim();
@@ -90,24 +81,16 @@ export async function POST(
   const assessmentScores = Object.fromEntries(assessmentCriteriaList.map((criterion) => [
       criterion.key, Math.max(0, Math.min(5, Number(form.get(`assessment_score_${criterion.key}`) ?? 0) || 0)),
     ]));
-  let submittedEngagements: Record<string, EditableEngagement[]> = {};
+  let activityCategories;
   try {
-    const parsedEngagements = JSON.parse(String(form.get("assessment_engagements") ?? "{}"));
-    submittedEngagements = Object.fromEntries(assessmentCriteriaList.map(({ key }) => [key, (Array.isArray(parsedEngagements?.[key]) ? parsedEngagements[key] : [])
-      .filter((item: unknown): item is EditableEngagement => Boolean(item) && typeof item === "object" && typeof (item as EditableEngagement).id === "string" && typeof (item as EditableEngagement).title === "string" && typeof (item as EditableEngagement).description === "string")
-      .map((item: EditableEngagement) => ({ id: item.id.slice(0, 180), title: item.title.trim().slice(0, 180), description: item.description.trim().slice(0, 2000) }))
-      .filter((item: EditableEngagement) => item.id && item.title)]));
-  } catch { submittedEngagements = {}; }
+    activityCategories = parseAssessmentActivityCategories(JSON.parse(String(form.get("assessment_activity_categories") ?? "[]")));
+  } catch { return NextResponse.json({ error: "Engagement data could not be read." }, { status: 400 }); }
   const assessment = JSON.stringify({
     scores: assessmentScores,
     overall: String(form.get("assessment_overall") ?? "").trim(),
     overallDescription: String(form.get("assessment_overall_description") ?? "").trim(),
     primaryDrivers: getPrimaryComplexityDrivers(assessmentScores),
-    likelyEngagement: Object.values(submittedEngagements).flat().map((item) => item.title),
-    conducted: form.getAll("assessment_conducted").map(String).filter(Boolean),
-    conductedEngagementIds: form.getAll("assessment_conducted_engagement_id").map(String).filter(Boolean),
-    notApplicable: [],
-    engagements: submittedEngagements,
+    activityCategories,
     placement: assessmentPlacement,
   });
 
@@ -121,11 +104,12 @@ export async function POST(
   }
 
   const existing = db
-    .prepare("SELECT body, cover_image, thumbnail_image, published, password_hashes, published_at FROM case_studies WHERE id = ?")
+    .prepare("SELECT body, cover_image, thumbnail_image, hero_code, published, password_hashes, published_at FROM case_studies WHERE id = ?")
     .get(id) as {
       body: string;
       cover_image: string;
       thumbnail_image: string;
+      hero_code: string;
       published: number;
       password_hashes: string;
       published_at: string;
@@ -210,6 +194,10 @@ export async function POST(
       noIndex,
       id
     );
+    if (form.has("hero_code")) {
+      const code = saveHeroVisualCode(existing?.hero_code ?? "", String(form.get("hero_code") ?? ""), intent === "publish");
+      db.prepare("UPDATE case_studies SET hero_code = ?, hero_code_draft = ? WHERE id = ?").run(code.live, code.draft, id);
+    }
     if (categories && existing) replaceCaseStudyCategories(Number(id), categories);
     db.exec("COMMIT");
   } catch {

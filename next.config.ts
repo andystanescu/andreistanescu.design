@@ -6,9 +6,6 @@ const contentImportMaxBodySize: SizeLimit = configuredImportLimit && /^\d+(?:\.\
   : "50mb";
 
 const nextConfig: NextConfig = {
-  async headers() {
-    return [{ source: "/live-component-preview", headers: [{ key: "Content-Security-Policy", value: "default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data:; connect-src 'none'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'" }] }];
-  },
   outputFileTracingIncludes: {
     "/admin/design-system/*": ["./src/components/**/*.{tsx,css}", "./src/app/globals.css", "./src/app/admin/**/admin.module.css", "./src/lib/themePalette.ts", "./public/assets/lattice/*.svg"],
     "/admin/design-system": ["./public/assets/lattice/*.svg"],

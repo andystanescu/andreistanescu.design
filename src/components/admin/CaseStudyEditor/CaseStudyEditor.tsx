@@ -1,22 +1,24 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { TagSuggestions } from "@/components/admin/TagSuggestions/TagSuggestions";
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import type { ReactNode } from "react";
 import { ImageField } from "@/components/admin/ImageField/ImageField";
 import { RichTextEditor } from "@/components/admin/RichTextEditor/RichTextEditor";
 import type { CaseStudy, CaseStudyMetric } from "@/data/caseStudies";
-import type { CaseStudyAssessment, EditableEngagement, EngagementGroups, CriterionKey } from "@/data/caseStudyAssessment";
-import { assessmentCriteriaList, generateActivityRecommendations, getActivityDescription, getPrimaryComplexityDrivers } from "@/data/caseStudyAssessment";
+import type { CaseStudyAssessment, AssessmentActivityCategory, AssessmentActivity } from "@/data/caseStudyAssessment";
+import { assessmentCriteriaList, getAssessmentActivityCategories, getPrimaryComplexityDrivers } from "@/data/caseStudyAssessment";
 import styles from "./CaseStudyEditor.module.css";
+import filterStyles from "@/components/insights/InsightsListing/InsightsListing.module.css";
 import adminStyles from "@/app/admin/(dashboard)/admin.module.css";
 import { dateInputValue } from "@/lib/dateUtils";
 import { MetadataFields } from "@/components/admin/MetadataFields/MetadataFields";
 import Link from "next/link";
 import type { RelatedReadingOption } from "@/lib/relatedReadings";
-import { addHeadingIds } from "@/lib/tableOfContents";
+import { assessmentEditorBody } from "@/lib/assessmentPlacement";
 import { parseCaseStudyOverview } from "@/lib/caseStudyOverview";
+import { LiveComponentBlock } from "@/components/LiveComponentBlock/LiveComponentBlock";
 
 type CategoryOption = { id: number; name: string };
 type PasswordEntry = { name: string; masked: string; revealable?: boolean };
@@ -35,11 +37,15 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
   const [savedPasswords, setSavedPasswords] = useState(passwordEntries);
   const [pendingPasswords, setPendingPasswords] = useState<Array<{ name: string; password: string }>>([]);
   const [removedPasswords, setRemovedPasswords] = useState<number[]>([]);
-  const initialWorkingBody = study.body_draft ?? study.body;
+  const hasLegacyAssessment = Boolean(assessment.overall || Object.values(assessment.scores).some(Boolean) || getAssessmentActivityCategories(assessment).some((category) => category.activities.some((activity) => activity.title.trim())));
+  const prepareBody = (body: string) => assessmentEditorBody(body, assessment.placement, editing && hasLegacyAssessment);
+  const initialWorkingBody = prepareBody(study.body_draft ?? study.body);
   const [bodyValue, setBodyValue] = useState(initialWorkingBody);
   const [bodyDraftEnabled, setBodyDraftEnabled] = useState(Boolean(study.body_draft_enabled));
   const [bodyEditorKey, setBodyEditorKey] = useState(0);
-  const bodyDiffersFromLive = bodyValue !== study.body;
+  const [heroCode, setHeroCode] = useState(study.hero_code_draft ?? study.hero_code ?? "");
+  const [heroCodeOpen, setHeroCodeOpen] = useState(false);
+  const bodyDiffersFromLive = bodyValue !== prepareBody(study.body);
   const [scores, setScores] = useState<Record<string, string>>(() => Object.fromEntries(assessmentCriteriaList.map((criterion) => [criterion.key, String(assessment.scores[criterion.key] ?? "")] )));
   const overallOptions = ["Focused engagement", "Defined initiative", "Strategic initiative", "Transformation programme", "Enterprise programme"];
   const overallDescriptions: Record<string, string> = { "Focused engagement": "A contained piece of work with a clear problem, owner, and delivery path.", "Defined initiative": "A bounded initiative involving a small number of teams, decisions, or dependencies.", "Strategic initiative": "A meaningful piece of work that influences product direction, priorities, or ways of working.", "Transformation programme": "A sustained change across products, teams, systems, or organisational practices.", "Enterprise programme": "A broad, high-stakes programme requiring organisation-wide coordination and long-term governance." };
@@ -51,65 +57,21 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
   const [overallOverride, setOverallOverride] = useState<string | null>(assessment.overall || null);
   const overallLabel = overallOverride || suggestedOverall;
   const primaryDrivers = useMemo(() => getPrimaryComplexityDrivers(Object.fromEntries(Object.entries(scores).map(([key, value]) => [key, Number(value)]))), [scores]);
-  const recommendations = useMemo(() => generateActivityRecommendations(Object.fromEntries(Object.entries(scores).map(([key, value]) => [key, Number(value)]))), [scores]);
-  const initialEngagements = useMemo<EngagementGroups>(() => {
-    if (assessment.engagements) {
-      return Object.fromEntries(assessmentCriteriaList.map(({ key }) => [key, (assessment.engagements?.[key] ?? []).map((item) => ({ ...item }))]));
-    }
-    return Object.fromEntries(assessmentCriteriaList.map((criterion) => [criterion.key, recommendations
-      .filter((activity) => activity.triggeredBy[0]?.criterion === criterion.key)
-      .filter((activity) => !assessment.notApplicable.includes(activity.name))
-      .map((activity) => ({ id: `${criterion.key}:${activity.name}`, title: activity.name, description: getActivityDescription(activity.name) }))]));
-  }, [assessment.engagements, assessment.notApplicable, recommendations]);
-  const [engagementOverrides, setEngagementOverrides] = useState<EngagementGroups | null>(() => assessment.engagements
-    ? Object.fromEntries(Object.entries(assessment.engagements).map(([key, items]) => [key, items?.map((item) => ({ ...item })) ?? []]))
-    : null);
-  const engagements = engagementOverrides ?? initialEngagements;
-  const defaultConductedEngagementIds = Object.values(engagements).flatMap((items) => items ?? [])
-    .filter((item) => assessment.conductedEngagementIds.includes(item.id) || assessment.conducted.includes(item.title))
-    .map((item) => item.id);
-  const [conductedEngagementOverrides, setConductedEngagementOverrides] = useState<string[] | null>(() => assessment.conductedEngagementIds.length ? [...assessment.conductedEngagementIds] : null);
-  const conductedEngagementIds = conductedEngagementOverrides ?? defaultConductedEngagementIds;
+  const [activityCategories, setActivityCategories] = useState<AssessmentActivityCategory[]>(() => getAssessmentActivityCategories(assessment));
   const [activeEngagementEdit, setActiveEngagementEdit] = useState<string | null>(null);
-  const bodyHeadings = useMemo(() => addHeadingIds(bodyValue).toc, [bodyValue]);
-  const placementExists = assessment.placement === "start" || bodyHeadings.some((heading) => heading.id === assessment.placement);
-  const [assessmentPlacement, setAssessmentPlacement] = useState(placementExists ? assessment.placement : "start");
-  const selectedAssessmentPlacement = assessmentPlacement === "start" || bodyHeadings.some((heading) => heading.id === assessmentPlacement) ? assessmentPlacement : "start";
-  const recommendationGroups = assessmentCriteriaList.map((criterion) => ({ criterion }));
-  const updateEngagement = (criterion: CriterionKey, id: string, changes: Partial<EditableEngagement>) => {
-    setEngagementOverrides((current) => {
-      const source = current ?? initialEngagements;
-      return { ...source, [criterion]: (source[criterion] ?? []).map((item) => item.id === id ? { ...item, ...changes } : item) };
-    });
+  const [activeCategoryEdit, setActiveCategoryEdit] = useState<string | null>(null);
+  const updateEngagement = (categoryId: string, id: string, changes: Partial<AssessmentActivity>) => {
+    setActivityCategories((current) => current.map((group) => group.id === categoryId ? { ...group, activities: group.activities.map((item) => item.id === id ? { ...item, ...changes } : item) } : group));
   };
-  const addEngagement = (criterion: CriterionKey) => {
-    const id = `custom:${crypto.randomUUID()}`;
-    setEngagementOverrides((current) => {
-      const source = current ?? initialEngagements;
-      return { ...source, [criterion]: [...(source[criterion] ?? []), { id, title: "", description: "" }] };
-    });
-  };
-  const removeEngagement = (criterion: CriterionKey, id: string) => {
-    setEngagementOverrides((current) => {
-      const source = current ?? initialEngagements;
-      return { ...source, [criterion]: (source[criterion] ?? []).filter((item) => item.id !== id) };
-    });
-    setConductedEngagementOverrides((current) => (current ?? conductedEngagementIds).filter((engagementId) => engagementId !== id));
-  };
-  const saveEngagementOnBlur = async (criterion: CriterionKey, id: string, field: "title" | "description", value: string) => {
-    const source = engagementOverrides ?? initialEngagements;
-    const nextGroups: EngagementGroups = {
-      ...source,
-      [criterion]: (source[criterion] ?? []).map((item) => item.id === id ? { ...item, [field]: value } : item),
-    };
-    setEngagementOverrides(nextGroups);
-    setActiveEngagementEdit(null);
-    if (!nextGroups[criterion]?.find((item) => item.id === id)?.title.trim()) return;
+  const addEngagement = (categoryId: string) => setActivityCategories((current) => current.map((group) => group.id === categoryId ? { ...group, activities: [...group.activities, { id: crypto.randomUUID(), title: "", description: "", status: "not_started" }] } : group));
+  const removeEngagement = (categoryId: string, id: string) => setActivityCategories((current) => current.map((group) => group.id === categoryId ? { ...group, activities: group.activities.filter((item) => item.id !== id) } : group));
+  const saveActivityCategories = async (nextGroups: AssessmentActivityCategory[]) => {
+    if (!editing) return;
     const form = formRef.current;
     if (!form) return;
     const formData = new FormData(form);
     formData.set("intent", "save_assessment_engagements");
-    formData.set("assessment_engagements", JSON.stringify(nextGroups));
+    formData.set("assessment_activity_categories", JSON.stringify(nextGroups));
     setSaveState("saving");
     try {
       const response = await fetch(form.action, { method: "POST", body: formData });
@@ -120,6 +82,12 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
     } catch {
       setSaveState("error");
     }
+  };
+  const saveEngagementOnBlur = (categoryId: string, id: string, field: "title" | "description", value: string) => {
+    const nextGroups = activityCategories.map((group) => group.id === categoryId ? { ...group, activities: group.activities.map((item) => item.id === id ? { ...item, [field]: value } : item) } : group);
+    setActivityCategories(nextGroups);
+    setActiveEngagementEdit(null);
+    if (value.trim() || field !== "title") void saveActivityCategories(nextGroups);
   };
   const saveDraft = async () => {
     const form = formRef.current;
@@ -152,7 +120,7 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
     try {
       const response = await fetch(form.action, { method: "POST", body: formData });
       if (!response.ok) throw new Error("Body draft discard failed");
-      setBodyValue(study.body);
+      setBodyValue(prepareBody(study.body));
       setBodyDraftEnabled(false);
       setBodyEditorKey((key) => key + 1);
       setSaveState("saved");
@@ -164,6 +132,8 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
   };
   return (
     <form ref={formRef} data-editor-page className={`${adminStyles.form} ${styles.editorForm}`} action={action ?? `/api/admin/case-studies/${study.id}`} method="POST" encType="multipart/form-data" onInput={markUnsaved} onChange={markUnsaved}>
+      <input type="hidden" name="hero_code" value={heroCode} />
+      <input type="hidden" name="assessment_placement" value={assessment.placement} />
       <header className={styles.editorHeader}>
           <div className={styles.editorHeading}><p className={styles.editorEyebrow}>ADMIN · CASE STUDY</p><h1>{editing ? study.title : "New case study"}</h1></div>
           <div className={styles.editorActions}>{saveState !== "idle" && <span className={styles.saveStatus}>{saveState === "saving" ? "Saving…" : saveState === "error" ? "Save failed" : "Saved"}</span>}{editing && <><button type="button" className={adminStyles.secondaryButton} onClick={() => void saveDraft()}>Save</button><Link href={`/work/${encodeURIComponent(study.slug)}?preview=1`} target="_blank" className={adminStyles.secondaryButton}>Preview</Link></>}<Link href="/admin/case-studies" className={adminStyles.tertiaryButton}>Cancel</Link><button type="submit" name="intent" value={editing ? "publish" : "draft"} className={adminStyles.submit}>{editing ? "Publish" : "Create case study"}</button></div>
@@ -213,59 +183,49 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
 
       <section id="case-study-panel-assessment" role="tabpanel" aria-labelledby="case-study-tab-assessment" hidden={tab !== "assessment"} className={styles.panel} aria-label="Assessment">
         <div className={styles.sectionIntro}><span className="label-eyebrow">Assessment</span><p className="body-default">Record the complexity you observed, what the assessment suggests, and what was actually conducted.</p></div>
-        <Field label="Position in the case study"><select name="assessment_placement" value={selectedAssessmentPlacement} onChange={(event) => setAssessmentPlacement(event.target.value)} className={adminStyles.input}><option value="start">Before the case study story</option>{bodyHeadings.map((heading) => <option key={heading.id} value={heading.id}>After “{heading.text}”</option>)}</select></Field>
+        <p className="body-small">Insert the assessment from the content editor toolbar to choose where it appears in the case study.</p>
         <div className={styles.assessmentGrid}>
           <div><h2 className="heading-03">Complexity scores</h2>{assessmentCriteriaList.map((criterion) => { const selectedScore = Number(scores[criterion.key]); const selectedLevel = selectedScore >= 1 && selectedScore <= 5 ? criterion.levels[selectedScore as 1 | 2 | 3 | 4 | 5] : undefined; return <div className={styles.scoreRow} key={criterion.key}><div><strong>{criterion.label}{primaryDrivers.includes(criterion.key) && <span className={styles.driverBadge}>Primary driver</span>}</strong><small>{criterion.question}</small><input type="hidden" name={`assessment_score_${criterion.key}`} value={scores[criterion.key]} /></div><div className={styles.scoreControl}><div className={styles.segmented} role="group" aria-label={`${criterion.label} score`}>{([1, 2, 3, 4, 5] as const).map((score) => <button key={score} type="button" className={scores[criterion.key] === String(score) ? styles.segmentActive : styles.segment} aria-pressed={scores[criterion.key] === String(score)} onClick={() => setScores((current) => ({ ...current, [criterion.key]: String(score) }))}><span>{score}</span><small>{criterion.levels[score].label}</small></button>)}</div>{selectedLevel && <p className={styles.scoreDescription}>{selectedLevel.description}</p>}</div></div>; })}</div>
           <div><h2 className="heading-03">Overall complexity</h2><input type="hidden" name="assessment_overall" value={overallLabel} /><p className="body-small">A default is selected from the completed scores. You can choose another label without changing the scores.</p><div className={styles.overallOptions} role="group" aria-label="Overall complexity">{overallOptions.map((label) => <button key={label} type="button" className={overallLabel === label ? styles.overallOptionActive : styles.overallOption} aria-pressed={overallLabel === label} onClick={() => setOverallOverride(label)}><strong>{label}</strong><small>{overallDescriptions[label]}</small></button>)}</div><Field label="Additional details"><textarea name="assessment_overall_description" defaultValue={assessment.overallDescription} placeholder="What makes this engagement complex?" className={adminStyles.textarea} /></Field></div>
         </div>
         <div className={styles.engagement}>
-          <div className={styles.engagementHeader}><div><h2 className="heading-03">Engagement activities</h2><p className="body-small">Edit the suggested engagements for each section. Add anything else you contributed, or remove activities that do not apply.</p></div></div>
-          <input type="hidden" name="assessment_engagements" value={JSON.stringify(engagements)} />
-          {recommendationGroups.map(({ criterion }) => {
-            const activities = engagements[criterion.key] ?? [];
-            return <section className={styles.activityGroup} key={criterion.key}>
-              <div className={styles.activityGroupHeader}><h3>{criterion.label}</h3><span>{scores[criterion.key] || "—"} / 5</span></div>
+          <div className={styles.engagementHeader}><div><h2 className="heading-03">Engagement activities</h2><p className="body-small">Create categories and add the activities that describe the work.</p></div></div>
+          <input type="hidden" name="assessment_activity_categories" value={JSON.stringify(activityCategories)} />
+          {activityCategories.map((category) => {
+            const activities = category.activities;
+            return <section className={styles.activityGroup} key={category.id}>
+              <div className={styles.activityGroupHeader}>{activeCategoryEdit === category.id ? <input autoFocus className={adminStyles.input} value={category.title} onChange={(event) => setActivityCategories((current) => current.map((group) => group.id === category.id ? { ...group, title: event.target.value } : group))} onBlur={(event) => { const next = activityCategories.map((group) => group.id === category.id ? { ...group, title: event.currentTarget.value } : group); setActivityCategories(next); setActiveCategoryEdit(null); if (event.currentTarget.value.trim()) void saveActivityCategories(next); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); } if (event.key === "Escape") setActiveCategoryEdit(null); }} placeholder="Category name" aria-label="Category name" /> : <button type="button" className={styles.editableCategoryTitle} onClick={() => setActiveCategoryEdit(category.id)} aria-label={`Edit category: ${category.title || "untitled"}`}>{category.title || "Add category name"}</button>}<button type="button" className={adminStyles.tertiaryButton} onClick={() => setActivityCategories((current) => current.filter((group) => group.id !== category.id))} aria-label={`Remove category ${category.title || "untitled"}`}>Remove category</button></div>
               {activities.length === 0 && <p className={styles.engagementEmpty}>No engagements in this section yet.</p>}
               <div className={styles.editableEngagementList}>{activities.map((activity) => {
-                const conducted = conductedEngagementIds.includes(activity.id);
                 return <article className={`${styles.editableEngagement} ${styles.activityCard}`} key={activity.id}>
-                  <button type="button" className={styles.removeEngagementButton} onClick={() => removeEngagement(criterion.key, activity.id)} aria-label={`Remove ${activity.title || "engagement"}`} title="Remove engagement">
+                  <button type="button" className={styles.removeEngagementButton} onClick={() => removeEngagement(category.id, activity.id)} aria-label={`Remove ${activity.title || "engagement"}`} title="Remove engagement">
                     <AdminIcon name="action-delete" />
                   </button>
                   <div className={styles.editableEngagementFields}>
-                    <div className={styles.engagementConductedRow}>
-                      <label className={styles.switch}>
-                        <input type="checkbox" role="switch" aria-label={`Completed: ${activity.title || "engagement"}`} checked={conducted} onChange={(event) => setConductedEngagementOverrides((current) => { const source = current ?? conductedEngagementIds; return event.target.checked ? [...source, activity.id] : source.filter((id) => id !== activity.id); })} />
-                        <span aria-hidden="true" />
-                      </label>
-                      <span className={styles.engagementConductedText}>{conducted ? "Completed" : "Not completed"}</span>
-                    </div>
+                    <div className={styles.activityStatusOptions} role="group" aria-label={`Status for ${activity.title || "engagement"}`}>{([ ["completed", "Completed"], ["not_completed", "Not completed"], ["not_started", "Not started"] ] as const).map(([value, label]) => <button type="button" key={value} className={activity.status === value ? filterStyles.filterActive : filterStyles.filter} data-status={value} aria-pressed={activity.status === value} onClick={() => updateEngagement(category.id, activity.id, { status: value })}>{label}</button>)}</div>
                     <div className={styles.inlineEngagementField}>
                       {activeEngagementEdit === `${activity.id}:title`
-                        ? <input autoFocus aria-label="Engagement title" value={activity.title} onChange={(event) => updateEngagement(criterion.key, activity.id, { title: event.target.value })} onBlur={(event) => void saveEngagementOnBlur(criterion.key, activity.id, "title", event.currentTarget.value)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setActiveEngagementEdit(null); }} placeholder="Engagement title" className={`${adminStyles.input} ${styles.inlineEngagementInput}`} />
+                        ? <input autoFocus aria-label="Engagement title" value={activity.title} onChange={(event) => updateEngagement(category.id, activity.id, { title: event.target.value })} onBlur={(event) => void saveEngagementOnBlur(category.id, activity.id, "title", event.currentTarget.value)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") setActiveEngagementEdit(null); }} placeholder="Engagement title" className={`${adminStyles.input} ${styles.inlineEngagementInput}`} />
                         : <button type="button" className={styles.inlineEngagementTitle} onClick={() => setActiveEngagementEdit(`${activity.id}:title`)} aria-label={`Edit title: ${activity.title || "Engagement"}`}>{activity.title || <span className={styles.inlineEngagementPlaceholder}>Add engagement title</span>}</button>}
                     </div>
                     <div className={styles.inlineEngagementField}>
                       {activeEngagementEdit === `${activity.id}:description`
-                        ? <textarea autoFocus aria-label="Engagement description" value={activity.description} onChange={(event) => updateEngagement(criterion.key, activity.id, { description: event.target.value })} onBlur={(event) => void saveEngagementOnBlur(criterion.key, activity.id, "description", event.currentTarget.value)} onKeyDown={(event) => { if (event.key === "Escape") setActiveEngagementEdit(null); }} placeholder="What this engagement involves" className={`${adminStyles.textarea} ${styles.inlineEngagementTextarea}`} />
+                        ? <textarea autoFocus aria-label="Engagement description" value={activity.description} onChange={(event) => updateEngagement(category.id, activity.id, { description: event.target.value })} onBlur={(event) => void saveEngagementOnBlur(category.id, activity.id, "description", event.currentTarget.value)} onKeyDown={(event) => { if (event.key === "Escape") setActiveEngagementEdit(null); }} placeholder="What this engagement involves" className={`${adminStyles.textarea} ${styles.inlineEngagementTextarea}`} />
                         : <button type="button" className={styles.inlineEngagementDescription} onClick={() => setActiveEngagementEdit(`${activity.id}:description`)} aria-label={`Edit description for ${activity.title || "engagement"}`}>{activity.description || <span className={styles.inlineEngagementPlaceholder}>Add a description</span>}</button>}
                     </div>
                   </div>
-                  <div className={styles.editableEngagementActions}>
-                    {conducted && <><input type="hidden" name="assessment_conducted" value={activity.title} /><input type="hidden" name="assessment_conducted_engagement_id" value={activity.id} /></>}
-                    <input type="hidden" name="assessment_likely" value={activity.title} />
-                  </div>
                 </article>;
               })}</div>
-              <button type="button" className={styles.addEngagementButton} onClick={() => addEngagement(criterion.key)}>+ Add engagement</button>
+              <button type="button" className={styles.addEngagementButton} onClick={() => addEngagement(category.id)}>+ Add engagement</button>
             </section>;
           })}
+          <button type="button" className={styles.addEngagementButton} onClick={() => { const id = crypto.randomUUID(); setActivityCategories((current) => [...current, { id, title: "", activities: [] }]); setActiveCategoryEdit(id); }}>+ Add category</button>
         </div>
       </section>
 
       <section id="case-study-panel-content" role="tabpanel" aria-labelledby="case-study-tab-content" hidden={tab !== "content"} className={styles.panel} aria-label="Case study content">
-        <p className="body-small">Save keeps your working body in the admin. Publish updates the live body unless Keep as body draft is switched on.</p>
-        <div className={`${adminStyles.field} ${adminStyles.fieldWide}`}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Body</span><RichTextEditor key={bodyEditorKey} name="body" defaultValue={bodyValue} onContentChange={(html) => { setBodyValue(html); markUnsaved(); }} relatedReadings={relatedReadings} toolbarAddon={<><label className={styles.bodyDraftSwitch}><input type="checkbox" name="body_draft_enabled" checked={bodyDraftEnabled} onChange={(event) => setBodyDraftEnabled(event.target.checked)} /><span aria-hidden="true" /><strong>Keep as body draft</strong></label>{bodyDiffersFromLive && <button type="button" className={styles.discardBodyDraft} onClick={() => void discardBodyDraft()}>Discard body draft</button>}</>} /></div>
+        <p className="body-small">Save keeps your working body in the admin. Publish updates the live body unless Draft is switched on.</p>
+        <div className={`${adminStyles.field} ${adminStyles.fieldWide}`}><span className="label-small" style={{ color: "var(--text-secondary)" }}>Body</span><RichTextEditor key={bodyEditorKey} name="body" defaultValue={bodyValue} allowAssessment onContentChange={(html) => { setBodyValue(html); markUnsaved(); }} relatedReadings={relatedReadings} toolbarAddon={<><label className={styles.bodyDraftSwitch}><input type="checkbox" name="body_draft_enabled" checked={bodyDraftEnabled} onChange={(event) => setBodyDraftEnabled(event.target.checked)} /><span aria-hidden="true" /><strong>Draft</strong></label>{bodyDiffersFromLive && <button type="button" className={styles.discardBodyDraft} onClick={() => void discardBodyDraft()}>Discard body draft</button>}</>} /></div>
       </section>
 
       <section id="case-study-panel-metadata" role="tabpanel" aria-labelledby="case-study-tab-metadata" hidden={tab !== "metadata"} className={styles.panel} aria-label="Case study metadata and SEO">
@@ -290,7 +250,8 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
           <small>{study.published ? study.in_progress ? "The introduction and outcomes are live; the full write-up remains hidden." : "Visible on the live site." : "Not visible on the live site until published."}</small>
         </div>
         <div className={styles.sidePanel}>
-          <h2 className="heading-03">Media</h2>
+          <div className={styles.mediaHeading}><h2 className="heading-03">Media</h2><button type="button" className={adminStyles.secondaryButton} onClick={() => setHeroCodeOpen(true)}>{heroCode.trim() ? "Edit code" : "Add code"}</button></div>
+          {heroCode.trim() && <small>The interactive visual uses the cover image area. Add a cover image for the visual to appear and to provide a fallback for reduced motion or errors. Save and publish to update the live case study.</small>}
           <Field label="Cover image (shown at the top of the case study)"><ImageField name="cover_image" currentUrl={study.cover_image} /></Field>
           <Field label="Thumbnail image (shown on cards and listings)"><ImageField name="thumbnail_image" currentUrl={study.thumbnail_image} /></Field>
         </div>
@@ -301,8 +262,29 @@ export function CaseStudyEditor({ study, metrics, assessment, categories, select
         </div>
       </aside>
       </div>
+      {heroCodeOpen && <HeroCodeDialog initialCode={heroCode} onCancel={() => setHeroCodeOpen(false)} onSave={(code) => { setHeroCode(code); setHeroCodeOpen(false); markUnsaved(); }} />}
     </form>
   );
+}
+
+function subscribeMotion(update: () => void) {
+  const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+  media.addEventListener("change", update);
+  return () => media.removeEventListener("change", update);
+}
+
+function HeroCodeDialog({ initialCode, onCancel, onSave }: { initialCode: string; onCancel: () => void; onSave: (code: string) => void }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const [code, setCode] = useState(initialCode);
+  const reducedMotion = useSyncExternalStore(subscribeMotion, () => window.matchMedia("(prefers-reduced-motion: reduce)").matches, () => true);
+  useEffect(() => { if (dialog.current && !dialog.current.open) dialog.current.showModal(); }, []);
+  return <dialog ref={dialog} className={styles.heroCodeDialog} aria-labelledby="hero-code-title" onCancel={(event) => { event.preventDefault(); onCancel(); }}>
+    <div className={styles.heroCodeDialogHeader}><h2 id="hero-code-title" className="heading-03">Interactive hero visual</h2><button type="button" className={adminStyles.tertiaryButton} onClick={onCancel}>Close</button></div>
+    <p className="body-small">Add a React component using TSX. It appears in the cover image area; the image remains the fallback for reduced motion or errors. External imports are not supported.</p>
+    <label className={adminStyles.field}><span className="label-small">TSX code</span><textarea className={`${adminStyles.textarea} ${styles.heroCodeInput}`} value={code} onChange={(event) => setCode(event.target.value)} maxLength={100000} rows={12} placeholder={"function HeroVisual() {\n  return <div>Your interactive visual</div>;\n}"} /></label>
+    {code.trim() && <div className={styles.heroCodePreview}><p className="label-small">Live preview</p>{reducedMotion ? <p className="body-small">Preview is paused because reduced motion is enabled. Visitors with this preference see the cover image.</p> : <LiveComponentBlock code={code} runtime="react" chrome="minimal" />}</div>}
+    <div className={styles.heroCodeActions}>{initialCode.trim() && <button type="button" className={adminStyles.tertiaryButton} onClick={() => onSave("")}>Remove code</button>}<button type="button" className={adminStyles.tertiaryButton} onClick={onCancel}>Cancel</button><button type="button" className={adminStyles.submit} onClick={() => onSave(code)}>Save code</button></div>
+  </dialog>;
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) { return <label className={adminStyles.field}><span className="label-small" style={{ color: "var(--text-secondary)" }}>{label}</span>{children}</label>; }

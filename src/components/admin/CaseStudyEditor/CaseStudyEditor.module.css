@@ -214,3 +214,18 @@
 .inlineEngagementInput,.inlineEngagementTextarea{width:100%;box-sizing:border-box}
 .editableEngagementFields .inlineEngagementTextarea{display:block;width:100%;max-width:none!important;min-height:120px;resize:vertical;box-sizing:border-box}
 .inlineEngagementTitle:focus-visible,.inlineEngagementDescription:focus-visible{outline:2px solid var(--accent-foundation);outline-offset:3px;border-radius:var(--radius-sm)}
+.activityStatusOptions{display:flex;flex-wrap:wrap;gap:var(--space-100);padding-right:var(--space-600)}
+.activityStatusOptions button[aria-pressed="true"][data-status="completed"]{background:var(--bg-success);border-color:var(--border-success);color:var(--text-success)}
+.activityStatusOptions button[aria-pressed="true"][data-status="not_completed"]{background:var(--bg-warning);border-color:var(--border-warning);color:var(--text-warning)}
+.activityStatusOptions button[aria-pressed="true"][data-status="not_started"]{background:var(--bg-info);border-color:var(--border-info);color:var(--text-info)}
+.editableCategoryTitle{min-width:0;padding:0;border:0;background:transparent;color:var(--text-primary);font:600 18px/1.3 var(--font-family-heading);text-align:left;cursor:text}
+.editableCategoryTitle:focus-visible{outline:2px solid var(--focus-ring);outline-offset:3px}
+.mediaHeading{display:flex;align-items:center;justify-content:space-between;gap:var(--space-200)}
+.heroCodeDialog{width:min(100% - var(--space-600), 960px);max-width:960px;max-height:calc(100dvh - var(--space-600));margin:auto;padding:var(--space-300);overflow-y:auto;border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--bg-surface);color:var(--text-primary)}
+.heroCodeDialog::backdrop{background:rgb(0 0 0 / .65)}
+.heroCodeDialog>p,.heroCodeDialog>label,.heroCodeDialog>.heroCodePreview{margin-top:var(--space-300)}
+.heroCodeDialogHeader,.heroCodeActions{display:flex;align-items:center;justify-content:space-between;gap:var(--space-200)}
+.heroCodeInput{width:100%;max-width:none!important;min-height:240px;font-family:var(--font-family-mono)}
+.heroCodePreview{display:grid;gap:var(--space-100)}
+.heroCodeActions{justify-content:flex-end;flex-wrap:wrap;margin-top:var(--space-300)}
+@media(max-width:767px){.heroCodeDialog{width:calc(100% - var(--space-300));max-height:calc(100dvh - var(--space-300));padding:var(--space-200)}.heroCodeActions>*{min-height:var(--admin-touch-target)}}

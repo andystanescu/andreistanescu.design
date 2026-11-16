@@ -265,6 +265,8 @@ function addColumnIfMissing(table: string, column: string, ddl: string) {
 addColumnIfMissing("case_studies", "body", "body TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("case_studies", "body_draft", "body_draft TEXT");
 addColumnIfMissing("case_studies", "body_draft_enabled", "body_draft_enabled INTEGER NOT NULL DEFAULT 0");
+addColumnIfMissing("case_studies", "hero_code", "hero_code TEXT NOT NULL DEFAULT ''");
+addColumnIfMissing("case_studies", "hero_code_draft", "hero_code_draft TEXT");
 addColumnIfMissing("analytics_events", "source", "source TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("analytics_events", "country", "country TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("analytics_events", "visitor_hash", "visitor_hash TEXT NOT NULL DEFAULT ''");

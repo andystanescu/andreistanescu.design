@@ -9,6 +9,9 @@ type LiveComponentBlockProps = {
   runtime?: "auto" | "react" | "html" | "static";
   language?: string;
   publicInline?: boolean;
+  fill?: boolean;
+  onReady?: () => void;
+  onFailure?: () => void;
 };
 
 type PreviewMode = "react" | "html" | "none";
@@ -58,7 +61,7 @@ function prepareHtmlPreview(source: string, errorChannel: string, autoHeight: bo
 
 // Interactive React blocks run in a sandboxed iframe on both the public site
 // and the editor; the surrounding page never evaluates their code.
-export function LiveComponentBlock({ code, chrome = "framed", runtime = "auto", language, publicInline = false }: LiveComponentBlockProps) {
+export function LiveComponentBlock({ code, chrome = "framed", runtime = "auto", language, publicInline = false, fill = false, onReady, onFailure }: LiveComponentBlockProps) {
   const [revision, setRevision] = React.useState(0);
   const mode: PreviewMode = runtime === "auto" ? detectPreviewMode(code) : runtime === "static" ? "none" : runtime;
   const displayChrome = (publicInline && mode !== "none") || /\bBeforeAfterComparison\b/.test(code) ? "minimal" : chrome;
@@ -69,7 +72,7 @@ export function LiveComponentBlock({ code, chrome = "framed", runtime = "auto", 
     return <StaticCodeSurface code={code} chrome={displayChrome} language={language || "code"} />;
   }
 
-  return <ReactComponentSurface code={code} chrome={displayChrome} revision={revision} onRetry={() => setRevision((value) => value + 1)} />;
+  return <ReactComponentSurface code={code} chrome={displayChrome} revision={revision} onRetry={() => setRevision((value) => value + 1)} fill={fill} onReady={onReady} onFailure={onFailure} />;
 }
 
 function StaticCodeSurface({ code, chrome, language }: { code: string; chrome: "framed" | "minimal"; language: string }) {
@@ -158,13 +161,15 @@ function HtmlComponentSurface({ code, chrome, language, autoHeight }: { code: st
   );
 }
 
-function ReactComponentSurface({ code, chrome, revision, onRetry }: { code: string; chrome: "framed" | "minimal"; revision: number; onRetry: () => void }) {
+function ReactComponentSurface({ code, chrome, revision, onRetry, fill, onReady, onFailure }: { code: string; chrome: "framed" | "minimal"; revision: number; onRetry: () => void; fill: boolean; onReady?: () => void; onFailure?: () => void }) {
   const [view, setView] = React.useState<"preview" | "code">("preview");
   const [copied, setCopied] = React.useState(false);
   const [error, setError] = React.useState("");
   const [height, setHeight] = React.useState(150);
+  const [runtimeUrl, setRuntimeUrl] = React.useState("");
   const frameRef = React.useRef<HTMLIFrameElement>(null);
   const channel = React.useId();
+  React.useEffect(() => { setRuntimeUrl(new URL("/assets/live-component-runtime.js", window.location.origin).href); }, []);
   const send = React.useCallback(() => {
     const frame = frameRef.current;
     if (!frame?.contentWindow) return;
@@ -178,8 +183,9 @@ function ReactComponentSurface({ code, chrome, revision, onRetry }: { code: stri
       if (event.source !== frameRef.current?.contentWindow || event.data?.source !== "conscept-react-preview") return;
       if (event.data.type === "ready") { setError(""); send(); return; }
       if (event.data.channel !== channel) return;
+      if (event.data.type === "rendered") onReady?.();
       if (event.data.type === "height" && typeof event.data.height === "number" && Number.isFinite(event.data.height) && event.data.height > 0 && event.data.height <= 100000) setHeight(Math.ceil(event.data.height));
-      if (event.data.type === "error" && typeof event.data.message === "string") setError(event.data.message.slice(0, 2000));
+      if (event.data.type === "error" && typeof event.data.message === "string") { setError(event.data.message.slice(0, 2000)); onFailure?.(); }
     };
     window.addEventListener("message", receive);
     const observer = new MutationObserver(send);
@@ -187,7 +193,7 @@ function ReactComponentSurface({ code, chrome, revision, onRetry }: { code: stri
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     media.addEventListener("change", send);
     return () => { window.removeEventListener("message", receive); observer.disconnect(); media.removeEventListener("change", send); };
-  }, [channel, send]);
+  }, [channel, send, onReady, onFailure]);
   React.useEffect(() => { setError(""); send(); }, [send]);
 
   const handleCopy = async () => {
@@ -201,7 +207,7 @@ function ReactComponentSurface({ code, chrome, revision, onRetry }: { code: stri
   };
 
   return (
-    <div className={chrome === "framed" ? styles.frame : styles.minimal}>
+    <div className={`${chrome === "framed" ? styles.frame : styles.minimal} ${fill ? styles.fill : ""}`}>
       {chrome === "framed" && <div className={styles.header}>
         <span className={styles.language}>tsx</span>
         <div className={styles.headerActions}>
@@ -214,7 +220,7 @@ function ReactComponentSurface({ code, chrome, revision, onRetry }: { code: stri
           </button>
         </div>
       </div>}
-      {view === "preview" ? error ? <InteractiveErrorState message={error} onRetry={() => { setError(""); onRetry(); }} /> : <div className={chrome === "minimal" ? styles.previewMinimal : styles.preview}><iframe key={revision} ref={frameRef} title="Interactive component preview" sandbox="allow-scripts" src="/live-component-preview" className={styles.htmlPreviewAuto} style={{ height }} /></div> : <pre className={styles.code}><code>{code}</code></pre>}
+      {view === "preview" ? error ? <InteractiveErrorState message={error} onRetry={() => { setError(""); onRetry(); }} /> : <div className={`${chrome === "minimal" ? styles.previewMinimal : styles.preview} ${fill ? styles.fill : ""}`}>{runtimeUrl && <iframe key={revision} ref={frameRef} title="Interactive component preview" sandbox="allow-scripts" srcDoc={`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-eval' ${runtimeUrl}; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data:; connect-src 'none'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;padding:0;background:transparent}${fill ? "html,body,#preview-root,#preview-root>div,#preview-root>div>div{height:100%}" : ""}*{box-sizing:border-box}</style><script defer src="${runtimeUrl}"></script></head><body><div id="preview-root"></div></body></html>`} className={styles.htmlPreviewAuto} style={{ height: fill ? "100%" : height }} />}</div> : <pre className={styles.code}><code>{code}</code></pre>}
     </div>
   );
 }

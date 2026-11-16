@@ -11,7 +11,7 @@ import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { AllSelection, TextSelection } from "@tiptap/pm/state";
+import { AllSelection, NodeSelection, TextSelection } from "@tiptap/pm/state";
 import { Node as TiptapNode } from "@tiptap/core";
 import { createLowlight, common } from "lowlight";
 import { AccentMark } from "./AccentMark";
@@ -20,6 +20,21 @@ import type { RelatedReadingOption } from "@/lib/relatedReadings";
 import styles from "./RichTextEditor.module.css";
 
 const lowlight = createLowlight(common);
+
+const AssessmentBlock = TiptapNode.create({
+  name: "assessmentBlock", group: "block", atom: true, draggable: true,
+  parseHTML() { return [{ tag: 'aside[data-assessment-block="true"]' }]; },
+  renderHTML() { return ["aside", { "data-assessment-block": "true" }]; },
+  addNodeView() {
+    return () => {
+      const element = document.createElement("aside");
+      element.className = styles.galleryBlock;
+      element.contentEditable = "false";
+      element.textContent = "Assessment · drag to move or select and delete";
+      return { dom: element };
+    };
+  },
+});
 
 // A code block can be flagged "interactive" — on the public page it renders
 // as a live, running React component (via react-live) instead of
@@ -430,6 +445,7 @@ type RichTextEditorProps = {
   onContentChange?: (html: string) => void;
   relatedReadings?: RelatedReadingOption[];
   toolbarAddon?: ReactNode;
+  allowAssessment?: boolean;
   /** Keep uploaded media local when demonstrating the editor. */
   previewOnly?: boolean;
 };
@@ -445,6 +461,7 @@ type ToolbarIconName =
   | "image"
   | "code"
   | "more"
+  | "compare" | "gallery" | "callout" | "related-reading" | "separator" | "assessment"
   | "chevron-down";
 
 function ToolbarIcon({ name }: { name: ToolbarIconName }) {
@@ -458,8 +475,10 @@ function ToolbarIcon({ name }: { name: ToolbarIconName }) {
 function readToolbarState(editor: Editor | null) {
   const selectedNode = editor?.state.selection.$from.parent;
   let hasLiveCode = false;
+  let hasAssessment = false;
   editor?.state.doc.descendants((node) => {
     if (node.type.name === "codeBlock" && node.attrs.interactive) hasLiveCode = true;
+    if (node.type.name === "assessmentBlock") hasAssessment = true;
   });
   return {
     bold: editor?.isActive("bold") ?? false,
@@ -467,6 +486,7 @@ function readToolbarState(editor: Editor | null) {
     bulletList: editor?.isActive("bulletList") ?? false,
     liveCode: selectedNode?.type.name === "codeBlock" ? selectedNode.textContent : "",
     hasLiveCode,
+    hasAssessment,
     orderedList: editor?.isActive("orderedList") ?? false,
     codeBlock: editor?.isActive("codeBlock") ?? false,
     interactive: editor?.isActive("codeBlock") ?? false,
@@ -506,6 +526,7 @@ export function RichTextEditor({
   onContentChange,
   relatedReadings = [],
   toolbarAddon,
+  allowAssessment = false,
   previewOnly = false,
 }: RichTextEditorProps) {
   const demoUrls = useRef<string[]>([]);
@@ -527,6 +548,7 @@ export function RichTextEditor({
   const [toolbarOverflowed, setToolbarOverflowed] = useState(false);
   const [toolbarCompact, setToolbarCompact] = useState(false);
   const [toolbarHidden, setToolbarHidden] = useState(false);
+  const [elementControlsAnchor, setElementControlsAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [comparisonAnchor, setComparisonAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
   const [comparisonBefore, setComparisonBefore] = useState<{ file: File; preview: string } | null>(null);
@@ -552,6 +574,7 @@ export function RichTextEditor({
       RelatedInsightBlock,
       GalleryBlock,
       BeforeAfterBlock,
+      AssessmentBlock,
       Link.configure({ openOnClick: false }),
       AttributedBlockquote,
       InteractiveCodeBlock.configure({ lowlight }),
@@ -629,19 +652,8 @@ export function RichTextEditor({
     const updateOverflow = () => {
       // Narrow editors need multiple rows: the essential controls and draft
       // actions alone can be wider than a phone, even after inserts are hidden.
-      const compact = toolbar.clientWidth < 768;
-      setToolbarCompact(compact);
-      if (compact) {
-        setToolbarOverflowed(false);
-        return;
-      }
-      // Keep every control visible while it fits. The optional insert actions
-      // are moved into the menu only after the toolbar itself overflows.
-      const wasOverflowed = toolbar.classList.contains(styles.toolbarOverflowed);
-      if (wasOverflowed) toolbar.classList.remove(styles.toolbarOverflowed);
-      const isOverflowed = toolbar.scrollWidth > toolbar.clientWidth + 1;
-      if (wasOverflowed) toolbar.classList.add(styles.toolbarOverflowed);
-      setToolbarOverflowed(isOverflowed);
+      setToolbarCompact(toolbar.clientWidth < 768);
+      setToolbarOverflowed(false);
     };
 
     updateOverflow();
@@ -649,6 +661,32 @@ export function RichTextEditor({
     observer.observe(toolbar);
     return () => observer.disconnect();
   }, [editor, toolbarOverflowed]);
+
+  useEffect(() => {
+    if (!editor) return;
+    const updateAnchor = () => {
+      const wrapper = wrapperRef.current;
+      if (!wrapper) return;
+      const { selection } = editor.state;
+      const names = new Set(["image", "imageGallery", "beforeAfter", "codeBlock", "callout"]);
+      let position: number | null = null;
+      if (selection instanceof NodeSelection && names.has(selection.node.type.name)) position = selection.from;
+      else for (let depth = selection.$from.depth; depth > 0; depth--) {
+        if (names.has(selection.$from.node(depth).type.name)) { position = selection.$from.before(depth); break; }
+      }
+      const node = position === null ? null : editor.view.nodeDOM(position);
+      if (!(node instanceof HTMLElement)) { setElementControlsAnchor(null); return; }
+      const bounds = node.getBoundingClientRect();
+      const outer = wrapper.getBoundingClientRect();
+      const content = editor.view.dom.getBoundingClientRect();
+      setElementControlsAnchor({ top: bounds.bottom - outer.top + 8, left: content.left - outer.left, width: content.width });
+    };
+    editor.on("selectionUpdate", updateAnchor);
+    editor.on("update", updateAnchor);
+    window.addEventListener("resize", updateAnchor);
+    updateAnchor();
+    return () => { editor.off("selectionUpdate", updateAnchor); editor.off("update", updateAnchor); window.removeEventListener("resize", updateAnchor); };
+  }, [editor]);
 
   useEffect(() => {
     if (!editor || !toolbarCompact) { setToolbarHidden(false); return; }
@@ -864,6 +902,21 @@ export function RichTextEditor({
     setInsertMenuOpen(false);
   };
 
+  const showOrInsertAssessment = () => {
+    setInsertMenuOpen(false);
+    let position: number | null = null;
+    editor.state.doc.descendants((node, pos) => {
+      if (position === null && node.type.name === "assessmentBlock") position = pos;
+    });
+    if (position === null) {
+      editor.chain().focus().insertContent({ type: "assessmentBlock" }).run();
+      return;
+    }
+    editor.chain().focus(undefined, { scrollIntoView: false }).setNodeSelection(position).run();
+    const element = editor.view.nodeDOM(position);
+    if (element instanceof HTMLElement) element.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "center" });
+  };
+
   return (
     <div className={styles.wrapper} ref={wrapperRef}>
       <div
@@ -933,7 +986,7 @@ export function RichTextEditor({
           onClick={() => editor.chain().focus().toggleBold().run()}
           aria-label="Bold"
         >
-          <ToolbarIcon name="bold" />
+          <ToolbarIcon name="bold" /><span>Bold</span>
         </button>
         <button
           type="button"
@@ -943,9 +996,9 @@ export function RichTextEditor({
           onClick={() => editor.chain().focus().toggleItalic().run()}
           aria-label="Italic"
         >
-          <ToolbarIcon name="italic" />
+          <ToolbarIcon name="italic" /><span>Italic</span>
         </button>
-        <button type="button" className={styles.toolbarButton} onClick={handleLink} aria-label="Add link" title="Add link"><ToolbarIcon name="link" /></button>
+        <button type="button" className={styles.toolbarButton} onClick={handleLink} aria-label="Add link"><ToolbarIcon name="link" /><span>Link</span></button>
         <span className={styles.toolbarDivider} />
         <button
           type="button"
@@ -962,7 +1015,7 @@ export function RichTextEditor({
           }}
           aria-label="Bullet list"
         >
-          <ToolbarIcon name="bulleted-list" />
+          <ToolbarIcon name="bulleted-list" /><span>Bullet list</span>
         </button>
         <button
           type="button"
@@ -976,71 +1029,16 @@ export function RichTextEditor({
           }}
           aria-label="Numbered list"
         >
-          <ToolbarIcon name="ordered-list" />
+          <ToolbarIcon name="ordered-list" /><span>Numbered list</span>
         </button>
         <button
           type="button"
           className={styles.toolbarButton}
           onClick={() => editor.chain().focus().setCodeBlock().run()}
           aria-label="Insert code block"
-          title="Insert code block"
         >
-          <ToolbarIcon name="code" />
+          <ToolbarIcon name="code" /><span>Live code</span>
         </button>
-        {state.codeBlock && <label className={styles.runtimeControl}>
-          <span>Preview as</span>
-          <select
-            value={state.runtime}
-            aria-label="Live code preview type"
-            onChange={(event) => {
-              const runtime = event.target.value as "auto" | "react" | "html" | "static";
-              const language = runtime === "react" ? "tsx" : runtime === "html" ? "html" : state.language || null;
-              editor.chain().focus().updateAttributes("codeBlock", { runtime, language }).run();
-            }}
-          >
-            <option value="auto">Automatic</option>
-            <option value="react">React / TSX</option>
-            <option value="html">HTML / CSS / JS</option>
-            <option value="static">Static code</option>
-          </select>
-        </label>}
-        {state.codeBlock && <label className={styles.runtimeControl}>
-          <span>Label</span>
-          <input value={state.embedLabel} aria-label="Embed label" placeholder="Optional" onChange={(event) => editor.chain().focus().updateAttributes("codeBlock", { embedLabel: event.target.value }).run()} />
-        </label>}
-        {state.codeBlock && <label className={styles.runtimeControl}>
-          <span>Help</span>
-          <input value={state.embedHelp} aria-label="Embed caption or help" placeholder="Optional" onChange={(event) => editor.chain().focus().updateAttributes("codeBlock", { embedHelp: event.target.value }).run()} />
-        </label>}
-        {state.mediaType && <label className={styles.runtimeControl}>
-          <span>Media width</span>
-          <select
-            value={state.mediaVariant}
-            aria-label="Media width"
-            onChange={(event) => editor.chain().focus().updateAttributes(state.mediaType, { mediaVariant: event.target.value }).run()}
-          >
-            <option value="contained">Contained</option>
-            <option value="wide">Wide</option>
-            <option value="bleed">Full bleed</option>
-          </select>
-        </label>}
-        {state.callout && <label className={styles.runtimeControl}>
-          <span>Callout type</span>
-          <select
-            value={state.calloutVariant}
-            aria-label="Callout type"
-            onChange={(event) => {
-              const variant = event.target.value as "note" | "decision" | "outcome" | "constraint";
-              const title = variant.charAt(0).toUpperCase() + variant.slice(1);
-              editor.chain().focus().updateAttributes("callout", { variant, title }).run();
-            }}
-          >
-            <option value="note">Note</option>
-            <option value="decision">Decision</option>
-            <option value="outcome">Outcome</option>
-            <option value="constraint">Constraint</option>
-          </select>
-        </label>}
         <span className={styles.toolbarDivider} />
         <button
           type="button"
@@ -1048,7 +1046,7 @@ export function RichTextEditor({
           onClick={() => fileInputRef.current?.click()}
           aria-label="Insert image"
         >
-          <ToolbarIcon name="image" />
+          <ToolbarIcon name="image" /><span>Image</span>
         </button>
         <input
           ref={fileInputRef}
@@ -1066,21 +1064,20 @@ export function RichTextEditor({
           className={`${styles.toolbarButton} ${styles.overflowable}`}
           onClick={openComparisonAtSelection}
           aria-label="Insert before and after comparison"
-          title="Insert comparison"
         >
-          Compare
+          <ToolbarIcon name="compare" /><span>Comparison</span>
         </button>
-        <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={openGalleryAtSelection} aria-label="Insert image gallery" title="Insert gallery">Gallery</button>
-        <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={insertCallout} aria-label="Insert callout" title="Insert callout">Callout</button>
-        {relatedReadings.length > 0 && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={openRelatedReadingAtSelection} aria-label="Insert related reading" title="Insert related reading">Related reading</button>}
+        <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={openGalleryAtSelection} aria-label="Insert image gallery"><ToolbarIcon name="gallery" /><span>Gallery</span></button>
+        <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={insertCallout} aria-label="Insert callout"><ToolbarIcon name="callout" /><span>Callout</span></button>
+        {relatedReadings.length > 0 && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={openRelatedReadingAtSelection} aria-label="Insert related reading"><ToolbarIcon name="related-reading" /><span>Related</span></button>}
+        {allowAssessment && <button type="button" className={`${styles.toolbarButton} ${styles.overflowable}`} onClick={showOrInsertAssessment} aria-label={state.hasAssessment ? "Go to assessment" : "Insert assessment"}><ToolbarIcon name="assessment" /><span>Assessment</span></button>}
         <button
           type="button"
           className={`${styles.toolbarButton} ${styles.overflowable}`}
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
           aria-label="Insert separator"
-          title="Insert separator"
         >
-          Separator
+          <ToolbarIcon name="separator" /><span>Separator</span>
         </button>
         {toolbarOverflowed && (
           <button
@@ -1088,6 +1085,7 @@ export function RichTextEditor({
             className={styles.toolbarButton}
             onClick={() => setInsertMenuOpen((open) => !open)}
             aria-label="More insert options"
+            title="More insert options"
             aria-expanded={insertMenuOpen}
             aria-haspopup="menu"
           >
@@ -1099,10 +1097,68 @@ export function RichTextEditor({
           <button type="button" role="menuitem" onClick={openGalleryAtSelection}>Gallery</button>
           <button type="button" role="menuitem" onClick={insertCallout}>Callout</button>
           {relatedReadings.length > 0 && <button type="button" role="menuitem" onClick={openRelatedReadingAtSelection}>Related reading</button>}
+          {allowAssessment && <button type="button" role="menuitem" onClick={showOrInsertAssessment}>{state.hasAssessment ? "Go to assessment" : "Insert assessment"}</button>}
           <button type="button" role="menuitem" onClick={() => { setInsertMenuOpen(false); editor.chain().focus().setHorizontalRule().run(); }}>Separator</button>
         </div>}
         {toolbarAddon && <div className={styles.toolbarAddon}>{toolbarAddon}</div>}
       </div>
+      {elementControlsAnchor && (state.codeBlock || state.mediaType || state.callout) && <div className={styles.elementControls} style={elementControlsAnchor} aria-label="Selected element settings">
+        {state.codeBlock && <button type="button" className={styles.codeExpandButton} onClick={() => setCodeExpanded((expanded) => !expanded)} aria-expanded={codeExpanded}>{codeExpanded ? "Collapse code" : "Expand code"}</button>}
+        {state.codeBlock && <label className={styles.runtimeControl}>
+          <span>Preview as</span>
+          <select
+            value={state.runtime}
+            aria-label="Live code preview type"
+            onChange={(event) => {
+              const runtime = event.target.value as "auto" | "react" | "html" | "static";
+              const language = runtime === "react" ? "tsx" : runtime === "html" ? "html" : state.language || null;
+              editor.chain().updateAttributes("codeBlock", { runtime, language }).run();
+            }}
+          >
+            <option value="auto">Automatic</option>
+            <option value="react">React / TSX</option>
+            <option value="html">HTML / CSS / JS</option>
+            <option value="static">Static code</option>
+          </select>
+        </label>}
+        {state.codeBlock && <label className={styles.runtimeControl}>
+          <span>Label</span>
+          <input value={state.embedLabel} aria-label="Embed label" placeholder="Optional" onChange={(event) => editor.chain().updateAttributes("codeBlock", { embedLabel: event.target.value }).run()} />
+        </label>}
+        {state.codeBlock && <label className={styles.runtimeControl}>
+          <span>Help</span>
+          <input value={state.embedHelp} aria-label="Embed caption or help" placeholder="Optional" onChange={(event) => editor.chain().updateAttributes("codeBlock", { embedHelp: event.target.value }).run()} />
+        </label>}
+        {state.mediaType && <label className={styles.runtimeControl}>
+          <span>Media width</span>
+          <select
+            value={state.mediaVariant}
+            aria-label="Media width"
+            onChange={(event) => editor.chain().updateAttributes(state.mediaType, { mediaVariant: event.target.value }).run()}
+          >
+            <option value="contained">Contained</option>
+            <option value="wide">Wide</option>
+            <option value="bleed">Full bleed</option>
+          </select>
+        </label>}
+        {state.callout && <label className={styles.runtimeControl}>
+          <span>Callout type</span>
+          <select
+            value={state.calloutVariant}
+            aria-label="Callout type"
+            onChange={(event) => {
+              const variant = event.target.value as "note" | "decision" | "outcome" | "constraint";
+              const title = variant.charAt(0).toUpperCase() + variant.slice(1);
+              editor.chain().updateAttributes("callout", { variant, title }).run();
+            }}
+          >
+            <option value="note">Note</option>
+            <option value="decision">Decision</option>
+            <option value="outcome">Outcome</option>
+            <option value="constraint">Constraint</option>
+          </select>
+        </label>}
+      </div>}
       {comparisonOpen && (
         <div className={`${styles.comparisonWidget} ${styles.inlineWidget}`} style={comparisonAnchor ?? undefined} role="dialog" aria-label="Create before and after comparison">
           <div className={styles.comparisonWidgetHeader}>
@@ -1205,16 +1261,6 @@ export function RichTextEditor({
       >
         <EditorContent editor={editor} />
       </div>
-      {state.hasLiveCode && (
-        <button
-          type="button"
-          className={styles.codeExpandButton}
-          onClick={() => setCodeExpanded((expanded) => !expanded)}
-          aria-expanded={codeExpanded}
-        >
-          {codeExpanded ? "Collapse code" : "Expand code"}
-        </button>
-      )}
       {state.interactive && state.liveCode.trim() && (
         <div className={styles.editorPreview}>
           <p className={styles.editorPreviewLabel}>⚡ Live preview</p>

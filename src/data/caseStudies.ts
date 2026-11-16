@@ -20,6 +20,8 @@ export type CaseStudy = {
   body: string;
   body_draft: string | null;
   body_draft_enabled: number;
+  hero_code: string;
+  hero_code_draft: string | null;
   cover_image: string;
   thumbnail_image: string;
   position: number;

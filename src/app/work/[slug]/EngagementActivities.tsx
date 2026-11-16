@@ -1,63 +1,16 @@
-"use client";
-
-import { useState } from "react";
-import type { EditableEngagement } from "@/data/caseStudyAssessment";
+import type { AssessmentActivityCategory } from "@/data/caseStudyAssessment";
 import styles from "./case-study.module.css";
 
-type Props = {
-  visibleActivities: EditableEngagement[];
-  additionalActivities: EditableEngagement[];
-  conductedActivities: string[];
-  conductedEngagementIds: string[];
-};
+const STATUS_LABELS = { completed: "Completed", not_completed: "Not completed", not_started: "Not started" } as const;
 
-export function EngagementActivities({
-  visibleActivities,
-  additionalActivities,
-  conductedActivities,
-  conductedEngagementIds,
-}: Props) {
-  const [expanded, setExpanded] = useState(false);
-  const activities = expanded
-    ? [...visibleActivities, ...additionalActivities]
-    : visibleActivities;
-  const additionalCount = additionalActivities.length;
-
-  return (
-    <>
-      <div className={styles.activityCards} id="additional-engagement-activities">
-        {activities.map((item) => {
-          const completed = conductedEngagementIds.includes(item.id) || conductedActivities.includes(item.title);
-          return (
-            <article className={styles.activityCard} key={item.id}>
-              <div className={styles.activityCardHeader}>
-                <h4>{item.title}</h4>
-                <span className={completed ? styles.statusComplete : styles.statusIncomplete}>
-                  {completed ? "Complete" : "Not completed"}
-                </span>
-              </div>
-              <p>{item.description}</p>
-            </article>
-          );
-        })}
-      </div>
-      {additionalCount > 0 && (
-        <div className={styles.activityReveal}>
-          <span>+{additionalCount} additional {additionalCount === 1 ? "activity" : "activities"}</span>
-          <button
-            type="button"
-            className={styles.activityRevealButton}
-            aria-expanded={expanded}
-            aria-controls="additional-engagement-activities"
-            onClick={() => setExpanded((current) => !current)}
-          >
-            <span>{expanded ? "Show fewer activities" : "View all activities"}</span>
-            <span className={styles.activityRevealIcon} aria-hidden="true">
-              {expanded ? "−" : "+"}
-            </span>
-          </button>
-        </div>
-      )}
-    </>
-  );
+export function EngagementActivities({ categories }: { categories: AssessmentActivityCategory[] }) {
+  const visible = categories.map((category) => ({ ...category, activities: category.activities.filter((item) => item.title.trim()) })).filter((category) => category.activities.length);
+  if (!visible.length) return <p className="body-small">No engagement activities have been recorded.</p>;
+  return <div className={styles.activityCategories}>{visible.map((category) => <section className={styles.activityCategory} key={category.id}>
+    <h4 className="heading-04">{category.title.trim() || "Activities"}</h4>
+    <div className={styles.activityCards}>{category.activities.map((item) => <article className={styles.activityCard} key={item.id}>
+      <div className={styles.activityCardHeader}><h5>{item.title}</h5><span className={item.status === "completed" ? styles.statusComplete : styles.statusIncomplete}>{STATUS_LABELS[item.status]}</span></div>
+      {item.description && <p>{item.description}</p>}
+    </article>)}</div>
+  </section>)}</div>;
 }

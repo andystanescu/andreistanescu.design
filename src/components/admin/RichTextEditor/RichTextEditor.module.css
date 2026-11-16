@@ -20,7 +20,7 @@
   align-items: center;
   justify-content: flex-start;
   gap: var(--space-50);
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   padding: var(--space-50);
   border: 1px solid var(--border-field);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
@@ -64,6 +64,7 @@
 }
 
 .toolbarButton {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -77,6 +78,8 @@
   font-size: 14px;
   font-weight: 600;
   line-height: 1;
+  gap: var(--space-100);
+  flex-shrink: 0;
 }
 
 .toolbarIcon {
@@ -93,6 +96,11 @@
 .toolbarButton :global(svg) {
   flex: 0 0 20px;
 }
+
+.toolbarButton > span { position: absolute; left: 100%; top: 0; z-index: 3; display: inline-flex; height: 100%; align-items: center; padding: 0 var(--space-100); border-radius: var(--radius-sm); background: var(--bg-subtle); color: var(--text-primary); white-space: nowrap; pointer-events: none; opacity: 0; visibility: hidden; transform: translateX(-4px); transition: opacity 160ms ease, transform 160ms ease, visibility 0s linear 160ms; }
+.toolbarButton:hover > span,
+.toolbarButton:focus-visible > span { opacity: 1; visibility: visible; transform: translateX(0); transition: opacity 180ms ease 120ms, transform 180ms ease 120ms, visibility 0s linear 120ms; }
+@media (prefers-reduced-motion: reduce) { .toolbarButton > span, .toolbarButton:hover > span, .toolbarButton:focus-visible > span { transition: none; transform: none; } }
 
 .toolbarButton:hover,
 .toolbarButton:focus-visible {
@@ -436,6 +444,7 @@
 .runtimeControl{display:inline-flex;min-height:36px;align-items:center;gap:var(--space-75);padding-inline:var(--space-100);color:var(--text-tertiary);font:500 11px/1 var(--font-family-body)}
 .runtimeControl select,.runtimeControl input{min-height:30px;padding:0 var(--space-300) 0 var(--space-100);border:1px solid var(--border-field);border-radius:var(--radius-sm);background:var(--bg-field);color:var(--text-primary);font:500 12px/1 var(--font-family-body)}
 .runtimeControl input{width:112px;padding-right:var(--space-100)}
+.elementControls{position:absolute;z-index:5;display:flex;flex-wrap:wrap;gap:var(--space-100);padding:var(--space-100);box-sizing:border-box;border:1px solid var(--border-field);border-radius:var(--radius-md);background:var(--bg-surface);box-shadow:0 4px 14px color-mix(in srgb,var(--text-primary) 8%,transparent)}
 .toolbarAddon{display:flex;align-items:center;gap:var(--space-150);margin-left:auto;padding-left:var(--space-150)}
 
 @media (max-width: 767px) {

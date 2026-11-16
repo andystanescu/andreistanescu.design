@@ -3,6 +3,7 @@
 /out/
 /build/
 /coverage/
+/public/assets/live-component-runtime.js
 *.tsbuildinfo
 next-env.d.ts
 .env*

@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { Nav } from "@/components/Nav/Nav";
@@ -8,7 +7,7 @@ import { Footer } from "@/components/Footer/Footer";
 import { RichContent } from "@/components/RichContent/RichContent";
 import { ArticleCard } from "@/components/ArticleCard/ArticleCard";
 import { getCaseStudies, getCaseStudyBySlug, getCaseStudyMetrics, getCaseStudyAssessment } from "@/data/caseStudies";
-import { assessmentCriteriaList, generateActivityRecommendations, getActivityDescription, getPrimaryComplexityDrivers } from "@/data/caseStudyAssessment";
+import { assessmentCriteriaList, getAssessmentActivityCategories } from "@/data/caseStudyAssessment";
 import { addHeadingIds } from "@/lib/tableOfContents";
 import { TableOfContents } from "@/components/TableOfContents/TableOfContents";
 import styles from "./case-study.module.css";
@@ -27,20 +26,10 @@ import { CaseStudyHero } from "@/components/work/CaseStudyHero/CaseStudyHero";
 import { AssessmentDisclosure } from "./AssessmentDisclosure";
 import { CaseStudyOverview } from "@/components/work/CaseStudyOverview/CaseStudyOverview";
 import { canShowCaseStudyOverview, parseCaseStudyOverview } from "@/lib/caseStudyOverview";
+import { displayedHeroVisualCode } from "@/lib/heroVisual";
+import { hasEditorAssessmentPlacement, splitAssessmentBlock } from "@/lib/assessmentPlacement";
 
 export const dynamic = "force-dynamic";
-
-function ComplexityMetricIcon({ criterion }: { criterion: string }) {
-  const paths: Record<string, ReactNode> = {
-    discoveryComplexity: <><circle cx="11" cy="11" r="6" /><path d="m16 16 4 4" /></>,
-    organisationalComplexity: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
-    technicalComplexity: <><path d="m8 9-4 3 4 3M16 9l4 3-4 3M14 5l-4 14" /></>,
-    changeComplexity: <><path d="M20 7h-6V1" /><path d="M20 7a9 9 0 1 0 1 8" /></>,
-    riskComplexity: <><path d="M12 3 3 7v5c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V7l-9-4Z" /><path d="M12 8v5M12 17h.01" /></>,
-    deliveryComplexity: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 11h18M8 16l2 2 5-5" /></>,
-  };
-  return <svg className={styles.metricIcon} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[criterion]}</svg>;
-}
 
 function relatedStudyRank(currentSlug: string, candidateSlug: string) {
   const value = `${currentSlug}:${candidateSlug}`;
@@ -96,26 +85,17 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
     .slice(0, 3);
   const metrics = getCaseStudyMetrics(study);
   const assessment = getCaseStudyAssessment(study);
-  const hasAssessment = assessment.overall || assessment.likelyEngagement.length > 0 || Object.values(assessment.scores).some(Boolean);
-  const activityRecommendations = generateActivityRecommendations(assessment.scores);
-  const applicableEngagement = assessment.likelyEngagement.filter((item) => !assessment.notApplicable.includes(item));
-  const engagementSections = assessmentCriteriaList.map((criterion) => ({
-    criterion,
-    activities: assessment.engagements
-      ? (assessment.engagements[criterion.key] ?? []).filter((item) => item.title.trim())
-      : applicableEngagement
-        .filter((name) => activityRecommendations.find((activity) => activity.name === name)?.triggeredBy[0]?.criterion === criterion.key)
-        .map((title) => ({ id: `${criterion.key}:${title}`, title, description: getActivityDescription(title) })),
-  }));
-  const likelyDisplayed = engagementSections.flatMap((group) => group.activities.slice(0, 2));
-  const likelyDisplayedIds = new Set(likelyDisplayed.map((item) => item.id));
-  const likelyAdditional = engagementSections.flatMap((group) => group.activities.filter((item) => !likelyDisplayedIds.has(item.id)));
-  const primaryDrivers = getPrimaryComplexityDrivers(assessment.scores);
-  const assessmentSplit = hasAssessment && assessment.placement !== "start" ? splitHtmlAfterHeading(bodyHtml, assessment.placement) : null;
-  const assessmentPlacementIndex = assessmentSplit ? toc.findIndex((item) => item.id === assessment.placement) : -1;
+  const activityCategories = getAssessmentActivityCategories(assessment);
+  const hasAssessment = Boolean(assessment.overall || activityCategories.some((category) => category.activities.some((activity) => activity.title.trim())) || Object.values(assessment.scores).some(Boolean));
+  const editorSplit = splitAssessmentBlock(bodyHtml);
+  const legacyPlacement = !hasEditorAssessmentPlacement(renderedBody) && !editorSplit;
+  const legacySplit = legacyPlacement && hasAssessment && assessment.placement !== "start" ? splitHtmlAfterHeading(bodyHtml, assessment.placement) : null;
+  const assessmentSplit = editorSplit ?? legacySplit;
+  const showAssessment = hasAssessment && Boolean(editorSplit || legacyPlacement);
+  const assessmentPlacementIndex = editorSplit ? addHeadingIds(editorSplit.before).toc.length - 1 : legacySplit ? toc.findIndex((item) => item.id === assessment.placement) : -1;
   const pageToc = [...toc];
-  if (hasAssessment) pageToc.splice(assessmentPlacementIndex >= 0 ? assessmentPlacementIndex + 1 : 0, 0, { id: "assessment-overview", text: "Assessment" });
-  const assessmentBlock = hasAssessment ? <AssessmentDisclosure overall={assessment.overall} interpretation={assessment.overallDescription} dimensions={assessmentCriteriaList.map((criterion) => ({ label: criterion.label, score: assessment.scores[criterion.key] || 0 }))}><section id="engagement-assessment" className={styles.assessment}><div className={styles.assessmentHeader}><div><p className="label-eyebrow" style={{ color: "var(--text-accent)" }}>ASSESSMENT</p><h2 className="heading-02">A clearer view of the work ahead.</h2><p className="body-default">A practical record of the complexity observed, the engagement activities involved, and the work that was actually conducted.</p></div></div><div className={styles.assessmentGrid}><div className={styles.assessmentScores}><h3 id="complexity-profile" className="heading-03">Complexity profile</h3>{assessmentCriteriaList.map((criterion) => { const score=assessment.scores[criterion.key] || 0; return <div className={styles.assessmentScore} key={criterion.key}><ComplexityMetricIcon criterion={criterion.key} /><div className={styles.assessmentScoreMeta}><span>{criterion.label}</span><div className={styles.assessmentScoreValue}><strong>{score ? `${score} / 5` : "—"}</strong>{primaryDrivers.includes(criterion.key) && <em className={styles.primaryDriver}>Primary driver</em>}</div></div><div className={styles.scoreTrack}><i style={{ width: `${Math.min(100, score / 5 * 100)}%` }} /></div></div>; })}</div><div className={styles.assessmentAside}>{assessment.overall && <div className={styles.assessmentSummary}><span>OVERALL COMPLEXITY</span><strong>{assessment.overall}</strong><p>{assessment.overallDescription}</p></div>}<div className={styles.assessmentLists}><div><h3 id="engagement-activities" className="heading-03">Engagement activities</h3><EngagementActivities visibleActivities={likelyDisplayed} additionalActivities={likelyAdditional} conductedActivities={assessment.conducted} conductedEngagementIds={assessment.conductedEngagementIds} /></div></div></div></div></section></AssessmentDisclosure> : null;
+  if (showAssessment) pageToc.splice(assessmentPlacementIndex >= 0 ? assessmentPlacementIndex + 1 : 0, 0, { id: "assessment-overview", text: "Assessment" });
+  const assessmentBlock = showAssessment ? <AssessmentDisclosure overall={assessment.overall} interpretation={assessment.overallDescription} dimensions={assessmentCriteriaList.map((criterion) => ({ label: criterion.label, score: assessment.scores[criterion.key] || 0 }))}><section id="engagement-assessment" className={styles.assessment}><h3 id="engagement-activities" className="heading-03">Engagement activities</h3><EngagementActivities categories={activityCategories} /></section></AssessmentDisclosure> : null;
 
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
@@ -126,7 +106,7 @@ export default async function CaseStudyDetailPage({ params, searchParams }: { pa
     {preview && <aside className={styles.previewBanner}><strong>Preview mode</strong><span>{study.body_draft !== null ? "Showing the saved body draft." : "Showing the current published body."}</span><Link href={`/admin/case-studies/${study.id}`}>Return to editor</Link></aside>}
     <ContentViewTracker contentType="case_study" contentId={study.slug} />
     <main className={styles.main}>
-      <CaseStudyHero slug={study.slug} category={study.category} company={study.eyebrow} title={study.title} summary={study.description} author={authorName} publicationDetails={publicationDetails} tags={study.tags} role={study.project_role} contribution={study.contribution} timeline={study.timeline} scope={study.scope} team={study.team} coverImage={study.cover_image} impactEyebrow={study.outcome_eyebrow || "Impact"} impactTitle={study.outcome_title} metrics={metrics} />
+      <CaseStudyHero slug={study.slug} category={study.category} company={study.eyebrow} title={study.title} summary={study.description} author={authorName} publicationDetails={publicationDetails} tags={study.tags} role={study.project_role} contribution={study.contribution} timeline={study.timeline} scope={study.scope} team={study.team} coverImage={study.cover_image} heroCode={displayedHeroVisualCode(study.hero_code, study.hero_code_draft, Boolean(preview))} impactEyebrow={study.outcome_eyebrow || "Impact"} impactTitle={study.outcome_title} metrics={metrics} />
       {canShowCaseStudyOverview(overview, accessGranted) && <CaseStudyOverview overview={overview} target={showInProgress || accessGranted ? "case-study-story" : "protected-story-title"} followsOutcomes={metrics.length > 0} />}
       {showInProgress && <section id="case-study-story" className={`container ${styles.inProgress}`}><span className={styles.inProgressBadge}>Write-up in progress</span><h2>The results are in. The story behind them is still being written.</h2><p>This case study is being written up in full—the challenge, the shift in approach, and what was built. The outcomes above are real and already delivered; the full narrative is still being prepared.</p></section>}
       {!showInProgress && !accessGranted && <CaseStudyPasswordGate slug={study.slug} error={query.accessError ? "That password was not recognised." : undefined} />}

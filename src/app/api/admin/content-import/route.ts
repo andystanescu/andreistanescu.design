@@ -264,6 +264,8 @@ export async function POST(request: NextRequest) {
           text(record, "canonical_url"), text(record, "og_image"), integer(record, "no_index")
         );
         if (typeof record.overview === "string") db.prepare("UPDATE case_studies SET overview = ? WHERE slug = ?").run(record.overview, slug);
+        if (typeof record.hero_code === "string") db.prepare("UPDATE case_studies SET hero_code = ? WHERE slug = ?").run(record.hero_code, slug);
+        if (Object.hasOwn(record, "hero_code_draft") && (typeof record.hero_code_draft === "string" || record.hero_code_draft === null)) db.prepare("UPDATE case_studies SET hero_code_draft = ? WHERE slug = ?").run(record.hero_code_draft, slug);
         if (Array.isArray(record.category_names)) {
           const study = db.prepare("SELECT id FROM case_studies WHERE slug = ?").get(slug) as { id: number };
           db.prepare("DELETE FROM case_study_categories WHERE case_study_id = ?").run(study.id);

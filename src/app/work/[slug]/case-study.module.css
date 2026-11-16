@@ -140,7 +140,6 @@
 .assessmentCompactScores b{display:block;height:100%;border-radius:inherit;background:var(--accent-foundation)}
 .assessmentCompactAction{display:flex;min-height:44px;align-items:center;justify-content:space-between;gap:var(--space-200);border-top:1px solid var(--border-default);color:var(--text-accent);font:600 14px/1.3 var(--font-family-body)}
 .assessmentCompactAction>b{font:500 18px/1 var(--font-family-body);transition:transform .15s ease}
-.assessmentDisclosure[open] .assessmentCompactAction>b{transform:rotate(180deg)}
 .showLess{display:none}
 .assessmentDisclosure[open] .showFull{display:none}
 .assessmentDisclosure[open] .showLess{display:inline}
@@ -152,3 +151,8 @@
 .assessmentLists h3{width:max-content;max-width:100%}
 .activityCards{grid-template-columns:minmax(0,1fr)!important;justify-items:stretch}
 @media(max-width:900px){.assessmentCompactScores{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.activityCategories{display:grid;gap:var(--space-400);margin-top:var(--space-300)}
+.activityCategory{display:grid;gap:var(--space-200)}
+.activityCard h5{font:600 16px/1.3 var(--font-family-heading);min-width:0}
+@media(min-width:1024px){.activityCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:1023px){.activityCards{grid-template-columns:minmax(0,1fr)!important}}

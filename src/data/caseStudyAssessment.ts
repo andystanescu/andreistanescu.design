@@ -47,6 +47,27 @@ export type CriterionKey = keyof typeof assessmentCriteria;
 export type AssessmentScores = Partial<Record<CriterionKey, 1 | 2 | 3 | 4 | 5>>;
 export type EditableEngagement = { id: string; title: string; description: string };
 export type EngagementGroups = Partial<Record<CriterionKey, EditableEngagement[]>>;
+export type EngagementStatus = "completed" | "not_completed" | "not_started";
+export type AssessmentActivity = EditableEngagement & { status: EngagementStatus };
+export type AssessmentActivityCategory = { id: string; title: string; activities: AssessmentActivity[] };
+
+export function parseAssessmentActivityCategories(value: unknown): AssessmentActivityCategory[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((group) => group && typeof group === "object" && typeof group.id === "string" && typeof group.title === "string" && Array.isArray(group.activities)).map((group) => ({
+    id: group.id.slice(0, 180), title: group.title.slice(0, 180),
+    activities: group.activities.filter((item: unknown): item is AssessmentActivity => Boolean(item) && typeof item === "object" && typeof (item as AssessmentActivity).id === "string" && typeof (item as AssessmentActivity).title === "string" && typeof (item as AssessmentActivity).description === "string").map((item: AssessmentActivity) => ({ id: item.id.slice(0, 180), title: item.title.slice(0, 180), description: item.description.slice(0, 2000), status: (["completed", "not_completed", "not_started"] as const).includes(item.status) ? item.status : "not_started" })),
+  }));
+}
+
+export function getAssessmentActivityCategories(assessment: CaseStudyAssessment): AssessmentActivityCategory[] {
+  if (assessment.activityCategories !== undefined) return assessment.activityCategories;
+  if (assessment.engagements) return assessmentCriteriaList.flatMap((criterion) => {
+    const activities = assessment.engagements?.[criterion.key] ?? [];
+    return activities.length ? [{ id: `legacy:${criterion.key}`, title: criterion.label, activities: activities.map((item) => ({ ...item, status: assessment.conductedEngagementIds.includes(item.id) || assessment.conducted.includes(item.title) ? "completed" as const : "not_completed" as const })) }] : [];
+  });
+  const titles = assessment.likelyEngagement.filter((title) => !assessment.notApplicable.includes(title));
+  return titles.length ? [{ id: "legacy:activities", title: "Activities", activities: titles.map((title, index) => ({ id: `legacy:${index}:${title}`, title, description: getActivityDescription(title), status: assessment.conducted.includes(title) ? "completed" as const : "not_completed" as const })) }] : [];
+}
 export type RecommendedActivity = { name: string; triggeredBy: Array<{ criterion: CriterionKey; score: number }> };
 export const assessmentCriteriaList = Object.entries(assessmentCriteria).map(([key, criterion]) => ({ key: key as CriterionKey, ...criterion }));
 export function getPrimaryComplexityDrivers(scores: AssessmentScores): CriterionKey[] {
@@ -73,14 +94,14 @@ export function generateActivityRecommendations(scores: AssessmentScores): Recom
   return [...activityMap.values()];
 }
 
-export type CaseStudyAssessment = { scores: AssessmentScores; likelyEngagement: string[]; conducted: string[]; conductedEngagementIds: string[]; notApplicable: string[]; engagements?: EngagementGroups; overall: string; overallDescription: string; primaryDrivers: CriterionKey[]; placement: string };
+export type CaseStudyAssessment = { scores: AssessmentScores; likelyEngagement: string[]; conducted: string[]; conductedEngagementIds: string[]; notApplicable: string[]; engagements?: EngagementGroups; activityCategories?: AssessmentActivityCategory[]; overall: string; overallDescription: string; primaryDrivers: CriterionKey[]; placement: string };
 export function parseCaseStudyAssessment(value: string | undefined): CaseStudyAssessment {
   try {
     const parsed = JSON.parse(value || "{}");
     const engagements: EngagementGroups | undefined = parsed?.engagements && typeof parsed.engagements === "object"
       ? Object.fromEntries(assessmentCriteriaList.map(({ key }) => [key, Array.isArray(parsed.engagements[key]) ? parsed.engagements[key].filter((item: unknown): item is EditableEngagement => Boolean(item) && typeof item === "object" && typeof (item as EditableEngagement).id === "string" && typeof (item as EditableEngagement).title === "string" && typeof (item as EditableEngagement).description === "string") : []]))
       : undefined;
-    return { scores: parsed?.scores && typeof parsed.scores === "object" ? parsed.scores : {}, likelyEngagement: Array.isArray(parsed?.likelyEngagement) ? parsed.likelyEngagement : [], conducted: Array.isArray(parsed?.conducted) ? parsed.conducted : [], conductedEngagementIds: Array.isArray(parsed?.conductedEngagementIds) ? parsed.conductedEngagementIds.filter((id: unknown): id is string => typeof id === "string") : [], notApplicable: Array.isArray(parsed?.notApplicable) ? parsed.notApplicable : [], engagements, overall: typeof parsed?.overall === "string" ? parsed.overall : "", overallDescription: typeof parsed?.overallDescription === "string" ? parsed.overallDescription : "", primaryDrivers: Array.isArray(parsed?.primaryDrivers) ? parsed.primaryDrivers : [], placement: typeof parsed?.placement === "string" ? parsed.placement : "start" };
+    return { scores: parsed?.scores && typeof parsed.scores === "object" ? parsed.scores : {}, likelyEngagement: Array.isArray(parsed?.likelyEngagement) ? parsed.likelyEngagement : [], conducted: Array.isArray(parsed?.conducted) ? parsed.conducted : [], conductedEngagementIds: Array.isArray(parsed?.conductedEngagementIds) ? parsed.conductedEngagementIds.filter((id: unknown): id is string => typeof id === "string") : [], notApplicable: Array.isArray(parsed?.notApplicable) ? parsed.notApplicable : [], engagements, activityCategories: Array.isArray(parsed?.activityCategories) ? parseAssessmentActivityCategories(parsed.activityCategories) : undefined, overall: typeof parsed?.overall === "string" ? parsed.overall : "", overallDescription: typeof parsed?.overallDescription === "string" ? parsed.overallDescription : "", primaryDrivers: Array.isArray(parsed?.primaryDrivers) ? parsed.primaryDrivers : [], placement: typeof parsed?.placement === "string" ? parsed.placement : "start" };
   }
   catch { return { scores: {}, likelyEngagement: [], conducted: [], conductedEngagementIds: [], notApplicable: [], overall: "", overallDescription: "", primaryDrivers: [], placement: "start" }; }
 }

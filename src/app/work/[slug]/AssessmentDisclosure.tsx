@@ -17,7 +17,7 @@ export function AssessmentDisclosure({ overall, interpretation, dimensions, chil
         </span>)}
       </span>
       {interpretation && <span className={styles.assessmentCompactInterpretation}>{interpretation}</span>}
-      <span className={styles.assessmentCompactAction}><span className={styles.showFull}>View full assessment</span><span className={styles.showLess}>Hide full assessment</span><b aria-hidden="true">↓</b></span>
+      <span className={styles.assessmentCompactAction}><span className={styles.showFull}>View engagement activities</span><span className={styles.showLess}>Hide engagement activities</span><b aria-hidden="true"><span className={styles.showFull}>+</span><span className={styles.showLess}>−</span></b></span>
     </summary>
     <div className={styles.assessmentDetail}>{children}</div>
   </details>;

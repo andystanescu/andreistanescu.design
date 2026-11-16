@@ -11,6 +11,8 @@ import { readCategorySelection, replaceCaseStudyCategories } from "@/lib/categor
 import bcrypt from "bcryptjs";
 import { getSessionSecret } from "@/lib/auth";
 import { encryptCaseStudyPassword } from "@/lib/caseStudyPasswordEncryption";
+import { assessmentCriteriaList, getPrimaryComplexityDrivers, parseAssessmentActivityCategories } from "@/data/caseStudyAssessment";
+import { markEditorAssessmentPlacement } from "@/lib/assessmentPlacement";
 
 export async function POST(request: NextRequest) {
   const form = await request.formData();
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
   const canonicalUrl = String(form.get("canonical_url") ?? "").trim();
   const ogImage = String(form.get("og_image") ?? "").trim();
   const noIndex = form.get("no_index") === "on" ? 1 : 0;
-  const body = applyHeadingAccents(String(form.get("body") ?? "").trim());
+  const body = markEditorAssessmentPlacement(applyHeadingAccents(String(form.get("body") ?? "").trim()));
   const published = form.get("intent") === "publish" ? 1 : 0;
   const inProgress = form.get("in_progress") === "on" ? 1 : 0;
   const author = getSettings().author_name;
@@ -56,6 +58,11 @@ export async function POST(request: NextRequest) {
 
   const coverImage = await resolveImageField(form, "cover_image", "");
   const thumbnailImage = await resolveImageField(form, "thumbnail_image", "");
+  let activityCategories;
+  try { activityCategories = parseAssessmentActivityCategories(JSON.parse(String(form.get("assessment_activity_categories") ?? "[]"))); }
+  catch { return new Response("Engagement data could not be read.", { status: 400 }); }
+  const scores = Object.fromEntries(assessmentCriteriaList.map(({ key }) => [key, Math.max(0, Math.min(5, Number(form.get(`assessment_score_${key}`)) || 0))]));
+  const assessment = JSON.stringify({ scores, activityCategories, overall: String(form.get("assessment_overall") ?? "").trim(), overallDescription: String(form.get("assessment_overall_description") ?? "").trim(), primaryDrivers: getPrimaryComplexityDrivers(scores), placement: String(form.get("assessment_placement") ?? "start") });
 
   const maxPosition = db
     .prepare("SELECT COALESCE(MAX(position), -1) AS max FROM case_studies")
@@ -95,6 +102,8 @@ export async function POST(request: NextRequest) {
       noIndex,
       overviewFromForm(form)
     );
+    db.prepare("UPDATE case_studies SET hero_code = ? WHERE id = ?").run(String(form.get("hero_code") ?? "").slice(0, 100000), Number(result.lastInsertRowid));
+    db.prepare("UPDATE case_studies SET assessment = ? WHERE id = ?").run(assessment, Number(result.lastInsertRowid));
     if (categories) replaceCaseStudyCategories(Number(result.lastInsertRowid), categories);
     applyPendingCategoryAssignments(db, Number(result.lastInsertRowid), slug);
     if (passwordRequired || passwordHashes.length) {

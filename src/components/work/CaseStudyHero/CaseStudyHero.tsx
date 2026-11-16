@@ -4,6 +4,7 @@ import { AuthorAvatar } from "@/components/AuthorAvatar/AuthorAvatar";
 import { ShareArticle } from "@/components/ShareArticle/ShareArticle";
 import { ImpactMetrics, type ImpactMetric } from "@/components/ImpactMetrics/ImpactMetrics";
 import { ProjectMetadata } from "@/components/work/ProjectMetadata/ProjectMetadata";
+import { HeroInteractiveVisual } from "./HeroInteractiveVisual";
 import styles from "./CaseStudyHero.module.css";
 
 type CaseStudyHeroProps = {
@@ -21,12 +22,13 @@ type CaseStudyHeroProps = {
   scope?: string;
   team?: string;
   coverImage?: string;
+  heroCode?: string;
   impactEyebrow?: string;
   impactTitle?: string;
   metrics: ImpactMetric[];
 };
 
-export function CaseStudyHero({ slug, category, company, title, summary, author, publicationDetails, tags, role, contribution, timeline, scope, team, coverImage, impactEyebrow = "Impact", impactTitle, metrics }: CaseStudyHeroProps) {
+export function CaseStudyHero({ slug, category, company, title, summary, author, publicationDetails, tags, role, contribution, timeline, scope, team, coverImage, heroCode, impactEyebrow = "Impact", impactTitle, metrics }: CaseStudyHeroProps) {
   const descriptors = [category, company]
     .filter((value): value is string => Boolean(value))
     .filter((value, index, values) => values.findIndex((candidate) => candidate.toLowerCase() === value.toLowerCase()) === index);
@@ -54,6 +56,7 @@ export function CaseStudyHero({ slug, category, company, title, summary, author,
           {/* Cover images are managed by the CMS and do not have stable dimensions at build time. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={coverImage} alt="" />
+          {heroCode && <HeroInteractiveVisual key={heroCode} code={heroCode} />}
         </div>}
       </section>
       {metrics.length > 0 && (
