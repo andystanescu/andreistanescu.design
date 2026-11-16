@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import styles from "./AdminNav.module.css";
@@ -11,6 +12,42 @@ const GROUPS = [
   { label: "System", items: [{ label: "Content transfer", href: "/admin/content-transfer", icon: "admin-content-transfer" }, { label: "Submissions", href: "/admin/submissions", icon: "admin-submissions" }] },
 ] as const;
 const NESTED_UNDER: Record<string, string> = { "/admin/about-philosophy": "/admin/about", "/admin/about-highlights": "/admin/about", "/admin/services/settings": "/admin/categories" };
+
+const MOBILE_GROUPS = [
+  { label: "Site", items: GROUPS[0].items.slice(1) },
+  ...GROUPS.slice(1),
+];
+
+export function adminLocation(pathname: string) {
+  const effectivePath = NESTED_UNDER[pathname] ?? pathname;
+  for (const group of MOBILE_GROUPS) {
+    const item = group.items.find((entry) => effectivePath === entry.href || effectivePath.startsWith(`${entry.href}/`));
+    if (item) return { group: group.label, label: item.label };
+  }
+  return { group: "Admin", label: pathname.startsWith("/admin/design-system") ? "Design system" : "Dashboard" };
+}
+
+export function MobileAdminNav({ servicesEnabled = true, insightsEnabled = true }: { servicesEnabled?: boolean; insightsEnabled?: boolean }) {
+  const pathname = usePathname();
+  const current = adminLocation(pathname);
+  const [open, setOpen] = useState<string[]>([current.group]);
+  return <nav className={styles.mobileNav} aria-label="Admin">
+    <Link href="/admin" aria-current={pathname === "/admin" ? "page" : undefined} className={`${styles.mobileLink} ${pathname === "/admin" ? styles.mobileLinkActive : ""}`}><AdminIcon name="admin-dashboard" className={styles.icon} /><span>Dashboard</span></Link>
+    {MOBILE_GROUPS.map((group) => {
+      const items = group.items.filter((item) => insightsEnabled || item.href !== "/admin/insights");
+      const expanded = open.includes(group.label);
+      return <div key={group.label} className={styles.mobileGroup}>
+        <button type="button" className={styles.mobileGroupToggle} aria-expanded={expanded} onClick={() => setOpen((previous) => expanded ? previous.filter((label) => label !== group.label) : [...previous, group.label])}>
+          <span>{group.label}</span><span>{items.length}</span><AdminIcon name={expanded ? "action-minus" : "action-plus"} />
+        </button>
+        {expanded && <div>{items.map((item) => {
+          const active = current.label === item.label && current.group === group.label;
+          return <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={`${styles.mobileLink} ${active ? styles.mobileLinkActive : ""}`}><AdminIcon name={item.icon} className={styles.icon} /><span>{item.href === "/admin/categories" && !servicesEnabled ? "Categories" : item.label}</span></Link>;
+        })}</div>}
+      </div>;
+    })}
+  </nav>;
+}
 
 export function AdminNav({ collapsed = false, servicesEnabled = true, insightsEnabled = true }: { collapsed?: boolean; servicesEnabled?: boolean; insightsEnabled?: boolean }) {
   const pathname = usePathname();

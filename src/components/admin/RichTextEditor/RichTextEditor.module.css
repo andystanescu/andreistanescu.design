@@ -38,6 +38,31 @@
   display: none;
 }
 
+.toolbarCompact {
+  position: relative;
+  top: auto;
+  flex-wrap: wrap;
+  white-space: normal;
+}
+
+.toolbarCompact .toolbarButton,
+.toolbarCompact .toolbarSelect {
+  min-height: 44px;
+  flex-shrink: 0;
+}
+
+.toolbarCompact .toolbarSelectWrap,
+.toolbarCompact .toolbarDivider {
+  flex-shrink: 0;
+}
+
+.toolbarCompact .toolbarAddon {
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  margin-left: 0;
+  padding: var(--space-100) 0 0;
+}
+
 .toolbarButton {
   display: inline-flex;
   align-items: center;
@@ -412,6 +437,31 @@
 .runtimeControl select,.runtimeControl input{min-height:30px;padding:0 var(--space-300) 0 var(--space-100);border:1px solid var(--border-field);border-radius:var(--radius-sm);background:var(--bg-field);color:var(--text-primary);font:500 12px/1 var(--font-family-body)}
 .runtimeControl input{width:112px;padding-right:var(--space-100)}
 .toolbarAddon{display:flex;align-items:center;gap:var(--space-150);margin-left:auto;padding-left:var(--space-150)}
+
+@media (max-width: 767px) {
+  .toolbar.toolbarCompact {
+    --toolbar-mobile-top: var(--safe-area-top, 0px);
+    position: sticky;
+    top: var(--toolbar-mobile-top);
+    z-index: 21;
+    transition: transform 180ms ease;
+  }
+  .toolbar.toolbarCompact::before {
+    content: "";
+    position: absolute;
+    inset: calc(-1 * var(--toolbar-mobile-top)) 0 100%;
+    background: var(--bg-canvas);
+    pointer-events: none;
+  }
+  .toolbar.toolbarCompact.toolbarHidden {
+    transform: translateY(calc(-100% - var(--toolbar-mobile-top)));
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toolbar.toolbarCompact { transition: none; }
+}
 
 .inlineWidget {
   position: absolute;

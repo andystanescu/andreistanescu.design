@@ -525,6 +525,8 @@ export function RichTextEditor({
   const [codeExpanded, setCodeExpanded] = useState(false);
   const [insertMenuOpen, setInsertMenuOpen] = useState(false);
   const [toolbarOverflowed, setToolbarOverflowed] = useState(false);
+  const [toolbarCompact, setToolbarCompact] = useState(false);
+  const [toolbarHidden, setToolbarHidden] = useState(false);
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [comparisonAnchor, setComparisonAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
   const [comparisonBefore, setComparisonBefore] = useState<{ file: File; preview: string } | null>(null);
@@ -625,6 +627,14 @@ export function RichTextEditor({
     if (!toolbar) return;
 
     const updateOverflow = () => {
+      // Narrow editors need multiple rows: the essential controls and draft
+      // actions alone can be wider than a phone, even after inserts are hidden.
+      const compact = toolbar.clientWidth < 768;
+      setToolbarCompact(compact);
+      if (compact) {
+        setToolbarOverflowed(false);
+        return;
+      }
       // Keep every control visible while it fits. The optional insert actions
       // are moved into the menu only after the toolbar itself overflows.
       const wasOverflowed = toolbar.classList.contains(styles.toolbarOverflowed);
@@ -639,6 +649,31 @@ export function RichTextEditor({
     observer.observe(toolbar);
     return () => observer.disconnect();
   }, [editor, toolbarOverflowed]);
+
+  useEffect(() => {
+    if (!editor || !toolbarCompact) { setToolbarHidden(false); return; }
+    const mobile = window.matchMedia("(max-width: 767px)");
+    let lastTop = wrapperRef.current?.getBoundingClientRect().top ?? 0;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const wrapper = wrapperRef.current;
+      if (!wrapper) return;
+      const bounds = wrapper.getBoundingClientRect();
+      if (!mobile.matches || bounds.top >= 0 || bounds.bottom <= 0) setToolbarHidden(false);
+      else if (bounds.top < lastTop - 3 && !toolbarRef.current?.contains(document.activeElement)) setToolbarHidden(true);
+      else if (bounds.top > lastTop + 3) setToolbarHidden(false);
+      if (Math.abs(bounds.top - lastTop) > 3) lastTop = bounds.top;
+    };
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+    window.addEventListener("scroll", onScroll, true);
+    mobile.addEventListener("change", update);
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      mobile.removeEventListener("change", update);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [editor, toolbarCompact]);
 
   if (!editor) {
     return (
@@ -833,7 +868,7 @@ export function RichTextEditor({
     <div className={styles.wrapper} ref={wrapperRef}>
       <div
         ref={toolbarRef}
-        className={`${styles.toolbar} ${toolbarOverflowed ? styles.toolbarOverflowed : ""}`}
+        className={`${styles.toolbar} ${toolbarOverflowed ? styles.toolbarOverflowed : ""} ${toolbarCompact ? styles.toolbarCompact : ""} ${toolbarHidden ? styles.toolbarHidden : ""}`}
       >
         <div className={styles.toolbarSelectWrap} ref={typeStyleRef}>
           <button

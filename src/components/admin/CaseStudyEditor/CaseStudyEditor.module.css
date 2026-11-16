@@ -171,8 +171,8 @@
 
 @media (max-width: 767px) {
   .editorHeader {
-    position: static;
-    padding: calc(max(var(--space-200), var(--safe-area-top)) + var(--space-600)) var(--space-300) var(--space-200);
+    position: static !important;
+    padding: max(var(--space-300), var(--safe-area-top)) var(--space-300) var(--space-200);
   }
 
   .editorHeading h1 {
@@ -201,7 +201,7 @@
   }
 
   .editorLayout {
-    padding: 0 var(--space-300) var(--space-400);
+    padding: 0 var(--space-300) calc(var(--space-800) + var(--safe-area-bottom) + var(--space-300));
   }
 }
 

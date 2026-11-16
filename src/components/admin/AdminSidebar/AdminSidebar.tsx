@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { Logo } from "@/components/Logo/Logo";
 import { LogoIcon } from "@/components/Logo/LogoIcon";
-import { AdminNav } from "@/components/admin/AdminNav/AdminNav";
+import { AdminNav, MobileAdminNav, adminLocation } from "@/components/admin/AdminNav/AdminNav";
 import { ViewSiteLink } from "@/components/admin/ViewSiteLink/ViewSiteLink";
 import styles from "@/app/admin/(dashboard)/dashboard.module.css";
 import navStyles from "@/components/admin/AdminNav/AdminNav.module.css";
@@ -22,11 +22,21 @@ export function AdminSidebar({ logoIdentity, logoImage, logoIconImage, servicesE
   const openerRef = useRef<HTMLButtonElement>(null);
   const restoreFocusOnCloseRef = useRef(true);
   const drawerWasOpenRef = useRef(false);
+  const dragStartRef = useRef<number | null>(null);
+  const previousPathnameRef = useRef(pathname);
 
   function closeDrawer(restoreFocus = true) {
     restoreFocusOnCloseRef.current = restoreFocus;
     setMobileOpen(false);
   }
+
+  useEffect(() => {
+    if (previousPathnameRef.current !== pathname) {
+      previousPathnameRef.current = pathname;
+      restoreFocusOnCloseRef.current = false;
+      setMobileOpen(false);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const desktop = window.matchMedia("(min-width: 768px)");
@@ -51,6 +61,9 @@ export function AdminSidebar({ logoIdentity, logoImage, logoIconImage, servicesE
     const page = document.querySelector<HTMLElement>("[data-page-transition-content]");
     const wasInert = page?.inert ?? false;
     if (page) page.inert = true;
+    const scrolling = document.querySelector<HTMLElement>(`[class*="dashboard_content"]`);
+    const previousOverflow = scrolling?.style.overflow ?? "";
+    if (scrolling) scrolling.style.overflow = "hidden";
 
     const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -88,6 +101,7 @@ export function AdminSidebar({ logoIdentity, logoImage, logoIconImage, servicesE
       window.cancelAnimationFrame(focusFrame);
       document.removeEventListener("keydown", handleKeyDown);
       if (page) page.inert = wasInert;
+      if (scrolling) scrolling.style.overflow = previousOverflow;
     };
   }, [mobileOpen]);
 
@@ -97,21 +111,23 @@ export function AdminSidebar({ logoIdentity, logoImage, logoIconImage, servicesE
 
   return (
     <>
-      <button
+      <div className={styles.mobileAppBar}><button
         type="button"
         className={styles.mobileNavToggle}
         ref={openerRef}
         onClick={() => {
           restoreFocusOnCloseRef.current = true;
-          setMobileOpen(true);
+          setMobileOpen((open) => !open);
         }}
-        aria-label="Open admin navigation"
+        aria-label={mobileOpen ? "Close admin navigation" : "Open admin navigation"}
         aria-expanded={mobileOpen}
         aria-controls="admin-navigation-drawer"
       >
         <AdminIcon name="action-menu" />
         <span>Menu</span>
       </button>
+      <div className={styles.mobileLocation}><span>{adminLocation(pathname).group}</span><strong>{adminLocation(pathname).label}</strong></div>
+      <ViewSiteLink mobile /></div>
       {mobileOpen && <button type="button" className={styles.mobileNavBackdrop} aria-label="Close admin navigation" onClick={() => closeDrawer()} />}
       <aside
         id="admin-navigation-drawer"
@@ -124,6 +140,7 @@ export function AdminSidebar({ logoIdentity, logoImage, logoIconImage, servicesE
         data-admin-sidebar
         data-collapsed={collapsed || undefined}
       >
+      <div className={styles.mobileGrabber} aria-hidden="true" onPointerDown={(event) => { dragStartRef.current = event.clientY; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerUp={(event) => { if (dragStartRef.current !== null && event.clientY - dragStartRef.current > 60) closeDrawer(); dragStartRef.current = null; }} onPointerCancel={() => { dragStartRef.current = null; }}><span /></div>
       <div className={styles.sidebarTop}>
         <div className={styles.brand}>
           <Link href="/admin/design-system" className={styles.brandLogo} aria-label="Open design system" title="Open design system" onClick={() => closeDrawer(false)}>{collapsed && !mobileOpen ? logoIconImage ? <LogoIcon identity={logoIdentity} imageUrl={logoIconImage} /> : <span aria-hidden="true">A</span> : <Logo variant="compact" identity={logoIdentity} imageUrl={logoImage} />}</Link>
@@ -144,9 +161,10 @@ export function AdminSidebar({ logoIdentity, logoImage, logoIconImage, servicesE
         </button>
         <button ref={closeButtonRef} type="button" className={styles.mobileNavClose} onClick={() => closeDrawer()} aria-label="Close admin navigation"><AdminIcon name="action-close" /></button>
       </div>
-      {inLibrary ? <Link href="/admin" className={styles.viewSiteLink} aria-label="Return to dashboard" onClick={() => closeDrawer(false)}><AdminIcon name="direction-arrow-left" /><span>Return to dashboard</span></Link> : <ViewSiteLink />}
+      {inLibrary ? <Link href="/admin" className={styles.viewSiteLink} aria-label="Return to dashboard" onClick={() => closeDrawer(false)}><AdminIcon name="direction-arrow-left" /><span>Return to dashboard</span></Link> : <div className={styles.desktopViewSite}><ViewSiteLink /></div>}
+      <div className={styles.mobileDrawerViewSite}><ViewSiteLink mobileDrawer /></div>
       <div className={styles.navWrap} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) closeDrawer(false); }}>
-        {inLibrary ? <nav className={`${navStyles.nav} ${collapsed && !mobileOpen ? navStyles.navCollapsed : ""}`} aria-label="Design system">{DESIGN_SYSTEM_GROUPS.map((group) => <div className={navStyles.group} key={group.label}><p className={navStyles.groupLabel}>{group.label}</p><div className={navStyles.groupItems}>{group.links.map(([label, id]) => <Link className={`${navStyles.navLink} ${pathname === `/admin/design-system/${id}` ? navStyles.navLinkActive : ""}`} key={id} href={`/admin/design-system/${id}`} aria-current={pathname === `/admin/design-system/${id}` ? "page" : undefined} aria-label={label} title={collapsed && !mobileOpen ? label : undefined}><span className={navStyles.icon} aria-hidden="true">·</span><span className={navStyles.linkLabel}>{label}</span></Link>)}</div></div>)}</nav> : <AdminNav collapsed={collapsed && !mobileOpen} servicesEnabled={servicesEnabled} insightsEnabled={insightsEnabled} />}
+        {inLibrary ? <nav className={`${navStyles.nav} ${collapsed && !mobileOpen ? navStyles.navCollapsed : ""}`} aria-label="Design system">{DESIGN_SYSTEM_GROUPS.map((group) => <div className={navStyles.group} key={group.label}><p className={navStyles.groupLabel}>{group.label}</p><div className={navStyles.groupItems}>{group.links.map(([label, id]) => <Link className={`${navStyles.navLink} ${pathname === `/admin/design-system/${id}` ? navStyles.navLinkActive : ""}`} key={id} href={`/admin/design-system/${id}`} aria-current={pathname === `/admin/design-system/${id}` ? "page" : undefined} aria-label={label} title={collapsed && !mobileOpen ? label : undefined}><span className={navStyles.icon} aria-hidden="true">·</span><span className={navStyles.linkLabel}>{label}</span></Link>)}</div></div>)}</nav> : <><div className={styles.desktopAdminNav}><AdminNav collapsed={collapsed && !mobileOpen} servicesEnabled={servicesEnabled} insightsEnabled={insightsEnabled} /></div><div className={styles.mobileAdminNav}><MobileAdminNav key={pathname} servicesEnabled={servicesEnabled} insightsEnabled={insightsEnabled} /></div></>}
       </div>
       <form action="/api/admin/logout" method="POST">
         <button type="submit" className={styles.logout} aria-label="Sign out" title={collapsed && !mobileOpen ? "Sign out" : undefined}>
