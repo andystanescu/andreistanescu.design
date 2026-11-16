@@ -20,6 +20,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   function handleClick(event: MouseEvent<HTMLDivElement>) {
+    if (pathname === "/live-component-preview") return;
     if (exiting || event.defaultPrevented || event.button !== 0) return;
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
 

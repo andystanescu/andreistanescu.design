@@ -15,6 +15,7 @@ import { AdminContentTabs } from "@/components/admin/AdminContentTabs/AdminConte
 import { ReorderableList } from "@/components/admin/ReorderableList/ReorderableList";
 import { InlineSectionCard } from "@/components/admin/InlineSectionCard/InlineSectionCard";
 import styles from "../admin.module.css";
+import { insightsAvailable, servicesAvailable } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function AdminHomepagePage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const { tab } = await searchParams;
-  const sections = getAllSections().filter((section) => Object.hasOwn(LABELS, section.key));
+  const sections = getAllSections().filter((section) => Object.hasOwn(LABELS, section.key) && (servicesAvailable() || section.key !== "services") && (insightsAvailable() || section.key !== "latest_insights"));
   const settings = getSettings();
   const fixedSections = sections.filter((s) => s.fixed);
   const reorderable = sections.filter((s) => !s.fixed);
@@ -48,7 +49,7 @@ export default async function AdminHomepagePage({
           using the arrows, and control visibility in the Sections list.
           Hero stays at the top; the footer stays at the bottom.
         </p>
-        <p className={`body-small ${styles.helper}`}>Services and Approach stay together at the position of whichever comes first in the list. Their order follows the list.</p>
+        {servicesAvailable() && <p className={`body-small ${styles.helper}`}>Services and Approach stay together at the position of whichever comes first in the list. Their order follows the list.</p>}
       </div>} initialTab={tab === "metadata" || tab === "layout" ? tab : "sections"} tabs={[
         { id: "layout", label: "Layout preview", content: <LayoutEditor page="homepage" initial={getLayoutConfiguration("homepage")} previewOnly /> },
         {

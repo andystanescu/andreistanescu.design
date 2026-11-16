@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { servicesAvailable } from "@/lib/features";
 
 export async function POST(request: Request) {
   const { order } = await request.json() as { order?: unknown };
@@ -9,8 +10,8 @@ export async function POST(request: Request) {
   db.exec("BEGIN IMMEDIATE");
   try {
     const updateCategory = db.prepare("UPDATE categories SET position = ? WHERE id = ?");
-    const updateService = db.prepare("UPDATE service_items SET position = ? WHERE category_id = ?");
-    ids.forEach((id, index) => { updateCategory.run(index, id); updateService.run(index, id); });
+    const updateService = servicesAvailable() ? db.prepare("UPDATE service_items SET position = ? WHERE category_id = ?") : null;
+    ids.forEach((id, index) => { updateCategory.run(index, id); updateService?.run(index, id); });
     db.exec("COMMIT");
   } catch (error) { db.exec("ROLLBACK"); throw error; }
   return Response.json({ saved: true });

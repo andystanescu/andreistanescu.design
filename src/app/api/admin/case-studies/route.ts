@@ -1,5 +1,6 @@
 import { relativeRedirect } from "@/lib/relativeRedirect";
 import { overviewFromForm } from "@/lib/caseStudyOverview";
+import { applyPendingCategoryAssignments } from "@/lib/pendingCategoryAssignments";
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { resolveImageField } from "@/lib/uploads";
@@ -95,6 +96,7 @@ export async function POST(request: NextRequest) {
       overviewFromForm(form)
     );
     if (categories) replaceCaseStudyCategories(Number(result.lastInsertRowid), categories);
+    applyPendingCategoryAssignments(db, Number(result.lastInsertRowid), slug);
     if (passwordRequired || passwordHashes.length) {
       const studyId = String(result.lastInsertRowid);
       const entries = passwordHashes.map(({ name, password, hash }) => ({ name, hash, encrypted: encryptCaseStudyPassword(password, getSessionSecret(), studyId) }));

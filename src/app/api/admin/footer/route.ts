@@ -1,12 +1,13 @@
 import { NextRequest } from "next/server";
 import { updateSettings } from "@/lib/settings";
 import { relativeRedirect } from "@/lib/relativeRedirect";
+import { servicesAvailable } from "@/lib/features";
 
 export async function POST(request: NextRequest) {
   const form = await request.formData();
   updateSettings({
     footer_message: String(form.get("footer_message") ?? "").trim(),
-    footer_show_services: form.has("footer_show_services") ? "1" : "0",
+    ...(servicesAvailable() ? { footer_show_services: form.has("footer_show_services") ? "1" : "0" } : {}),
     footer_show_navigation: form.has("footer_show_navigation") ? "1" : "0",
     footer_show_contact: form.has("footer_show_contact") ? "1" : "0",
     footer_contact_label: String(form.get("footer_contact_label") ?? "").trim() || "Let's talk",

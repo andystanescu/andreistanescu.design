@@ -5,7 +5,9 @@ export function migrateCategoryFoundation(db: DatabaseSync) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL COLLATE NOCASE UNIQUE
+      name TEXT NOT NULL COLLATE NOCASE UNIQUE,
+      position INTEGER NOT NULL DEFAULT 0,
+      description TEXT NOT NULL DEFAULT ''
     );
     CREATE TABLE IF NOT EXISTS case_study_categories (
       case_study_id INTEGER NOT NULL REFERENCES case_studies(id) ON DELETE CASCADE,
@@ -17,7 +19,16 @@ export function migrateCategoryFoundation(db: DatabaseSync) {
       name TEXT PRIMARY KEY COLLATE NOCASE,
       category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE
     );
+    CREATE TABLE IF NOT EXISTS pending_case_study_categories (
+      study_slug TEXT NOT NULL,
+      category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+      position INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (study_slug, category_id)
+    );
   `);
+  const columns = db.prepare("PRAGMA table_info(categories)").all() as Array<{ name: string }>;
+  if (!columns.some((column) => column.name === "position")) db.exec("ALTER TABLE categories ADD COLUMN position INTEGER NOT NULL DEFAULT 0");
+  if (!columns.some((column) => column.name === "description")) db.exec("ALTER TABLE categories ADD COLUMN description TEXT NOT NULL DEFAULT ''");
   const marker = db.prepare("SELECT value FROM settings WHERE key = ?").get("shared_categories_v1");
   if (marker) {
     db.exec("INSERT OR IGNORE INTO category_legacy_names(name, category_id) SELECT name, id FROM categories");
@@ -25,11 +36,7 @@ export function migrateCategoryFoundation(db: DatabaseSync) {
   }
   db.exec(`
     INSERT OR IGNORE INTO categories(name)
-      SELECT TRIM(title) FROM service_items WHERE TRIM(title) <> '';
-    INSERT OR IGNORE INTO categories(name)
       SELECT TRIM(category) FROM case_studies WHERE TRIM(category) <> '';
-    INSERT OR IGNORE INTO categories(name)
-      SELECT TRIM(category) FROM insights WHERE TRIM(category) <> '';
     INSERT OR IGNORE INTO category_legacy_names(name, category_id) SELECT name, id FROM categories;
     INSERT OR IGNORE INTO case_study_categories(case_study_id, category_id)
       SELECT s.id, c.id FROM case_studies s JOIN categories c ON c.name = TRIM(s.category) COLLATE NOCASE

@@ -5,6 +5,7 @@ import { migrateCategoryFoundation } from "../src/lib/categoryMigration.ts";
 import { migrateServiceCategories } from "../src/lib/serviceCategoryMigration.ts";
 import { setDedicatedService } from "../src/lib/serviceCategoryOperations.ts";
 import { deleteCategory } from "../src/lib/categoryDeletion.ts";
+import { migrateInsightsCategories, unlinkInsightsCategory } from "../src/modules/insights/migration.ts";
 
 function fixture() {
   const db = new DatabaseSync(":memory:");
@@ -16,6 +17,7 @@ function fixture() {
     INSERT INTO case_studies VALUES (1,'Design Systems');`);
   migrateCategoryFoundation(db);
   migrateServiceCategories(db);
+  migrateInsightsCategories(db);
   return db;
 }
 
@@ -53,6 +55,19 @@ test("a category becomes a service only when enabled, with a unique URL", () => 
   db.close();
 });
 
+test("re-enabling the add-on syncs its legacy title after a Core category rename", () => {
+  const db = fixture();
+  const category = db.prepare("SELECT id FROM categories WHERE name = 'Design Systems'").get();
+  db.prepare("UPDATE categories SET name = ? WHERE id = ?").run("Design practice", category.id);
+  migrateServiceCategories(db);
+  const service = db.prepare("SELECT category_id, title, slug, body FROM service_items WHERE category_id = ?").get(category.id);
+  assert.equal(service.title, "Design practice");
+  assert.equal(service.slug, "original-url");
+  assert.equal(service.body, "Original content");
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM case_study_categories WHERE category_id = ?").get(category.id).n, 1);
+  db.close();
+});
+
 test("deleting a category removes its service and assignments while retaining content", () => {
   const db = fixture();
   const category = db.prepare("SELECT id FROM categories WHERE name = ?").get("Design Systems");
@@ -60,6 +75,9 @@ test("deleting a category removes its service and assignments while retaining co
   const other = db.prepare("SELECT id FROM categories WHERE name = ?").get("Research");
   db.prepare("INSERT INTO case_study_categories(case_study_id, category_id, position) VALUES (1, ?, 1)").run(other.id);
   db.exec("INSERT INTO insights VALUES (1, 'Design Systems')");
+  // The Services boundary removes its extension; Core removes the category.
+  db.prepare("DELETE FROM service_items WHERE category_id = ?").run(category.id);
+  unlinkInsightsCategory(db, category.id);
   assert.equal(deleteCategory(db, category.id), true);
   assert.equal(db.prepare("SELECT category FROM case_studies WHERE id = 1").get().category, "Research");
   assert.equal(db.prepare("SELECT category FROM insights WHERE id = 1").get().category, "");

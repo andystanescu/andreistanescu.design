@@ -5,6 +5,7 @@ import { FooterLink } from "./FooterLink";
 import { getServiceItems } from "@/lib/serviceItems";
 import { getSettings } from "@/lib/settings";
 import { getNavLinks, getPublishedPage } from "@/lib/pages";
+import { insightsAvailable, servicesAvailable } from "@/lib/features";
 import styles from "./Footer.module.css";
 
 type FooterProps = {
@@ -20,6 +21,7 @@ export function Footer({
   const settings = getSettings();
   const actionLabel = settings.footer_contact_label || "Let's talk";
   const services = getServiceItems();
+  const showServices = servicesAvailable() && settings.footer_show_services === "1";
   const privacyPage = getPublishedPage("privacy");
   const termsPage = getPublishedPage("terms");
   const resolvedContactPrompt = settings.footer_contact_message;
@@ -31,9 +33,9 @@ export function Footer({
           <FooterLink href="/contact" className={styles.compactCta}>{actionLabel} <span aria-hidden="true">→</span></FooterLink>
         </div>
       )}
-      {(settings.footer_show_navigation === "1" || settings.footer_show_services === "1") && <nav className={styles.compactLinks} aria-label="Footer navigation">
-        {settings.footer_show_navigation === "1" && <><FooterLink href="/work">Work</FooterLink><FooterLink href="/insights">Articles</FooterLink><FooterLink href="/about">About</FooterLink></>}
-        {settings.footer_show_services === "1" && <FooterLink href="/services">Services</FooterLink>}
+      {(settings.footer_show_navigation === "1" || showServices) && <nav className={styles.compactLinks} aria-label="Footer navigation">
+        {settings.footer_show_navigation === "1" && <><FooterLink href="/work">Work</FooterLink>{insightsAvailable() && <FooterLink href="/insights">Articles</FooterLink>}<FooterLink href="/about">About</FooterLink></>}
+        {showServices && <FooterLink href="/services">Services</FooterLink>}
       </nav>}
       <p className={styles.compactCopyright}>© {settings.footer_copyright}</p>
     </div>
@@ -62,7 +64,7 @@ export function Footer({
           </div>
 
           <div className={styles.linksGroup}>
-            {settings.footer_show_services === "1" && <div className={styles.column}>
+            {showServices && <div className={styles.column}>
               <p className="label-small">Services</p>
               {services.map((service) => (
                 <FooterLink

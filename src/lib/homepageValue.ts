@@ -1,7 +1,8 @@
 import { db } from "@/lib/db";
 import { ukDateTimeValue } from "@/lib/dateUtils";
 import { readValueEvidenceOptions } from "./homepageValueContent";
+import { insightsAvailable } from "./features";
 
 export { parseValueContent } from "./homepageValueContent";
 export type { ValueEvidence, ValueProposition, ValueEvidenceOption } from "./homepageValueContent";
-export function getValueEvidenceOptions() { return readValueEvidenceOptions(db, ukDateTimeValue()); }
+export function getValueEvidenceOptions() { return readValueEvidenceOptions(db, ukDateTimeValue(), insightsAvailable()); }

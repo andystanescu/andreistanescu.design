@@ -10,6 +10,7 @@ import { readEngagementOverview } from "@/lib/engagementOverview";
 import { getEngagementDashboardData, type EngagementRange } from "@/lib/analytics";
 import { ukDateTimeValue } from "@/lib/dateUtils";
 import styles from "./dashboard-home.module.css";
+import { insightsAvailable, servicesAvailable } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -19,15 +20,17 @@ export default async function AdminHomePage({ searchParams }: { searchParams?: P
   const range: EngagementRange = ["7d", "30d", "90d", "all"].includes(rawRange || "") ? rawRange as EngagementRange : "30d";
   const engagement = getEngagementDashboardData(range, { contentPage: parsePageNumber(query.contentPage), journeyPage: parsePageNumber(query.journeyPage) });
   const overview = readEngagementOverview(db, range);
-  const contentPerformance = readContentPerformance(db, range, { group: Array.isArray(query.contentType) ? query.contentType[0] : query.contentType, page: parsePageNumber(query.contentPage) });
+  const requestedType = Array.isArray(query.contentType) ? query.contentType[0] : query.contentType;
+  const rawPerformance = readContentPerformance(db, range, { group: !insightsAvailable() && requestedType === "article" ? undefined : requestedType, page: parsePageNumber(query.contentPage) });
+  const contentPerformance = insightsAvailable() ? rawPerformance : { ...rawPerformance, groups: rawPerformance.groups.filter((group) => group.group !== "article") };
   const periodLabel = range === "all" ? "All time" : `Last ${range.slice(0, -1)} days`;
   const trackingStartLabel = engagement.trackingStart
     ? new Date(`${engagement.trackingStart.replace(" ", "T")}Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
     : "Not started";
   const earlySample = overview.current.sessions < 20;
   const caseStudies = db.prepare("SELECT id, slug, title, description, body, tags, thumbnail_image, cover_image, published, body_draft_enabled, meta_title, meta_description, canonical_url, og_image FROM case_studies ORDER BY id DESC").all() as Array<{ id: number; slug: string; title: string; description: string; body: string; tags: string; thumbnail_image: string; cover_image: string; published: number; body_draft_enabled: number; meta_title: string; meta_description: string; canonical_url: string; og_image: string }>;
-  const insights = db.prepare("SELECT id, slug, title, excerpt, body, tags, thumbnail_image, cover_image, published, scheduled_at, meta_title, meta_description, canonical_url, og_image FROM insights ORDER BY id DESC").all() as Array<{ id: number; slug: string; title: string; excerpt: string; body: string; tags: string; thumbnail_image: string; cover_image: string; published: number; scheduled_at: string; meta_title: string; meta_description: string; canonical_url: string; og_image: string }>;
-  const services = db.prepare("SELECT slug, title FROM service_items").all() as Array<{ slug: string; title: string }>;
+  const insights = insightsAvailable() ? db.prepare("SELECT id, slug, title, excerpt, body, tags, thumbnail_image, cover_image, published, scheduled_at, meta_title, meta_description, canonical_url, og_image FROM insights ORDER BY id DESC").all() as Array<{ id: number; slug: string; title: string; excerpt: string; body: string; tags: string; thumbnail_image: string; cover_image: string; published: number; scheduled_at: string; meta_title: string; meta_description: string; canonical_url: string; og_image: string }> : [];
+  const services = servicesAvailable() ? db.prepare("SELECT slug, title FROM service_items").all() as Array<{ slug: string; title: string }> : [];
   const contentTitles = Object.fromEntries([...caseStudies.map((item) => [`/work/${item.slug}`, item.title]), ...insights.map((item) => [`/insights/${item.slug}`, item.title]), ...services.map((item) => [`/services/${item.slug}`, item.title])]);
   const contentEditLinks = Object.fromEntries([...caseStudies.map((item) => [`/work/${item.slug}`, `/admin/case-studies/${item.id}`]), ...insights.map((item) => [`/insights/${item.slug}`, `/admin/insights/${item.id}`])]);
   const submissions = listSubmissions();
@@ -101,7 +104,7 @@ export default async function AdminHomePage({ searchParams }: { searchParams?: P
       <div className={styles.actionQueueGrid}>
         <div className={styles.actionQueueColumn}>
           <div className={styles.queueColumnHeader}><h3 className="heading-04">Content to review</h3><span className="label-small">{contentChecks.length}</span></div>
-          <p className={styles.coverageNote}>Drafts and scheduled articles, missing essentials, and metadata that needs correction.</p>
+          <p className={styles.coverageNote}>{insightsAvailable() ? "Drafts and scheduled articles, missing essentials, and metadata that needs correction." : "Drafts, missing essentials, and metadata that needs correction."}</p>
           {contentChecks.length ? <>
             {visibleContentChecks.map((item, index) => <Link key={`${item.href}-${item.group}-${item.detail}-${index}`} href={item.href} className={styles.attentionRow}><span className={styles.alert} aria-hidden="true">!</span><span><strong>{item.label}</strong><small className={styles.attentionDetail}>{item.group} · {item.detail}</small></span><span className={styles.attentionAction}>Fix →</span></Link>)}
             {remainingContentChecks.length > 0 && <details className={styles.queueMore}><summary>Show {remainingContentChecks.length} more items</summary>{remainingContentChecks.map((item, index) => <Link key={`${item.href}-${item.group}-${item.detail}-${index + 5}`} href={item.href} className={styles.attentionRow}><span className={styles.alert} aria-hidden="true">!</span><span><strong>{item.label}</strong><small className={styles.attentionDetail}>{item.group} · {item.detail}</small></span><span className={styles.attentionAction}>Fix →</span></Link>)}</details>}
@@ -116,7 +119,7 @@ export default async function AdminHomePage({ searchParams }: { searchParams?: P
         </div>
       </div>
     </section>
-    <section className={styles.dashboardSection} aria-labelledby="general-metrics"><SectionHeading id="general-metrics" title="Content status · all time" /><div className={styles.stats}><ContentStat href="/admin/case-studies" value={publishedCaseStudies} label="Published case studies" /><ContentStat href="/admin/insights" value={publishedArticles} label="Published articles" /><ContentStat href="/admin/case-studies?status=draft" value={draftCaseStudies} label="Draft case studies" /><ContentStat href="/admin/insights?status=draft" value={draftArticles} label="Draft articles" /></div></section>
+    <section className={styles.dashboardSection} aria-labelledby="general-metrics"><SectionHeading id="general-metrics" title="Content status · all time" /><div className={styles.stats}><ContentStat href="/admin/case-studies" value={publishedCaseStudies} label="Published case studies" />{insightsAvailable() && <ContentStat href="/admin/insights" value={publishedArticles} label="Published articles" />}<ContentStat href="/admin/case-studies?status=draft" value={draftCaseStudies} label="Draft case studies" />{insightsAvailable() && <ContentStat href="/admin/insights?status=draft" value={draftArticles} label="Draft articles" />}</div></section>
   </div>;
 }
 

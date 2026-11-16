@@ -7,16 +7,17 @@ import { ServiceToggle } from "@/components/admin/ServiceToggle/ServiceToggle";
 import { CategoryDeleteActions } from "@/components/admin/CategoryDeleteActions/CategoryDeleteActions";
 import { SERVICES_TABS } from "../adminTabs";
 import styles from "../admin.module.css";
+import { insightsAvailable, servicesAvailable } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  const categories = db.prepare(`SELECT c.id, c.name, s.id AS service_id, s.slug, s.service_enabled, s.published, s.show_on_homepage
-    FROM categories c LEFT JOIN service_items s ON s.category_id = c.id ORDER BY c.position, c.id`).all() as Array<{ id: number; name: string; service_id: number | null; slug: string | null; service_enabled: number | null; published: number | null; show_on_homepage: number | null }>;
+  const enabled = servicesAvailable();
+  const categories = db.prepare(enabled ? `SELECT c.id, c.name, s.id AS service_id, s.slug, s.service_enabled, s.published, s.show_on_homepage FROM categories c LEFT JOIN service_items s ON s.category_id = c.id ORDER BY c.position, c.id` : `SELECT c.id, c.name, NULL AS service_id, NULL AS slug, NULL AS service_enabled, NULL AS published, NULL AS show_on_homepage FROM categories c ORDER BY c.position, c.id`).all() as Array<{ id: number; name: string; service_id: number | null; slug: string | null; service_enabled: number | null; published: number | null; show_on_homepage: number | null }>;
   return <>
-    <div className={styles.pageHeaderGroup}><div className={styles.pageHeader}><h1 className="heading-01">Categories &amp; services</h1></div><AdminTabs embedded tabs={SERVICES_TABS} active="/admin/categories" /></div>
-    <p className={`body-small ${styles.helper}`}>Every entry is available to case studies and articles. Turn on a dedicated service to show it on the Services page; switching it off keeps its page content and category assignments.</p>
+    <div className={styles.pageHeaderGroup}><div className={styles.pageHeader}><h1 className="heading-01">{enabled ? "Categories & services" : "Categories"}</h1></div>{enabled && <AdminTabs embedded tabs={SERVICES_TABS} active="/admin/categories" />}</div>
+    <p className={`body-small ${styles.helper}`}>{enabled ? `Every entry is available to case studies${insightsAvailable() ? " and articles" : ""}. Turn on a dedicated service to show it on the Services page; switching it off keeps its page content and category assignments.` : "Organise case studies using categories for your capabilities and areas of expertise."}</p>
     {error && <p role="alert" style={{ color: "var(--border-error)" }}>{error}</p>}
     <form className={styles.form} action="/api/admin/categories" method="POST">
       <label className={styles.field}><span className="label-small">New category</span><input className={styles.input} name="name" required maxLength={120} /></label>
@@ -26,13 +27,13 @@ export default async function CategoriesPage({ searchParams }: { searchParams: P
       id: String(category.id),
       editHref: `/admin/categories/${category.id}`,
       node: <>
-        <div className={styles.listItemMeta}><p className="body-default">{category.name}{Boolean(category.service_enabled && category.published && category.show_on_homepage) && <span className="body-small" style={{ color: "var(--text-accent)", marginLeft: "var(--space-150)" }}>on homepage</span>}</p><p className="body-small" style={{ color: "var(--text-tertiary)" }}>{category.slug ? `/services/${category.slug}` : "Category only"}</p></div>
+        <div className={styles.listItemMeta}><p className="body-default">{category.name}{Boolean(category.service_enabled && category.published && category.show_on_homepage) && <span className="body-small" style={{ color: "var(--text-accent)", marginLeft: "var(--space-150)" }}>on homepage</span>}</p>{enabled && <p className="body-small" style={{ color: "var(--text-tertiary)" }}>{category.service_enabled && category.published && category.slug ? `/services/${category.slug}` : "Category only"}</p>}</div>
         <div className={`${styles.listItemActions} ${styles.serviceCategoryActions}`}>
-          <ServiceToggle categoryId={category.id} enabled={Boolean(category.service_enabled && category.published)} name={category.name} />
+          {enabled && <ServiceToggle categoryId={category.id} enabled={Boolean(category.service_enabled && category.published)} name={category.name} />}
           <form action={`/api/admin/categories/${category.id}/move`} method="POST"><input type="hidden" name="direction" value="up" /><button type="submit" disabled={index === 0} aria-label={`Move ${category.name} up`}><AdminIcon name="direction-arrow-up" /></button></form>
           <form action={`/api/admin/categories/${category.id}/move`} method="POST"><input type="hidden" name="direction" value="down" /><button type="submit" disabled={index === categories.length - 1} aria-label={`Move ${category.name} down`}><AdminIcon name="direction-arrow-down" /></button></form>
-          <Link href={`/admin/categories/${category.id}`} className={styles.editLink} aria-label={`Edit ${category.name}`} title="Edit category and service"><AdminIcon name="action-edit" /></Link>
-          <CategoryDeleteActions id={category.id} name={category.name} hasService={Boolean(category.service_id)} />
+          <Link href={`/admin/categories/${category.id}`} className={styles.editLink} aria-label={`Edit ${category.name}`} title={enabled ? "Edit category and service" : "Edit category"}><AdminIcon name="action-edit" /></Link>
+          <CategoryDeleteActions id={category.id} name={category.name} hasService={Boolean(category.service_id)} insightsEnabled={insightsAvailable()} />
         </div>
       </>,
     }))} />

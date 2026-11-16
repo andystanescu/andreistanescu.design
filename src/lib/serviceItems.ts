@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { servicesAvailable } from "@/lib/features";
 
 export type ServiceItem = {
   id: number;
@@ -48,24 +49,28 @@ export function getServiceCapabilities(slug: string): string[] {
 }
 
 export function getServiceItems(): ServiceItem[] {
+  if (!servicesAvailable()) return [];
   return db
     .prepare("SELECT s.*, c.name AS title FROM service_items s JOIN categories c ON c.id = s.category_id WHERE s.published = 1 AND s.service_enabled = 1 ORDER BY s.position ASC")
     .all() as ServiceItem[];
 }
 
 export function getAllServiceItemsAdmin(): ServiceItem[] {
+  if (!servicesAvailable()) return [];
   return db
-    .prepare("SELECT * FROM service_items ORDER BY position ASC")
+    .prepare("SELECT s.*, c.name AS title FROM service_items s JOIN categories c ON c.id = s.category_id ORDER BY s.position ASC")
     .all() as ServiceItem[];
 }
 
 export function getServiceItemBySlug(slug: string): ServiceItem | undefined {
+  if (!servicesAvailable()) return undefined;
   return db
     .prepare("SELECT s.*, c.name AS title FROM service_items s JOIN categories c ON c.id = s.category_id WHERE s.slug = ? AND s.published = 1 AND s.service_enabled = 1")
     .get(slug) as ServiceItem | undefined;
 }
 
 export function getHomepageServiceItems(): ServiceItem[] {
+  if (!servicesAvailable()) return [];
   return db
     .prepare(
       "SELECT s.*, c.name AS title FROM service_items s JOIN categories c ON c.id = s.category_id WHERE s.published = 1 AND s.service_enabled = 1 AND s.show_on_homepage = 1 ORDER BY s.position ASC"

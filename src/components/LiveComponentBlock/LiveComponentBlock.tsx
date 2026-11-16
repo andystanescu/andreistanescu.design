@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { LiveContext, LiveProvider, LivePreview } from "react-live";
 import styles from "./LiveComponentBlock.module.css";
 
 type LiveComponentBlockProps = {
@@ -14,35 +13,8 @@ type LiveComponentBlockProps = {
 
 type PreviewMode = "react" | "html" | "none";
 
-// The available identifiers inside a "⚡ Live" code block — no bundler or
-// import resolution runs here (react-live transpiles in the browser via
-// Sucrase and evaluates the result directly), so anything the snippet
-// wants to use has to be handed in through this scope explicitly.
-const scope = {
-  React,
-  useState: React.useState,
-  useEffect: React.useEffect,
-  useRef: React.useRef,
-  useMemo: React.useMemo,
-  useCallback: React.useCallback,
-};
-
-function prepareLiveCode(source: string): string {
-  let code = source
-    // Live blocks already receive React through the execution scope.
-    .replace(/^\s*import[^;]+;\s*$/gm, "")
-    // Inline evaluation cannot contain module exports.
-    .replace(/export\s+default\s+function\s+/g, "function ")
-    .replace(/export\s+default\s+/g, "");
-
-  if (!/\brender\s*\(/.test(code)) {
-    const component = code.match(/function\s+([A-Z][A-Za-z0-9_]*)\s*\(/)?.[1]
-      ?? code.match(/(?:const|let)\s+([A-Z][A-Za-z0-9_]*)\s*(?::[^=]+)?=/)?.[1];
-    if (component) code += `\nrender(<${component} />);`;
-  }
-  return code;
-}
-
+// React snippets are executed in the separate sandboxed preview document.
+// Imports are unsupported; that document provides React and common hooks.
 function detectPreviewMode(source: string): PreviewMode {
   const code = source.trim();
   if (!code) return "none";
@@ -84,11 +56,8 @@ function prepareHtmlPreview(source: string, errorChannel: string, autoHeight: bo
   </style></head><body>${code}</body></html>`;
 }
 
-// Renders a case-study code block as a real, running React component
-// instead of static highlighted text. The code must end with a call to
-// render(<YourComponent />) — react-live's convention for this mode
-// (noInline), which keeps definitions above it in normal function/const
-// syntax rather than requiring a single trailing JSX expression.
+// Interactive React blocks run in a sandboxed iframe on both the public site
+// and the editor; the surrounding page never evaluates their code.
 export function LiveComponentBlock({ code, chrome = "framed", runtime = "auto", language, publicInline = false }: LiveComponentBlockProps) {
   const [revision, setRevision] = React.useState(0);
   const mode: PreviewMode = runtime === "auto" ? detectPreviewMode(code) : runtime === "static" ? "none" : runtime;
@@ -100,19 +69,7 @@ export function LiveComponentBlock({ code, chrome = "framed", runtime = "auto", 
     return <StaticCodeSurface code={code} chrome={displayChrome} language={language || "code"} />;
   }
 
-  const preparedCode = prepareLiveCode(code);
-  return (
-    <LiveProvider
-      key={revision}
-      code={preparedCode}
-      scope={scope}
-      noInline
-      language="tsx"
-      enableTypeScript
-    >
-      <LiveComponentSurface code={preparedCode} chrome={displayChrome} onRetry={() => setRevision((value) => value + 1)} />
-    </LiveProvider>
-  );
+  return <ReactComponentSurface code={code} chrome={displayChrome} revision={revision} onRetry={() => setRevision((value) => value + 1)} />;
 }
 
 function StaticCodeSurface({ code, chrome, language }: { code: string; chrome: "framed" | "minimal"; language: string }) {
@@ -201,12 +158,37 @@ function HtmlComponentSurface({ code, chrome, language, autoHeight }: { code: st
   );
 }
 
-function LiveComponentSurface({ code, chrome, onRetry }: { code: string; chrome: "framed" | "minimal"; onRetry: () => void }) {
-  const { error, element } = React.useContext(LiveContext);
+function ReactComponentSurface({ code, chrome, revision, onRetry }: { code: string; chrome: "framed" | "minimal"; revision: number; onRetry: () => void }) {
   const [view, setView] = React.useState<"preview" | "code">("preview");
   const [copied, setCopied] = React.useState(false);
-  const canRender = Boolean(element) && !error;
-  const activeView = view;
+  const [error, setError] = React.useState("");
+  const [height, setHeight] = React.useState(150);
+  const frameRef = React.useRef<HTMLIFrameElement>(null);
+  const channel = React.useId();
+  const send = React.useCallback(() => {
+    const frame = frameRef.current;
+    if (!frame?.contentWindow) return;
+    const computed = getComputedStyle(frame);
+    const tokens: Record<string, string> = {};
+    for (const name of computed) if (name.startsWith("--")) tokens[name] = computed.getPropertyValue(name);
+    frame.contentWindow.postMessage({ source: "conscept-react-parent", channel, code, tokens, color: computed.color, font: computed.font }, "*");
+  }, [channel, code]);
+  React.useEffect(() => {
+    const receive = (event: MessageEvent) => {
+      if (event.source !== frameRef.current?.contentWindow || event.data?.source !== "conscept-react-preview") return;
+      if (event.data.type === "ready") { setError(""); send(); return; }
+      if (event.data.channel !== channel) return;
+      if (event.data.type === "height" && typeof event.data.height === "number" && Number.isFinite(event.data.height) && event.data.height > 0 && event.data.height <= 100000) setHeight(Math.ceil(event.data.height));
+      if (event.data.type === "error" && typeof event.data.message === "string") setError(event.data.message.slice(0, 2000));
+    };
+    window.addEventListener("message", receive);
+    const observer = new MutationObserver(send);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    media.addEventListener("change", send);
+    return () => { window.removeEventListener("message", receive); observer.disconnect(); media.removeEventListener("change", send); };
+  }, [channel, send]);
+  React.useEffect(() => { setError(""); send(); }, [send]);
 
   const handleCopy = async () => {
     try {
@@ -223,26 +205,16 @@ function LiveComponentSurface({ code, chrome, onRetry }: { code: string; chrome:
       {chrome === "framed" && <div className={styles.header}>
         <span className={styles.language}>tsx</span>
         <div className={styles.headerActions}>
-          {canRender && (
             <div className={styles.switcher} role="tablist" aria-label="Live component view">
-              <button type="button" role="tab" aria-selected={activeView === "preview"} className={activeView === "preview" ? styles.switcherActive : ""} onClick={() => setView("preview")}>Preview</button>
-              <button type="button" role="tab" aria-selected={activeView === "code"} className={activeView === "code" ? styles.switcherActive : ""} onClick={() => setView("code")}>Code</button>
+              <button type="button" role="tab" aria-selected={view === "preview"} className={view === "preview" ? styles.switcherActive : ""} onClick={() => setView("preview")}>Preview</button>
+              <button type="button" role="tab" aria-selected={view === "code"} className={view === "code" ? styles.switcherActive : ""} onClick={() => setView("code")}>Code</button>
             </div>
-          )}
           <button type="button" className={styles.copyButton} onClick={handleCopy} aria-label={copied ? "Copied" : "Copy code"} title={copied ? "Copied" : "Copy code"}>
             <span aria-hidden="true" className={styles.copyIcon}>{copied ? "✓" : ""}</span>
           </button>
         </div>
       </div>}
-      {error ? (
-        <InteractiveErrorState message={String(error)} onRetry={onRetry} />
-      ) : activeView === "preview" && canRender ? (
-        <div className={chrome === "minimal" ? styles.previewMinimal : styles.preview}><LivePreview /></div>
-      ) : activeView === "preview" && !error ? (
-        <div className={styles.loading} role="status">Loading interactive preview…</div>
-      ) : (
-        <pre className={styles.code}><code>{code}</code></pre>
-      )}
+      {view === "preview" ? error ? <InteractiveErrorState message={error} onRetry={() => { setError(""); onRetry(); }} /> : <div className={chrome === "minimal" ? styles.previewMinimal : styles.preview}><iframe key={revision} ref={frameRef} title="Interactive component preview" sandbox="allow-scripts" src="/live-component-preview" className={styles.htmlPreviewAuto} style={{ height }} /></div> : <pre className={styles.code}><code>{code}</code></pre>}
     </div>
   );
 }

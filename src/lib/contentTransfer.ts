@@ -1,10 +1,11 @@
 export const TRANSFER_GROUPS = [
   { key: "caseStudies", label: "Case studies", description: "Published and draft projects, assessments, metadata and category assignments.", images: true },
+  { key: "categories", label: "Categories", description: "Category names, descriptions, order and case-study assignments.", images: false },
   { key: "insights", label: "Articles", description: "Published, scheduled and draft articles, including tags and metadata.", images: true },
   { key: "pages", label: "Pages and experience", description: "Page content, homepage and About sections, experience and page metadata.", images: true },
   { key: "siteIdentity", label: "Site identity", description: "Author name, logos, colour palettes, logo colour mappings and light and dark theme selections.", images: true },
   { key: "navigation", label: "Navigation and footer", description: "Navigation style, page menu order and visibility, and footer settings.", images: false },
-  { key: "services", label: "Services and categories", description: "Categories, dedicated service pages and their content and layouts.", images: true },
+  { key: "services", label: "Services", description: "Service extensions, dedicated pages and their content and layouts.", images: true },
   { key: "siteSettings", label: "Other site settings", description: "Site name, contact details and other general settings.", images: true },
   { key: "analyticsEvents", label: "Traffic events", description: "Stored views, shares and downloads used in traffic reports.", images: false },
 ] as const;

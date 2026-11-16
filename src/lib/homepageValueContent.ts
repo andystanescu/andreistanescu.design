@@ -16,9 +16,9 @@ export function parseValueContent(raw: string): ValueProposition[] {
 }
 
 /** Resolve only currently published and publicly accessible evidence. */
-export function readValueEvidenceOptions(db: DatabaseSync, now: string): ValueEvidenceOption[] {
+export function readValueEvidenceOptions(db: DatabaseSync, now: string, includeInsights = true): ValueEvidenceOption[] {
   const studies = db.prepare("SELECT id, slug, title FROM case_studies WHERE published = 1 AND password_required = 0 ORDER BY position, id").all() as Array<{ id: number; slug: string; title: string }>;
   const hasInsights = db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='insights'").get();
-  const articles = hasInsights ? db.prepare("SELECT id, slug, title FROM insights WHERE published = 1 AND (scheduled_at = '' OR scheduled_at <= ?) ORDER BY position, id").all(now) as Array<{ id: number; slug: string; title: string }> : [];
+  const articles = includeInsights && hasInsights ? db.prepare("SELECT id, slug, title FROM insights WHERE published = 1 AND (scheduled_at = '' OR scheduled_at <= ?) ORDER BY position, id").all(now) as Array<{ id: number; slug: string; title: string }> : [];
   return [...studies.map((item) => ({ id: item.id, type: "case_study" as const, title: item.title, href: `/work/${encodeURIComponent(item.slug)}` })), ...articles.map((item) => ({ id: item.id, type: "article" as const, title: item.title, href: `/insights/${encodeURIComponent(item.slug)}` }))];
 }

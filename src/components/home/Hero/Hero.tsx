@@ -7,14 +7,18 @@ import { LatticeFormations } from "./LatticeFormations";
 import { DiagramLayout } from "./DiagramLayout";
 import { HeroCollage } from "./HeroCollage";
 import styles from "./Hero.module.css";
+import { homepageDestinationAvailable } from "@/lib/features";
 
 export function Hero({ preview = false }: { preview?: boolean } = {}) {
   const section = getVisibleSection("hero")!;
   const [firstSectionKey] = getSectionOrder();
   const primaryLabel = section.cta_primary_label || "See my work";
-  const primaryHref = section.cta_primary_href.trim();
+  const allowedHref = (href: string) => homepageDestinationAvailable(href) ? href : "";
+  const primaryHref = allowedHref(section.cta_primary_href.trim());
   const secondaryLabel = section.cta_secondary_label || "Read articles";
-  const secondaryHref = section.cta_secondary_href.trim();
+  const secondaryHref = allowedHref(section.cta_secondary_href.trim());
+  const showPrimary = Boolean(primaryHref || (preview && !section.cta_primary_href.trim()));
+  const showSecondary = Boolean(secondaryHref || (preview && !section.cta_secondary_href.trim()));
 
   return (
     <section className={styles.hero}>
@@ -32,11 +36,11 @@ export function Hero({ preview = false }: { preview?: boolean } = {}) {
           <p className="body-large" style={{ color: "var(--text-secondary)" }}>
             {section.description}
           </p>
-          {(preview || primaryHref || secondaryHref) && <div className={styles.actions}>
-            {(preview || primaryHref) && <Button href={primaryHref || "#"} icon={<ArrowIcon size={20} />}>
+          {(showPrimary || showSecondary) && <div className={styles.actions}>
+            {showPrimary && <Button href={primaryHref || "#"} icon={<ArrowIcon size={20} />}>
               {primaryLabel}
             </Button>}
-            {(preview || secondaryHref) && <Button
+            {showSecondary && <Button
               variant="link"
               href={secondaryHref || "#"}
               icon={<ArrowIcon size={20} />}

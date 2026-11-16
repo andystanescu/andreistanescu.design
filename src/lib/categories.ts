@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 export type Category = { id: number; name: string };
 
 export function getCategories(): Category[] {
-  return db.prepare("SELECT id, name FROM categories ORDER BY name COLLATE NOCASE, id").all() as Category[];
+  return db.prepare("SELECT id, name FROM categories ORDER BY position, id").all() as Category[];
 }
 
 /** Resolve names still used by service and article records during migration. */

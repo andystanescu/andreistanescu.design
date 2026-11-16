@@ -13,6 +13,7 @@ import { AboutHighlights } from "@/components/about/AboutHighlights/AboutHighlig
 import { AboutLatestInsights } from "@/components/about/AboutLatestInsights/AboutLatestInsights";
 import { AboutBeforeConScept } from "@/components/about/AboutBeforeConScept/AboutBeforeConScept";
 import styles from "../admin.module.css";
+import { insightsAvailable } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ const LABELS: Record<string, string> = {
 
 export default async function AdminAboutPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  const sections = getAllSections();
+  const sections = getAllSections().filter((section) => insightsAvailable() || section.key !== "latest_insights");
   const fixedSections = sections.filter((s) => s.fixed);
   const reorderable = sections.filter((s) => !s.fixed);
   const previews: Record<string, React.ReactNode> = {

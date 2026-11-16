@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { insightsAvailable, servicesAvailable } from "@/lib/features";
 
 export type Page = {
   slug: string;
@@ -24,6 +25,8 @@ export function getPage(slug: string): Page | undefined {
 }
 
 export function getPublishedPage(slug: string): Page | undefined {
+  if (slug === "services" && !servicesAvailable()) return undefined;
+  if (slug === "insights" && !insightsAvailable()) return undefined;
   return db.prepare("SELECT * FROM pages WHERE slug = ? AND visible = 1").get(slug) as
     | Page
     | undefined;
@@ -63,7 +66,7 @@ export function getGenericPages(): Page[] {
 // this as the shared source for the admin ordering screen so the order shown
 // there is exactly the order visitors receive.
 export function getMainNavPages(): Page[] {
-  return getAllPages().filter((p) => p.show_in_nav === 1);
+  return getAllPages().filter((p) => p.show_in_nav === 1 && (p.slug !== "services" || servicesAvailable()) && (p.slug !== "insights" || insightsAvailable()));
 }
 
 export function updatePage(
@@ -132,7 +135,7 @@ export function getNavLinks(): NavLink[] {
       "SELECT slug, title, nav_label FROM pages WHERE show_in_nav = 1 AND visible = 1 ORDER BY position ASC"
     )
     .all() as Pick<Page, "slug" | "title" | "nav_label">[];
-  return pages.filter((p) => p.slug !== "approach").map((p) => ({
+  return pages.filter((p) => p.slug !== "approach" && (p.slug !== "services" || servicesAvailable()) && (p.slug !== "insights" || insightsAvailable())).map((p) => ({
     label: p.nav_label || p.title,
     href: `/${p.slug}`,
   }));

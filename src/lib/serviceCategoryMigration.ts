@@ -8,6 +8,7 @@ export function migrateServiceCategories(db: DatabaseSync) {
   if (addPosition) db.exec("ALTER TABLE categories ADD COLUMN position INTEGER NOT NULL DEFAULT 0");
   if (addDescription) db.exec("ALTER TABLE categories ADD COLUMN description TEXT NOT NULL DEFAULT ''");
   const columns = db.prepare("PRAGMA table_info(service_items)").all() as Array<{ name: string }>;
+  const addedLink = !columns.some((column) => column.name === "category_id");
   if (!columns.some((column) => column.name === "category_id")) db.exec("ALTER TABLE service_items ADD COLUMN category_id INTEGER REFERENCES categories(id)");
   if (!columns.some((column) => column.name === "service_enabled")) {
     db.exec("ALTER TABLE service_items ADD COLUMN service_enabled INTEGER NOT NULL DEFAULT 1");
@@ -22,11 +23,13 @@ export function migrateServiceCategories(db: DatabaseSync) {
     UPDATE service_items SET category_id = (
       SELECT category_id FROM category_legacy_names WHERE name = TRIM(service_items.title) COLLATE NOCASE
     ) WHERE category_id IS NULL;
+    UPDATE service_items SET title = (SELECT name FROM categories WHERE id = service_items.category_id)
+      WHERE category_id IS NOT NULL AND EXISTS (SELECT 1 FROM categories WHERE id = service_items.category_id);
     CREATE UNIQUE INDEX IF NOT EXISTS service_items_category_id ON service_items(category_id) WHERE category_id IS NOT NULL;
   `);
-  if (addPosition) db.exec(`UPDATE categories SET position = COALESCE(
+  if (addPosition || addedLink) db.exec(`UPDATE categories SET position = COALESCE(
     (SELECT position FROM service_items WHERE category_id = categories.id),
     (SELECT COALESCE(MAX(position), -1) + categories.id FROM service_items)
   )`);
-  if (addDescription) db.exec("UPDATE categories SET description = COALESCE((SELECT description FROM service_items WHERE category_id = categories.id), '')");
+  if (addDescription || addedLink) db.exec("UPDATE categories SET description = COALESCE((SELECT description FROM service_items WHERE category_id = categories.id), description) WHERE description = ''");
 }

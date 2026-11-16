@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { insightsAvailable, servicesAvailable } from "@/lib/features";
 
 export type HomepageSection = {
   key: string;
@@ -40,7 +41,7 @@ export function getSectionOrder(): string[] {
         "SELECT key FROM homepage_sections WHERE fixed = 0 AND visible = 1 ORDER BY position ASC"
       )
       .all() as { key: string }[]
-  ).map((r) => r.key).filter((key) => ["value", "services", "approach", "selected_impact", "latest_insights"].includes(key));
+  ).map((r) => r.key).filter((key) => ["value", "services", "approach", "selected_impact", "latest_insights"].includes(key) && (key !== "services" || servicesAvailable()) && (key !== "latest_insights" || insightsAvailable()));
 }
 
 export function updateSection(

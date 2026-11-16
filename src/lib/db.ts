@@ -4,6 +4,8 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { migrateCategoryFoundation } from "./categoryMigration";
 import { migrateServiceCategories } from "./serviceCategoryMigration";
+import { insightsAvailable, servicesAvailable } from "./features";
+import { migrateInsightsSchema, migrateInsightsCategories } from "@/modules/insights/migration";
 
 // Use Node built-in SQLite with a configurable storage directory.
 // No provider-specific runtime or native compilation is required.
@@ -53,27 +55,6 @@ function initializeDatabase() {
     position INTEGER NOT NULL DEFAULT 0,
     published INTEGER NOT NULL DEFAULT 1,
     in_progress INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    meta_title TEXT NOT NULL DEFAULT '',
-    meta_description TEXT NOT NULL DEFAULT '',
-    meta_keywords TEXT NOT NULL DEFAULT '',
-    canonical_url TEXT NOT NULL DEFAULT '',
-    og_image TEXT NOT NULL DEFAULT '',
-    no_index INTEGER NOT NULL DEFAULT 0
-  );
-
-  CREATE TABLE IF NOT EXISTS insights (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    slug TEXT NOT NULL UNIQUE,
-    title TEXT NOT NULL,
-    excerpt TEXT NOT NULL,
-    body TEXT NOT NULL DEFAULT '',
-    cover_image TEXT NOT NULL DEFAULT '',
-    thumbnail_image TEXT NOT NULL DEFAULT '',
-    published_at TEXT NOT NULL,
-    scheduled_at TEXT NOT NULL DEFAULT '',
-    position INTEGER NOT NULL DEFAULT 0,
-    published INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     meta_title TEXT NOT NULL DEFAULT '',
     meta_description TEXT NOT NULL DEFAULT '',
@@ -193,7 +174,7 @@ function initializeDatabase() {
     cta_secondary_href TEXT NOT NULL DEFAULT ''
   );
 
-  CREATE TABLE IF NOT EXISTS service_items (
+  ${servicesAvailable() ? `CREATE TABLE IF NOT EXISTS service_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     slug TEXT NOT NULL UNIQUE,
     title TEXT NOT NULL,
@@ -205,7 +186,7 @@ function initializeDatabase() {
     published INTEGER NOT NULL DEFAULT 1,
     card_size TEXT NOT NULL DEFAULT 'standard',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
+  );` : ""}
 
   CREATE TABLE IF NOT EXISTS approach_steps (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -261,6 +242,7 @@ function initializeDatabase() {
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 `);
+if (insightsAvailable()) migrateInsightsSchema(db);
 
 // Migrate columns added after the tables were first created (CREATE TABLE
 // IF NOT EXISTS above only applies to brand-new databases).
@@ -327,30 +309,6 @@ addColumnIfMissing(
   "thumbnail_image TEXT NOT NULL DEFAULT ''"
 );
 addColumnIfMissing(
-  "insights",
-  "cover_image",
-  "cover_image TEXT NOT NULL DEFAULT ''"
-);
-addColumnIfMissing(
-  "insights",
-  "thumbnail_image",
-  "thumbnail_image TEXT NOT NULL DEFAULT ''"
-);
-addColumnIfMissing("insights", "scheduled_at", "scheduled_at TEXT NOT NULL DEFAULT ''");
-addColumnIfMissing("insights", "category", "category TEXT NOT NULL DEFAULT ''");
-addColumnIfMissing("insights", "tags", "tags TEXT NOT NULL DEFAULT ''");
-addColumnIfMissing(
-  "insights",
-  "author",
-  "author TEXT NOT NULL DEFAULT 'Andrei Stanescu'"
-);
-addColumnIfMissing("insights", "meta_title", "meta_title TEXT NOT NULL DEFAULT ''");
-addColumnIfMissing("insights", "meta_description", "meta_description TEXT NOT NULL DEFAULT ''");
-addColumnIfMissing("insights", "meta_keywords", "meta_keywords TEXT NOT NULL DEFAULT ''");
-addColumnIfMissing("insights", "canonical_url", "canonical_url TEXT NOT NULL DEFAULT ''");
-addColumnIfMissing("insights", "og_image", "og_image TEXT NOT NULL DEFAULT ''");
-addColumnIfMissing("insights", "no_index", "no_index INTEGER NOT NULL DEFAULT 0");
-addColumnIfMissing(
   "pages",
   "show_in_nav",
   "show_in_nav INTEGER NOT NULL DEFAULT 0"
@@ -362,12 +320,14 @@ addColumnIfMissing("pages", "meta_keywords", "meta_keywords TEXT NOT NULL DEFAUL
 addColumnIfMissing("pages", "canonical_url", "canonical_url TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("pages", "og_image", "og_image TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("pages", "no_index", "no_index INTEGER NOT NULL DEFAULT 0");
+if (servicesAvailable()) {
 addColumnIfMissing("service_items", "card_size", "card_size TEXT NOT NULL DEFAULT 'standard'");
 addColumnIfMissing("service_items", "template_key", "template_key TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("service_items", "hero_lead", "hero_lead TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("service_items", "hero_description", "hero_description TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("service_items", "section_content", "section_content TEXT NOT NULL DEFAULT '{}'");
 addColumnIfMissing("service_items", "section_settings", "section_settings TEXT NOT NULL DEFAULT '{}'");
+}
 addColumnIfMissing("submissions", "blocked", "blocked INTEGER NOT NULL DEFAULT 0");
 addColumnIfMissing("pages", "nav_label", "nav_label TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("pages", "position", "position INTEGER NOT NULL DEFAULT 0");
@@ -469,10 +429,11 @@ if (caseStudyCount.n === 0) {
   });
 }
 
+if (insightsAvailable()) {
 const insightCount = db.prepare("SELECT COUNT(*) AS n FROM insights").get() as {
   n: number;
 };
-if (insightCount.n === 0) {
+if (insightCount.n === 0 && !db.prepare("SELECT 1 FROM settings WHERE key = 'shared_categories_v1'").get()) {
   db.prepare(
     `INSERT INTO insights (slug, title, excerpt, body, published_at, position, published, category, author)
      VALUES (?, ?, ?, ?, ?, 0, 1, ?, ?)`
@@ -485,6 +446,7 @@ if (insightCount.n === 0) {
     "Design Systems",
     "Andrei Stanescu"
   );
+}
 }
 
 // Every real page on the site (excluding the homepage — a composed
@@ -755,6 +717,7 @@ const SEED_SERVICE_ITEMS = [
       "Bringing design, engineering and product together around shared foundations.",
   },
 ];
+if (servicesAvailable()) {
 const insertServiceItemStmt = db.prepare(
   `INSERT INTO service_items (slug, title, description, icon, show_on_homepage, position, published)
    VALUES (?, ?, ?, ?, 1, ?, 1)`
@@ -780,6 +743,7 @@ if (serviceCount.count === 0 && !db.prepare("SELECT 1 FROM settings WHERE key = 
       );
     }
   });
+}
 }
 
 // Approach steps shown on the homepage's Approach section and listed on
@@ -1015,6 +979,7 @@ const articleBodyBackfills: Record<string, { current: string; next: (image: stri
   },
 };
 
+if (insightsAvailable()) {
 const updateArticleBody = db.prepare(
   "UPDATE insights SET body = ? WHERE slug = ? AND body = ?"
 );
@@ -1026,9 +991,11 @@ for (const article of db
     updateArticleBody.run(backfill.next(article.cover_image), article.slug, backfill.current);
   }
 }
+}
 
     migrateCategoryFoundation(db);
-    migrateServiceCategories(db);
+    if (insightsAvailable()) migrateInsightsCategories(db);
+    if (servicesAvailable()) migrateServiceCategories(db);
     db.exec("COMMIT;");
   } catch (error) {
     try {

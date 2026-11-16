@@ -48,7 +48,7 @@ export function EngagementTracker() {
   const lastUserInput = useRef(0);
 
   useEffect(() => {
-    if (!pathname || pathname.startsWith("/admin") || pathname.startsWith("/api")) return;
+    if (!pathname || pathname === "/live-component-preview" || pathname.startsWith("/admin") || pathname.startsWith("/api")) return;
     if (!sessionId.current) sessionId.current = getSessionId();
     const currentSession = sessionId.current;
     const page = classifyPath(pathname);

@@ -1,8 +1,10 @@
 import { db } from "@/lib/db";
 import { relativeRedirect } from "@/lib/relativeRedirect";
 import { setDedicatedService } from "@/lib/serviceCategoryOperations";
+import { servicesAvailable } from "@/lib/features";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!servicesAvailable()) return new Response("Not found", { status: 404 });
   const { id } = await params;
   if (!/^[1-9]\d*$/.test(id)) return new Response("Invalid category", { status: 400 });
   const form = await request.formData();

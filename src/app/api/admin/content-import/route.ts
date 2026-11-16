@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { mkdir, writeFile } from "fs/promises";
+import { existsSync } from "fs";
 import { basename, join } from "path";
 import { getUploadsDir } from "@/lib/uploads";
 import { createPublishedTheme, DEFAULT_PALETTE_ANCHORS, isHexColor, parsePublishedTheme, type PaletteAnchors } from "@/lib/themePalette";
+import { insightsAvailable, servicesAvailable } from "@/lib/features";
+import { applyPendingCategoryAssignments } from "@/lib/pendingCategoryAssignments";
+import { importCategoryAssignments, importCoreCategories } from "@/lib/coreCategoryTransfer";
+import { uploadFilenames } from "@/lib/contentTransfer";
 
 type ContentRecord = Record<string, unknown>;
 
@@ -39,6 +44,7 @@ export async function POST(request: NextRequest) {
       assets?: { filename?: string; content?: string }[];
       configuration?: {
         categories?: ContentRecord[];
+        categoryAssignments?: ContentRecord[];
         settings?: ContentRecord[];
         homepageSections?: ContentRecord[];
         services?: ContentRecord[];
@@ -63,6 +69,13 @@ export async function POST(request: NextRequest) {
     const experiences = Array.isArray(payload.experiences) ? payload.experiences : [];
     const analyticsEvents = Array.isArray(payload.analyticsEvents) ? payload.analyticsEvents : [];
     const configuration = payload.configuration ?? {};
+    if (!insightsAvailable() && insights.length) return NextResponse.json({ error: "This file contains articles. Enable Insights before importing it; no content was imported." }, { status: 400 });
+    if (!servicesAvailable() && Array.isArray(configuration.services) && configuration.services.length) return NextResponse.json({ error: "This file contains service content. Enable Services before importing it; no content was imported." }, { status: 400 });
+    const assignments = Array.isArray(configuration.categoryAssignments) ? configuration.categoryAssignments : [];
+    for (const record of assignments) {
+      const slug = text(record, "slug").trim();
+      if (!slug || !Array.isArray(record.category_names)) return NextResponse.json({ error: "The export contains an invalid category assignment." }, { status: 400 });
+    }
     const importedSettings = Array.isArray(configuration.settings) ? configuration.settings : [];
     const importedSettingValues = new Map(importedSettings.map((record) => [text(record, "key"), text(record, "value")]));
     const themeSettingKeys = ["theme_config", "theme_primary_500", "theme_secondary_500", "theme_accent_500", "theme_neutral_500", "theme_customized"];
@@ -111,12 +124,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const missingInsightMedia = [...uploadFilenames(insights)].filter((filename) => !existsSync(join(getUploadsDir(), basename(filename))));
+
     db.exec("BEGIN");
     try {
       const saveSetting = db.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value");
       for (const record of importedSettings) {
         const key = text(record, "key").trim();
-        if (key && key !== "admin_credentials" && key !== "session_secret" && !themeSettingKeys.includes(key)) saveSetting.run(key, text(record, "value"));
+        if (key && !["admin_credentials", "session_secret", "shared_categories_v1", "insights_schema_v1", "insights_categories_v1"].includes(key) && !themeSettingKeys.includes(key)) saveSetting.run(key, text(record, "value"));
       }
       if (importedTheme?.kind === "publish") {
         saveSetting.run("theme_config", importedTheme.config);
@@ -135,13 +150,8 @@ export async function POST(request: NextRequest) {
       }
 
       const homepageSections = Array.isArray(configuration.homepageSections) ? configuration.homepageSections : [];
-      for (const record of Array.isArray(configuration.categories) ? configuration.categories : []) {
-        const name = text(record, "name").trim();
-        if (!name) continue;
-        db.prepare("INSERT INTO categories(name, description, position) VALUES (?, ?, ?) ON CONFLICT(name) DO UPDATE SET description=excluded.description, position=excluded.position").run(name, text(record, "description"), integer(record, "position"));
-        const category = db.prepare("SELECT id FROM categories WHERE name = ? COLLATE NOCASE").get(name) as { id: number };
-        db.prepare("INSERT OR IGNORE INTO category_legacy_names(name, category_id) VALUES (?, ?)").run(name, category.id);
-      }
+      importCoreCategories(db, Array.isArray(configuration.categories) ? configuration.categories : []);
+      if (insightsAvailable() && Array.isArray(configuration.categories)) { const { migrateInsightsCategories } = await import("@/modules/insights/migration"); migrateInsightsCategories(db); }
       const saveHomepageSection = db.prepare(`INSERT OR REPLACE INTO homepage_sections
         (key, eyebrow, headline, description, position, fixed, cta_primary_label,
          cta_primary_href, cta_secondary_label, cta_secondary_href, visible, content)
@@ -154,15 +164,17 @@ export async function POST(request: NextRequest) {
       const services = Array.isArray(configuration.services) ? configuration.services : [];
       for (const record of services) {
         const slug = text(record, "slug").trim();
-        const title = text(record, "title").trim();
-        if (!slug || !title) continue;
+        const title = (text(record, "category_name") || text(record, "title")).trim();
+        if (!slug || !title) throw new Error("A service in the export is missing its URL or category name.");
         const bySlug = db.prepare("SELECT id, category_id FROM service_items WHERE slug = ?").get(slug) as { id: number; category_id: number } | undefined;
-        let categoryId = bySlug?.category_id;
+        const namedCategory = db.prepare("SELECT category_id FROM category_legacy_names WHERE name = ? COLLATE NOCASE").get(title) as { category_id: number } | undefined;
+        if (bySlug && namedCategory && bySlug.category_id !== namedCategory.category_id) throw new Error(`Service ${slug} belongs to a different category.`);
+        let categoryId = namedCategory?.category_id ?? bySlug?.category_id;
         if (!categoryId) {
           const known = db.prepare("SELECT category_id FROM category_legacy_names WHERE name = ? COLLATE NOCASE").get(title) as { category_id: number } | undefined;
           categoryId = known?.category_id;
           if (!categoryId) {
-            const created = db.prepare("INSERT INTO categories(name, position) VALUES (?, (SELECT COALESCE(MAX(position), -1) + 1 FROM categories))").run(title);
+            const created = db.prepare("INSERT INTO categories(name, description, position) VALUES (?, ?, (SELECT COALESCE(MAX(position), -1) + 1 FROM categories))").run(title, text(record, "description"));
             categoryId = Number(created.lastInsertRowid);
             db.prepare("INSERT INTO category_legacy_names(name, category_id) VALUES (?, ?)").run(title, categoryId);
           }
@@ -173,7 +185,6 @@ export async function POST(request: NextRequest) {
         const values = [slug, title, text(record, "description"), text(record, "icon"), text(record, "body"), integer(record, "show_on_homepage"), integer(record, "position"), integer(record, "published", 1), text(record, "card_size", "standard"), integer(record, "service_enabled", integer(record, "published", 1)), categoryId, text(record, "template_key"), text(record, "hero_lead"), text(record, "hero_description"), text(record, "section_content", "{}"), text(record, "section_settings", "{}")] as const;
         if (serviceId) db.prepare(`UPDATE service_items SET slug=?, title=?, description=?, icon=?, body=?, show_on_homepage=?, position=?, published=?, card_size=?, service_enabled=?, category_id=?, template_key=?, hero_lead=?, hero_description=?, section_content=?, section_settings=? WHERE id=?`).run(...values, serviceId);
         else db.prepare(`INSERT INTO service_items (slug, title, description, icon, body, show_on_homepage, position, published, card_size, service_enabled, category_id, template_key, hero_lead, hero_description, section_content, section_settings) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(...values);
-        db.prepare("UPDATE categories SET description = ? WHERE id = ?").run(text(record, "description"), categoryId);
       }
 
       const approachSteps = Array.isArray(configuration.approachSteps) ? configuration.approachSteps : [];
@@ -258,14 +269,21 @@ export async function POST(request: NextRequest) {
           db.prepare("DELETE FROM case_study_categories WHERE case_study_id = ?").run(study.id);
           const names = [...new Set(record.category_names.filter((name): name is string => typeof name === "string" && Boolean(name.trim())).map((name) => name.trim()))];
           names.forEach((name, position) => {
-            db.prepare("INSERT OR IGNORE INTO categories(name, position) VALUES (?, (SELECT COALESCE(MAX(position), -1) + 1 FROM categories))").run(name);
-            const category = db.prepare("SELECT id FROM categories WHERE name = ? COLLATE NOCASE").get(name) as { id: number };
+            const known = db.prepare("SELECT category_id AS id FROM category_legacy_names WHERE name = ? COLLATE NOCASE").get(name) as { id: number } | undefined;
+            if (!known) db.prepare("INSERT OR IGNORE INTO categories(name, position) VALUES (?, (SELECT COALESCE(MAX(position), -1) + 1 FROM categories))").run(name);
+            const category = known ?? db.prepare("SELECT id FROM categories WHERE name = ? COLLATE NOCASE").get(name) as { id: number };
             db.prepare("INSERT OR IGNORE INTO category_legacy_names(name, category_id) VALUES (?, ?)").run(name, category.id);
             db.prepare("INSERT OR IGNORE INTO case_study_categories(case_study_id, category_id, position) VALUES (?, ?, ?)").run(study.id, category.id, position);
           });
         }
+        const importedStudy = db.prepare("SELECT id FROM case_studies WHERE slug = ?").get(slug) as { id: number };
+        applyPendingCategoryAssignments(db, importedStudy.id, slug);
       }
 
+      importCategoryAssignments(db, assignments);
+
+      if (insightsAvailable()) {
+      const { setInsightCategory } = await import("@/modules/insights/migration");
       const upsertInsight = db.prepare(
         `INSERT INTO insights
           (slug, title, excerpt, body, published_at, scheduled_at, position, published,
@@ -294,6 +312,9 @@ export async function POST(request: NextRequest) {
           text(record, "meta_title"), text(record, "meta_description"), text(record, "meta_keywords"),
           text(record, "canonical_url"), text(record, "og_image"), integer(record, "no_index")
         );
+        const importedInsight = db.prepare("SELECT id FROM insights WHERE slug = ?").get(slug) as { id: number };
+        setInsightCategory(db, importedInsight.id, text(record, "category"));
+      }
       }
 
       // Database IDs differ between installations. Reconnect exported value
@@ -304,6 +325,7 @@ export async function POST(request: NextRequest) {
           const content = JSON.parse(text(importedValue, "content", "{}")) as { propositions?: Array<{ evidence?: { type?: string; slug?: string; id?: number } | null }> };
           for (const proposition of content.propositions ?? []) {
             const evidence = proposition.evidence;
+            if (evidence?.type === "article" && !insightsAvailable()) continue;
             const table = evidence?.type === "case_study" ? "case_studies" : evidence?.type === "article" ? "insights" : null;
             const item = table && evidence?.slug ? db.prepare(`SELECT id FROM ${table} WHERE slug = ?`).get(evidence.slug) as { id: number } | undefined : undefined;
             proposition.evidence = item && evidence ? { type: evidence.type, id: item.id } : null;
@@ -386,7 +408,8 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-    return NextResponse.json({ imported: { caseStudies: caseStudies.length, insights: insights.length, pages: pages.length, experiences: experiences.length, analyticsEvents: analyticsEvents.length } });
+    const pendingCategories = (db.prepare("SELECT COUNT(DISTINCT study_slug) AS count FROM pending_case_study_categories").get() as { count: number }).count;
+    return NextResponse.json({ imported: { caseStudies: caseStudies.length, insights: insights.length, pages: pages.length, experiences: experiences.length, analyticsEvents: analyticsEvents.length }, pendingCategories, missingInsightMedia });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Import failed.";
     return NextResponse.json({ error: `Import failed: ${message}` }, { status: 400 });

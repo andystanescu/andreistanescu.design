@@ -1,4 +1,5 @@
 import { relativeRedirect } from "@/lib/relativeRedirect";
+import { setInsightCategory } from "@/modules/insights/migration";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import type { Insight } from "@/data/insights";
@@ -52,6 +53,7 @@ export async function POST(
   );
 
   try {
+    db.exec("BEGIN IMMEDIATE");
     db.prepare(
       `UPDATE insights
        SET slug = ?, title = ?, excerpt = ?, body = ?, cover_image = ?, thumbnail_image = ?, published_at = ?, scheduled_at = ?, published = ?, category = ?, author = ?, tags = ?, meta_title = ?, meta_description = ?, meta_keywords = ?, canonical_url = ?, og_image = ?, no_index = ?
@@ -77,9 +79,12 @@ export async function POST(
       noIndex,
       id
     );
-  } catch {
+    setInsightCategory(db, Number(id), category);
+    db.exec("COMMIT");
+  } catch (error) {
+    if (db.isTransaction) db.exec("ROLLBACK");
     const url = new URL(`/admin/insights/${id}`, request.url);
-    url.searchParams.set("error", `An insight with slug "${slug}" already exists.`);
+    url.searchParams.set("error", error instanceof Error && error.message.startsWith("Article category") ? error.message : `An insight with slug "${slug}" already exists.`);
     return relativeRedirect(url.pathname + url.search);
   }
 

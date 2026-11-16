@@ -1,8 +1,9 @@
 import { db } from "@/lib/db";
+import { insightsAvailable } from "@/lib/features";
 
 /** Tags remain free text; suggestions combine saved article and case-study tags. */
 export function getExistingTags(): string[] {
-  const rows = db.prepare("SELECT tags FROM insights UNION ALL SELECT tags FROM case_studies").all() as Array<{ tags: string }>;
+  const rows = db.prepare(insightsAvailable() ? "SELECT tags FROM insights UNION ALL SELECT tags FROM case_studies" : "SELECT tags FROM case_studies").all() as Array<{ tags: string }>;
   const unique = new Map<string, string>();
   for (const { tags } of rows) {
     for (const value of (tags || "").split(/[,;\n|*·]+/)) {

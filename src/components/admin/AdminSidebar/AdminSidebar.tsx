@@ -12,7 +12,7 @@ import styles from "@/app/admin/(dashboard)/dashboard.module.css";
 import navStyles from "@/components/admin/AdminNav/AdminNav.module.css";
 import { DESIGN_SYSTEM_GROUPS } from "@/lib/designSystemManifest";
 
-export function AdminSidebar({ logoIdentity, logoImage, logoIconImage }: { logoIdentity: "business" | "personal"; logoImage: string; logoIconImage: string }) {
+export function AdminSidebar({ logoIdentity, logoImage, logoIconImage, servicesEnabled = true, insightsEnabled = true }: { logoIdentity: "business" | "personal"; logoImage: string; logoIconImage: string; servicesEnabled?: boolean; insightsEnabled?: boolean }) {
   const pathname = usePathname();
   const inLibrary = pathname.startsWith("/admin/design-system");
   const [collapsed, setCollapsed] = useState(false);
@@ -146,7 +146,7 @@ export function AdminSidebar({ logoIdentity, logoImage, logoIconImage }: { logoI
       </div>
       {inLibrary ? <Link href="/admin" className={styles.viewSiteLink} aria-label="Return to dashboard" onClick={() => closeDrawer(false)}><AdminIcon name="direction-arrow-left" /><span>Return to dashboard</span></Link> : <ViewSiteLink />}
       <div className={styles.navWrap} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) closeDrawer(false); }}>
-        {inLibrary ? <nav className={`${navStyles.nav} ${collapsed && !mobileOpen ? navStyles.navCollapsed : ""}`} aria-label="Design system">{DESIGN_SYSTEM_GROUPS.map((group) => <div className={navStyles.group} key={group.label}><p className={navStyles.groupLabel}>{group.label}</p><div className={navStyles.groupItems}>{group.links.map(([label, id]) => <Link className={`${navStyles.navLink} ${pathname === `/admin/design-system/${id}` ? navStyles.navLinkActive : ""}`} key={id} href={`/admin/design-system/${id}`} aria-current={pathname === `/admin/design-system/${id}` ? "page" : undefined} aria-label={label} title={collapsed && !mobileOpen ? label : undefined}><span className={navStyles.icon} aria-hidden="true">·</span><span className={navStyles.linkLabel}>{label}</span></Link>)}</div></div>)}</nav> : <AdminNav collapsed={collapsed && !mobileOpen} />}
+        {inLibrary ? <nav className={`${navStyles.nav} ${collapsed && !mobileOpen ? navStyles.navCollapsed : ""}`} aria-label="Design system">{DESIGN_SYSTEM_GROUPS.map((group) => <div className={navStyles.group} key={group.label}><p className={navStyles.groupLabel}>{group.label}</p><div className={navStyles.groupItems}>{group.links.map(([label, id]) => <Link className={`${navStyles.navLink} ${pathname === `/admin/design-system/${id}` ? navStyles.navLinkActive : ""}`} key={id} href={`/admin/design-system/${id}`} aria-current={pathname === `/admin/design-system/${id}` ? "page" : undefined} aria-label={label} title={collapsed && !mobileOpen ? label : undefined}><span className={navStyles.icon} aria-hidden="true">·</span><span className={navStyles.linkLabel}>{label}</span></Link>)}</div></div>)}</nav> : <AdminNav collapsed={collapsed && !mobileOpen} servicesEnabled={servicesEnabled} insightsEnabled={insightsEnabled} />}
       </div>
       <form action="/api/admin/logout" method="POST">
         <button type="submit" className={styles.logout} aria-label="Sign out" title={collapsed && !mobileOpen ? "Sign out" : undefined}>

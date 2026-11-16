@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { insightsAvailable } from "@/lib/features";
 
 export type AboutSection = {
   key: string;
@@ -36,7 +37,7 @@ export function getSectionOrder(): string[] {
         "SELECT key FROM about_sections WHERE fixed = 0 AND visible = 1 ORDER BY position ASC"
       )
       .all() as { key: string }[]
-  ).map((r) => r.key);
+  ).map((r) => r.key).filter((key) => key !== "latest_insights" || insightsAvailable());
 }
 
 export function updateSection(

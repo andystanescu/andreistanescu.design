@@ -4,6 +4,7 @@ import { parseTransferSelection, settingTransferGroup, transferGroupSource, uplo
 
 test("accepts only supported content groups", () => {
   assert.deepEqual([...parseTransferSelection("insights,caseStudies,unknown")], ["insights", "caseStudies"]);
+  assert.deepEqual([...parseTransferSelection("categories")], ["categories"]);
 });
 
 test("separates identity, navigation, page and general settings", () => {

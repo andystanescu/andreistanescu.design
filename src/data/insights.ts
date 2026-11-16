@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { ukDateTimeValue } from "@/lib/dateUtils";
+import { insightsAvailable } from "@/lib/features";
 
 export type Insight = {
   id: number;
@@ -28,6 +29,7 @@ export type Insight = {
 // featured on the homepage. Managed entirely from /admin/insights; an empty
 // result hides "Latest Insights" and shows an empty state on /insights.
 export function getInsights(): Insight[] {
+  if (!insightsAvailable()) return [];
   const now = ukDateTimeValue();
   return db
     .prepare(
@@ -47,6 +49,7 @@ export function getHomepageInsights(): Insight[] {
 }
 
 export function getInsightBySlug(slug: string, includeUnpublished = false): Insight | undefined {
+  if (!insightsAvailable()) return undefined;
   let normalizedSlug = slug;
   try {
     normalizedSlug = decodeURIComponent(slug);
@@ -61,6 +64,7 @@ export function getInsightBySlug(slug: string, includeUnpublished = false): Insi
 // "Keep reading" on an article page — a fresh random sample (excluding the
 // article itself) on every request, up to `count` articles.
 export function getRandomInsights(excludeSlug: string, count: number): Insight[] {
+  if (!insightsAvailable()) return [];
   return db
     .prepare(
       "SELECT * FROM insights WHERE published = 1 AND (scheduled_at = '' OR scheduled_at <= ?) AND slug != ? ORDER BY RANDOM() LIMIT ?"

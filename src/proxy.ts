@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth";
+import { insightsAvailable, servicesAvailable } from "@/lib/features";
 
 // Proxy (formerly "middleware") defaults to the Node.js runtime as of
 // Next 16, which is what verifySessionToken needs (node:crypto).
@@ -21,6 +22,8 @@ const PUBLIC_PATHS = new Set([
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (!servicesAvailable() && (/^\/admin\/services(?:\/|$)/.test(pathname) || /^\/api\/admin\/services(?:\/|$)/.test(pathname))) return new NextResponse("Not found", { status: 404 });
+  if (!insightsAvailable() && (/^\/admin\/insights(?:\/|$)/.test(pathname) || /^\/api\/admin\/insights(?:\/|$)/.test(pathname))) return new NextResponse("Not found", { status: 404 });
 
   if (PUBLIC_PATHS.has(pathname)) {
     return NextResponse.next();

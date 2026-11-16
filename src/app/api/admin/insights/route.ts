@@ -5,6 +5,7 @@ import { resolveImageField } from "@/lib/uploads";
 import { applyHeadingAccents } from "@/lib/headingAccents";
 import { getSettings } from "@/lib/settings";
 import { todayInputValue } from "@/lib/dateUtils";
+import { setInsightCategory } from "@/modules/insights/migration";
 
 export async function POST(request: NextRequest) {
   const form = await request.formData();
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     // scheduled articles. Scheduled entries remain hidden until their date,
     // then become the featured public article without another manual reorder.
     db.prepare("UPDATE insights SET position = position + 1").run();
-    db.prepare(
+    const result = db.prepare(
       `INSERT INTO insights (slug, title, excerpt, body, cover_image, thumbnail_image, published_at, scheduled_at, position, published, category, author, tags, meta_title, meta_description, meta_keywords, canonical_url, og_image, no_index)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
@@ -64,11 +65,12 @@ export async function POST(request: NextRequest) {
       ogImage,
       noIndex
     );
+    setInsightCategory(db, Number(result.lastInsertRowid), category);
     db.exec("COMMIT;");
-  } catch {
+  } catch (error) {
     db.exec("ROLLBACK;");
     const url = new URL("/admin/insights/new", request.url);
-    url.searchParams.set("error", `An insight with slug "${slug}" already exists.`);
+    url.searchParams.set("error", error instanceof Error && error.message.startsWith("Article category") ? error.message : `An insight with slug "${slug}" already exists.`);
     return relativeRedirect(url.pathname + url.search);
   }
 

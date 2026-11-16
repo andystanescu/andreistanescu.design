@@ -6,6 +6,7 @@ import { FooterEditor } from "@/components/admin/FooterEditor/FooterEditor";
 import { getSettings } from "@/lib/settings";
 import { getServiceItems } from "@/lib/serviceItems";
 import styles from "../admin.module.css";
+import { insightsAvailable, servicesAvailable } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,7 @@ export default async function AdminPagesPage({ searchParams }: { searchParams: P
         </section>}
       </div>
       {query.saved === "footer" && <p role="status" className="body-small">Footer settings saved.</p>}
-      <FooterEditor initial={{ message: settings.footer_message, services: settings.footer_show_services === "1", navigation: settings.footer_show_navigation === "1", contact: settings.footer_show_contact === "1", label: settings.footer_contact_label, copyright: settings.footer_copyright, contactTitle: settings.footer_contact_title, contactMessage: settings.footer_contact_message }} logoIdentity={settings.logo_identity} logoImage={settings.logo_image} services={getServiceItems().map((item) => item.title)} navigation={getNavLinks().map((item) => item.label)} legal={[...(getPublishedPage("privacy") ? ["Privacy"] : []), ...(getPublishedPage("terms") ? ["Terms"] : [])]} />
+      <FooterEditor initial={{ message: settings.footer_message, services: servicesAvailable() && settings.footer_show_services === "1", navigation: settings.footer_show_navigation === "1", contact: settings.footer_show_contact === "1", label: settings.footer_contact_label, copyright: settings.footer_copyright, contactTitle: settings.footer_contact_title, contactMessage: settings.footer_contact_message }} logoIdentity={settings.logo_identity} logoImage={settings.logo_image} services={getServiceItems().map((item) => item.title)} servicesEnabled={servicesAvailable()} insightsEnabled={insightsAvailable()} navigation={getNavLinks().map((item) => item.label)} legal={[...(getPublishedPage("privacy") ? ["Privacy"] : []), ...(getPublishedPage("terms") ? ["Terms"] : [])]} />
     </>
   );
 }

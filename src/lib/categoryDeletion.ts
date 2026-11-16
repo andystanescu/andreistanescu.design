@@ -11,11 +11,8 @@ export function deleteCategory(db: DatabaseSync, categoryId: number) {
   ), '') WHERE EXISTS (
     SELECT 1 FROM category_legacy_names aliases WHERE aliases.category_id = ? AND aliases.name = TRIM(case_studies.category) COLLATE NOCASE
   )`).run(categoryId, categoryId);
-  db.prepare(`UPDATE insights SET category = '' WHERE EXISTS (
-    SELECT 1 FROM category_legacy_names aliases WHERE aliases.category_id = ? AND aliases.name = TRIM(insights.category) COLLATE NOCASE
-  )`).run(categoryId);
   db.prepare("DELETE FROM case_study_categories WHERE category_id = ?").run(categoryId);
-  db.prepare("DELETE FROM service_items WHERE category_id = ?").run(categoryId);
+  db.prepare("DELETE FROM pending_case_study_categories WHERE category_id = ?").run(categoryId);
   db.prepare("DELETE FROM category_legacy_names WHERE category_id = ?").run(categoryId);
   db.prepare("DELETE FROM categories WHERE id = ?").run(categoryId);
   return true;

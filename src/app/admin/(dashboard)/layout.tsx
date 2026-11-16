@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar/AdminSidebar";
 import styles from "./dashboard.module.css";
 import { getSettings } from "@/lib/settings";
+import { insightsAvailable, servicesAvailable } from "@/lib/features";
 
 export default function AdminDashboardLayout({
   children,
@@ -11,7 +12,7 @@ export default function AdminDashboardLayout({
   const settings = getSettings();
   return (
     <div className={styles.shell} data-admin-shell>
-      <AdminSidebar logoIdentity={settings.logo_identity} logoImage={settings.logo_image} logoIconImage={settings.logo_icon_image} />
+      <AdminSidebar logoIdentity={settings.logo_identity} logoImage={settings.logo_image} logoIconImage={settings.logo_icon_image} servicesEnabled={servicesAvailable()} insightsEnabled={insightsAvailable()} />
       <main className={styles.content} data-scroll-region data-page-transition-content>{children}</main>
     </div>
   );

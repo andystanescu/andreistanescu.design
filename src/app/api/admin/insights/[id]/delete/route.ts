@@ -7,6 +7,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  db.prepare("DELETE FROM insights WHERE id = ?").run(id);
+  db.exec("BEGIN IMMEDIATE");
+  try {
+    db.prepare("DELETE FROM insight_categories WHERE insight_id = ?").run(id);
+    db.prepare("DELETE FROM insights WHERE id = ?").run(id);
+    db.exec("COMMIT");
+  } catch (error) { if (db.isTransaction) db.exec("ROLLBACK"); throw error; }
   return relativeRedirect("/admin/insights");
 }
