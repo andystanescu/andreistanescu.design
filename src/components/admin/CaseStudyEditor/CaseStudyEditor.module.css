@@ -227,5 +227,6 @@
 .heroCodeDialogHeader,.heroCodeActions{display:flex;align-items:center;justify-content:space-between;gap:var(--space-200)}
 .heroCodeInput{width:100%;max-width:none!important;min-height:240px;font-family:var(--font-family-mono)}
 .heroCodePreview{display:grid;gap:var(--space-100)}
+.heroCodeCanvas{width:100%;aspect-ratio:16/10;min-width:0;overflow:hidden;background:var(--bg-canvas)}
 .heroCodeActions{justify-content:flex-end;flex-wrap:wrap;margin-top:var(--space-300)}
 @media(max-width:767px){.heroCodeDialog{width:calc(100% - var(--space-300));max-height:calc(100dvh - var(--space-300));padding:var(--space-200)}.heroCodeActions>*{min-height:var(--admin-touch-target)}}

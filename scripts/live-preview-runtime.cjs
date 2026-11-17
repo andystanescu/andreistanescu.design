@@ -20,7 +20,7 @@ class Boundary extends React.Component {
 function Result({ report }) {
   const { error, element } = React.useContext(LiveContext);
   useEffect(() => { if (error) report("error", { message: String(error) }); else if (element) report("rendered"); }, [error, element, report]);
-  return React.createElement(LivePreview);
+  return React.createElement(LivePreview, { "data-live-result": "" });
 }
 function App() {
   const [input, setInput] = useState(null);
@@ -48,6 +48,6 @@ function App() {
     measure();
     return () => { observer.disconnect(); mutations.disconnect(); };
   }, [input, report]);
-  return React.createElement("div", { ref: node, style: { display: "flow-root", width: "100%" } }, input && React.createElement(Boundary, { key: input.code, report }, React.createElement(LiveProvider, { code: prepare(input.code), scope, noInline: true, language: "tsx", enableTypeScript: true }, React.createElement(Result, { report }))));
+  return React.createElement("div", { ref: node, "data-live-wrapper": "", style: { display: "flow-root", width: "100%" } }, input && React.createElement(Boundary, { key: input.code, report }, React.createElement(LiveProvider, { code: prepare(input.code), scope, noInline: true, language: "tsx", enableTypeScript: true }, React.createElement(Result, { report }))));
 }
 createRoot(document.getElementById("preview-root")).render(React.createElement(App));

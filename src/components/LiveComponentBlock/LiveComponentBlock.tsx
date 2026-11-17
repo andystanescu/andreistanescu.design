@@ -184,7 +184,7 @@ function ReactComponentSurface({ code, chrome, revision, onRetry, fill, onReady,
       if (event.data.type === "ready") { setError(""); send(); return; }
       if (event.data.channel !== channel) return;
       if (event.data.type === "rendered") onReady?.();
-      if (event.data.type === "height" && typeof event.data.height === "number" && Number.isFinite(event.data.height) && event.data.height > 0 && event.data.height <= 100000) setHeight(Math.ceil(event.data.height));
+      if (!fill && event.data.type === "height" && typeof event.data.height === "number" && Number.isFinite(event.data.height) && event.data.height > 0 && event.data.height <= 100000) setHeight(Math.ceil(event.data.height));
       if (event.data.type === "error" && typeof event.data.message === "string") { setError(event.data.message.slice(0, 2000)); onFailure?.(); }
     };
     window.addEventListener("message", receive);
@@ -193,7 +193,7 @@ function ReactComponentSurface({ code, chrome, revision, onRetry, fill, onReady,
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     media.addEventListener("change", send);
     return () => { window.removeEventListener("message", receive); observer.disconnect(); media.removeEventListener("change", send); };
-  }, [channel, send, onReady, onFailure]);
+  }, [channel, send, onReady, onFailure, fill]);
   React.useEffect(() => { setError(""); send(); }, [send]);
 
   const handleCopy = async () => {
@@ -220,7 +220,7 @@ function ReactComponentSurface({ code, chrome, revision, onRetry, fill, onReady,
           </button>
         </div>
       </div>}
-      {view === "preview" ? error ? <InteractiveErrorState message={error} onRetry={() => { setError(""); onRetry(); }} /> : <div className={`${chrome === "minimal" ? styles.previewMinimal : styles.preview} ${fill ? styles.fill : ""}`}>{runtimeUrl && <iframe key={revision} ref={frameRef} title="Interactive component preview" sandbox="allow-scripts" srcDoc={`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-eval' ${runtimeUrl}; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data:; connect-src 'none'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;padding:0;background:transparent}${fill ? "html,body,#preview-root,#preview-root>div,#preview-root>div>div{height:100%}" : ""}*{box-sizing:border-box}</style><script defer src="${runtimeUrl}"></script></head><body><div id="preview-root"></div></body></html>`} className={styles.htmlPreviewAuto} style={{ height: fill ? "100%" : height }} />}</div> : <pre className={styles.code}><code>{code}</code></pre>}
+      {view === "preview" ? error ? <InteractiveErrorState message={error} onRetry={() => { setError(""); onRetry(); }} /> : <div className={`${chrome === "minimal" ? styles.previewMinimal : styles.preview} ${fill ? styles.fill : ""}`}>{runtimeUrl && <iframe key={revision} ref={frameRef} title="Interactive component preview" sandbox="allow-scripts" srcDoc={`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-eval' ${runtimeUrl}; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data:; connect-src 'none'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;padding:0;background:transparent}${fill ? "html,body,#preview-root,#preview-root>[data-live-wrapper],#preview-root>[data-live-wrapper]>[data-live-result]{width:100%;height:100%;min-width:0;min-height:0}html,body,#preview-root{overflow:hidden}" : ""}*{box-sizing:border-box}</style><script defer src="${runtimeUrl}"></script></head><body><div id="preview-root"></div></body></html>`} className={styles.htmlPreviewAuto} style={{ height: fill ? "100%" : height }} />}</div> : <pre className={styles.code}><code>{code}</code></pre>}
     </div>
   );
 }
