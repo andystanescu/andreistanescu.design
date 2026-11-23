@@ -1,3 +1,5 @@
+import { installedExtensions } from "@/platform/extensions/installed";
+import { notifyCategoryUpdated } from "@/platform/extensions/contract";
 import { db } from "@/lib/db";
 import { relativeRedirect } from "@/lib/relativeRedirect";
 import { insightsAvailable, servicesAvailable } from "@/lib/features";
@@ -18,6 +20,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   try {
     db.exec("BEGIN IMMEDIATE");
     db.prepare("UPDATE categories SET name = ?, description = ? WHERE id = ?").run(name, form.has("description") ? String(form.get("description") ?? "").trim() : previous.description, Number(id));
+    notifyCategoryUpdated(installedExtensions, db, { id: Number(id), name, description: form.has("description") ? String(form.get("description") ?? "").trim() : previous.description });
     db.prepare("INSERT OR IGNORE INTO category_legacy_names(name, category_id) VALUES (?, ?)").run(name, Number(id));
     db.prepare("UPDATE case_studies SET category = ? WHERE category = ? COLLATE NOCASE").run(name, previous.name);
     if (insightsAvailable()) { const { renameInsightCategory } = await import("@/modules/insights/migration"); renameInsightCategory(db, previous.name, name); }

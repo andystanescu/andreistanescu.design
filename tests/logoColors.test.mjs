@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { extractLogoColors, normalizeLogoColor, parseLogoColorMapping, recolorLogoSvg } from "../src/lib/logoColors.ts";
-import { generateThemePalette } from "../src/lib/themePalette.ts";
+import { generateThemePalette } from "../packages/core-domain/src/themePalette.ts";
 
 const palettes = Object.fromEntries(Object.entries({primary:"#11161F",secondary:"#3E4650",accent:"#E8441C",neutral:"#6B7280"}).map(([role, color]) => [role, generateThemePalette(color)]));
 const svg = `<svg viewBox="0 0 20 20"><style>.mark{fill:#fff;stroke:rgb(232, 68, 28)}</style><path fill="#11161f" stroke="none" d="M0 0"/><path style="fill:#FFF;stroke:#E8441C"/></svg>`;

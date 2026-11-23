@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { canShowCaseStudyOverview, overviewFromForm, parseCaseStudyOverview } from "../src/lib/caseStudyOverview.ts";
+import { canShowCaseStudyOverview, overviewFromForm, parseCaseStudyOverview } from "../packages/core-domain/src/caseStudyOverview.ts";
 
 test("empty and malformed overviews stay hidden", () => {
   for (const input of ["", "{}", "not json"]) {

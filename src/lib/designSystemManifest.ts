@@ -7,7 +7,7 @@ export const DESIGN_SYSTEM_GROUPS = [
 const adminCss = "src/app/admin/(dashboard)/admin.module.css";
 const component = (path: string) => [`src/components/${path}/${path.split("/").at(-1)}.tsx`, `src/components/${path}/${path.split("/").at(-1)}.module.css`];
 export const DESIGN_SYSTEM_FILES: Record<string, string[]> = {
-  colours: ["src/app/globals.css", "src/lib/themePalette.ts", ...component("ThemeSwitch")],
+  colours: ["src/app/globals.css", "packages/core-domain/src/themePalette.ts", ...component("ThemeSwitch")],
   typography: ["src/app/globals.css", adminCss], spacing: ["src/app/globals.css"],
   elevation: ["src/app/globals.css", adminCss],
   brand: ["src/components/Logo/Logo.tsx", "src/components/Logo/Logo.module.css", "src/components/Logo/LogoIcon.tsx", "src/components/Logo/PersonalLogoMark.tsx", "src/components/Logo/ThemedLogoImage.tsx", "src/components/Logo/FaviconTheme.tsx", ...component("admin/SiteIdentityEditor"), "src/components/admin/SiteIdentityEditor/LogoColorEditor.tsx"],

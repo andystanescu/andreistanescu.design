@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { migrateCategoryFoundation } from "../src/lib/categoryMigration.ts";
-import { migrateServiceCategories } from "../src/lib/serviceCategoryMigration.ts";
+import { migrateServiceCategories } from "../src/modules/services/migration.ts";
 import { setDedicatedService } from "../src/lib/serviceCategoryOperations.ts";
 import { deleteCategory } from "../src/lib/categoryDeletion.ts";
 import { applyPendingCategoryAssignments } from "../src/lib/pendingCategoryAssignments.ts";

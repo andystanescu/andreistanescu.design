@@ -1,3 +1,5 @@
+import { installedExtensions } from "@/platform/extensions/installed";
+import { notifyCategoryUpdated } from "@/platform/extensions/contract";
 import { db } from "@/lib/db";
 import { relativeRedirect } from "@/lib/relativeRedirect";
 import { insightsAvailable } from "@/lib/features";
@@ -30,7 +32,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     // Legacy display fields remain in use until Insights and Services migrate.
     db.prepare("UPDATE case_studies SET category = ? WHERE category = ? COLLATE NOCASE").run(name, previous.name);
     if (insightsAvailable()) { const { renameInsightCategory } = await import("@/modules/insights/migration"); renameInsightCategory(db, previous.name, name); }
-    db.prepare("UPDATE service_items SET title = ?, description = ? WHERE category_id = ?").run(name, description, Number(id));
+    notifyCategoryUpdated(installedExtensions, db, { id: Number(id), name, description });
     if (isEditor) {
       setDedicatedService(db, Number(id), enabled);
       if (enabled) {

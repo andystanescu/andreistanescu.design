@@ -1,0 +1,17 @@
+{
+  "name": "@conscept/core-domain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Framework-independent domain utilities extracted from the platform.",
+  "type": "module",
+  "files": ["dist", "README.md"],
+  "exports": {
+    "./theme": { "types": "./dist/themePalette.d.ts", "default": "./dist/themePalette.js" },
+    "./case-study-overview": { "types": "./dist/caseStudyOverview.d.ts", "default": "./dist/caseStudyOverview.js" },
+    "./hero-visual": { "types": "./dist/heroVisual.d.ts", "default": "./dist/heroVisual.js" },
+    "./email-content": { "types": "./dist/emailContent.d.ts", "default": "./dist/emailContent.js" }
+  },
+  "scripts": { "build": "tsc -p tsconfig.build.json", "prepack": "npm run build" },
+  "devDependencies": { "typescript": "^5" },
+  "engines": { "node": ">=22.13.0" }
+}

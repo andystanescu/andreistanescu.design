@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { saveHeroVisualCode, displayedHeroVisualCode } from "../src/lib/heroVisual.ts";
+import { saveHeroVisualCode, displayedHeroVisualCode } from "../packages/core-domain/src/heroVisual.ts";
 
 test("hero code stays private until published, including removal", () => {
   const draft = saveHeroVisualCode("published visual", "new visual", false);

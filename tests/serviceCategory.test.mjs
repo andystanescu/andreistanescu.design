@@ -2,9 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { migrateCategoryFoundation } from "../src/lib/categoryMigration.ts";
-import { migrateServiceCategories } from "../src/lib/serviceCategoryMigration.ts";
+import { migrateServiceCategories } from "../src/modules/services/migration.ts";
 import { setDedicatedService } from "../src/lib/serviceCategoryOperations.ts";
-import { deleteCategory } from "../src/lib/categoryDeletion.ts";
+import { deleteCategory, protectUnmanagedServiceCategory } from "../src/lib/categoryDeletion.ts";
+import { createExtensionRegistry, notifyCategoryUpdated, notifyCategoriesReordered, prepareCategoryDeletion } from "../src/platform/extensions/contract.ts";
+import { updateServiceCategory, reorderServiceCategories, prepareServiceCategoryDeletion } from "../src/modules/services/categoryHooks.ts";
 import { migrateInsightsCategories, unlinkInsightsCategory } from "../src/modules/insights/migration.ts";
 
 function fixture() {
@@ -84,5 +86,73 @@ test("deleting a category removes its service and assignments while retaining co
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM case_study_categories WHERE category_id = ?").get(other.id).n, 1);
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM service_items").get().n, 0);
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM categories WHERE id = ?").get(category.id).n, 0);
+  db.close();
+});
+
+
+test("category callbacks update and reorder services in the same transaction", () => {
+  const db = fixture();
+  const category = db.prepare("SELECT id FROM categories WHERE name = 'Design Systems'").get();
+  const registry = createExtensionRegistry([{ id: "services", contractVersion: 1, isEnabled: () => true, categories: { updated: updateServiceCategory, reordered: reorderServiceCategories, beforeDelete: prepareServiceCategoryDeletion } }]);
+  db.exec("BEGIN IMMEDIATE");
+  notifyCategoryUpdated(registry, db, { id: category.id, name: "Updated", description: "New description" });
+  notifyCategoriesReordered(registry, db, [99, category.id]);
+  assert.deepEqual({ ...db.prepare("SELECT title, description, position FROM service_items WHERE category_id = ?").get(category.id) }, { title: "Updated", description: "New description", position: 1 });
+  db.exec("ROLLBACK");
+  assert.equal(db.prepare("SELECT title FROM service_items WHERE category_id = ?").get(category.id).title, "Design Systems");
+  db.close();
+});
+
+test("category deletion protects disabled Services data and deletes it when enabled", () => {
+  const db = fixture();
+  const category = db.prepare("SELECT id FROM categories WHERE name = 'Design Systems'").get();
+  let enabled = false;
+  const registry = createExtensionRegistry([{ id: "services", contractVersion: 1, isEnabled: () => enabled, categories: { beforeDelete: prepareServiceCategoryDeletion } }]);
+  assert.match(prepareCategoryDeletion(registry, db, category.id), /Enable Services/);
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM service_items").get().n, 1);
+  enabled = true;
+  db.exec("BEGIN IMMEDIATE");
+  assert.equal(prepareCategoryDeletion(registry, db, category.id), undefined);
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM service_items").get().n, 0);
+  db.exec("ROLLBACK");
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM service_items").get().n, 1);
+  db.close();
+});
+
+test("category callbacks work with no installed extensions", () => {
+  const db = fixture();
+  const category = db.prepare("SELECT id FROM categories WHERE name = 'Design Systems'").get();
+  notifyCategoryUpdated([], db, { id: category.id, name: "Other", description: "" });
+  notifyCategoriesReordered([], db, [category.id]);
+  assert.equal(prepareCategoryDeletion([], db, category.id), undefined);
+  assert.equal(db.prepare("SELECT title FROM service_items WHERE category_id = ?").get(category.id).title, "Design Systems");
+  db.close();
+});
+
+
+test("Core protects retained Services data when the extension is absent", () => {
+  const db = fixture();
+  const linked = db.prepare("SELECT id FROM categories WHERE name = 'Design Systems'").get().id;
+  db.prepare("INSERT INTO categories(name, position) VALUES ('Unrelated', 2)").run();
+  const unrelated = db.prepare("SELECT id FROM categories WHERE name = 'Unrelated'").get().id;
+  assert.match(protectUnmanagedServiceCategory(db, linked, false), /Enable Services/);
+  assert.equal(protectUnmanagedServiceCategory(db, unrelated, false), undefined);
+  assert.throws(() => deleteCategory(db, linked), /Enable Services/);
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM service_items WHERE category_id = ?").get(linked).n, 1);
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM categories WHERE id = ?").get(linked).n, 1);
+  assert.equal(deleteCategory(db, unrelated), true);
+  db.close();
+});
+
+test("Core conservatively protects legacy service tables with no category link", () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec("CREATE TABLE service_items(id INTEGER PRIMARY KEY, title TEXT); INSERT INTO service_items VALUES (1, 'Legacy')");
+  assert.match(protectUnmanagedServiceCategory(db, 1, false), /Enable Services/);
+  db.close();
+});
+
+test("Core allows deletion when no Services table exists", () => {
+  const db = new DatabaseSync(":memory:");
+  assert.equal(protectUnmanagedServiceCategory(db, 1, false), undefined);
   db.close();
 });

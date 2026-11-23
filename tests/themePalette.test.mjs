@@ -13,7 +13,7 @@ import {
   resolveClosestContrastShade,
   resolveTheme,
   THEME_TONES,
-} from "../src/lib/themePalette.ts";
+} from "../packages/core-domain/src/themePalette.ts";
 import { persistPublishedTheme } from "../src/lib/themePersistence.ts";
 
 test("keeps the exact 500 anchor and generates a deterministic ordered OKLCH ramp", () => {

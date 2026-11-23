@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { createAdminRecoveryToken } from "@/lib/adminRecovery";
 import { sendAdminRecoveryEmail } from "@/lib/email";
 import { relativeRedirect } from "@/lib/relativeRedirect";
+import { getSettings } from "@/lib/settings";
 
 export async function POST(request: NextRequest) {
   const email = process.env.ADMIN_RECOVERY_EMAIL?.trim();
@@ -11,7 +12,7 @@ export async function POST(request: NextRequest) {
     const token = createAdminRecoveryToken();
     const baseUrl = process.env.PUBLIC_SITE_URL?.trim() || request.nextUrl.origin;
     const resetUrl = `${baseUrl.replace(/\/$/, "")}/admin/login?mode=reset&token=${encodeURIComponent(token)}`;
-    const result = await sendAdminRecoveryEmail({ to: email, resetUrl });
+    const result = await sendAdminRecoveryEmail({ to: email, resetUrl, siteName: getSettings().site_name });
     if (!result.ok) {
       console.error("Admin recovery email failed:", result.error);
     }

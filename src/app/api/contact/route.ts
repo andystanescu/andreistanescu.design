@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
       email,
       message,
       newsletter,
+      siteName: settings.site_name,
     });
     markSubmissionEmailResult(id, result.ok, result.ok ? undefined : result.error);
   } else {

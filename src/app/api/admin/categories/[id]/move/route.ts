@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { relativeRedirect } from "@/lib/relativeRedirect";
-import { servicesAvailable } from "@/lib/features";
+import { installedExtensions } from "@/platform/extensions/installed";
+import { notifyCategoriesReordered } from "@/platform/extensions/contract";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,8 +15,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     db.exec("BEGIN IMMEDIATE");
     try {
       const updateCategory = db.prepare("UPDATE categories SET position = ? WHERE id = ?");
-      const updateService = servicesAvailable() ? db.prepare("UPDATE service_items SET position = ? WHERE category_id = ?") : null;
-      rows.forEach((row, position) => { updateCategory.run(position, row.id); updateService?.run(position, row.id); });
+      rows.forEach((row, position) => updateCategory.run(position, row.id));
+      notifyCategoriesReordered(installedExtensions, db, rows.map(({ id }) => id));
       db.exec("COMMIT");
     } catch (error) { db.exec("ROLLBACK"); throw error; }
   }

@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { contactEmailSubject, recoveryEmailContent } from "./emailContent";
 
 let client: Resend | null = null;
 
@@ -17,6 +18,7 @@ export async function sendContactNotification(input: {
   email: string;
   message: string;
   newsletter: boolean;
+  siteName: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const from = process.env.CONTACT_EMAIL_FROM;
   if (!from) {
@@ -29,7 +31,7 @@ export async function sendContactNotification(input: {
       from,
       to: input.to,
       replyTo: input.email,
-      subject: `New message from ${input.name} via the ConScept site`,
+      subject: contactEmailSubject(input.siteName, input.name),
       text: `Name: ${input.name}\nEmail: ${input.email}\nNewsletter: ${
         input.newsletter ? "yes" : "no"
       }\n\n${input.message}`,
@@ -44,7 +46,7 @@ export async function sendContactNotification(input: {
   }
 }
 
-export async function sendAdminRecoveryEmail(input: { to: string; resetUrl: string }) {
+export async function sendAdminRecoveryEmail(input: { to: string; resetUrl: string; siteName: string }) {
   const from = process.env.CONTACT_EMAIL_FROM;
   if (!from) return { ok: false as const, error: "CONTACT_EMAIL_FROM is not set." };
 
@@ -53,8 +55,7 @@ export async function sendAdminRecoveryEmail(input: { to: string; resetUrl: stri
     const { error } = await resend.emails.send({
       from,
       to: input.to,
-      subject: "Reset your ConScept admin access",
-      text: `A request was made to reset your ConScept admin credentials.\n\nUse this one-time link within 15 minutes:\n${input.resetUrl}\n\nIf you did not make this request, you can ignore this email.`,
+      ...recoveryEmailContent(input.siteName, input.resetUrl),
     });
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const };

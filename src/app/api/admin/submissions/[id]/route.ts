@@ -26,7 +26,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     let result: { ok: true } | { ok: false; error: string };
     if (!submission.name || !submission.email || !submission.message) result = { ok: false, error: "The submission is missing a name, email, or message and cannot be sent." };
     else if (!settings.contact_email_to) result = { ok: false, error: "No destination address configured yet." };
-    else result = await sendContactNotification({ to: settings.contact_email_to, name: submission.name, email: submission.email, message: submission.message, newsletter: Boolean(submission.newsletter) });
+    else result = await sendContactNotification({ to: settings.contact_email_to, name: submission.name, email: submission.email, message: submission.message, newsletter: Boolean(submission.newsletter), siteName: settings.site_name });
     markSubmissionEmailResult(id, result.ok, result.ok ? undefined : result.error);
     return relativeRedirect(`/admin/submissions?category=${result.ok ? "submitted" : "failed"}&result=${result.ok ? "retried" : "retry-failed"}#submission-${id}`);
   }

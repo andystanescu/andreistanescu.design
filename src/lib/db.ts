@@ -3,9 +3,9 @@ import { existsSync, mkdirSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import { migrateCategoryFoundation } from "./categoryMigration";
-import { migrateServiceCategories } from "./serviceCategoryMigration";
-import { insightsAvailable, servicesAvailable } from "./features";
-import { migrateInsightsSchema, migrateInsightsCategories } from "@/modules/insights/migration";
+import { insightsAvailable } from "./features";
+import { enabledExtensions, runExtensionMigrations } from "@/platform/extensions/contract";
+import { installedExtensions } from "@/platform/extensions/installed";
 
 // Use Node built-in SQLite with a configurable storage directory.
 // No provider-specific runtime or native compilation is required.
@@ -37,6 +37,7 @@ function initializeDatabase() {
   // pass the same existence check and then insert the same record.
   db.exec("BEGIN IMMEDIATE;");
   try {
+    const enabledModules = enabledExtensions(installedExtensions);
     db.exec(`
   CREATE TABLE IF NOT EXISTS case_studies (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -174,20 +175,6 @@ function initializeDatabase() {
     cta_secondary_href TEXT NOT NULL DEFAULT ''
   );
 
-  ${servicesAvailable() ? `CREATE TABLE IF NOT EXISTS service_items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    slug TEXT NOT NULL UNIQUE,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
-    icon TEXT NOT NULL DEFAULT '',
-    body TEXT NOT NULL DEFAULT '',
-    show_on_homepage INTEGER NOT NULL DEFAULT 0,
-    position INTEGER NOT NULL DEFAULT 0,
-    published INTEGER NOT NULL DEFAULT 1,
-    card_size TEXT NOT NULL DEFAULT 'standard',
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );` : ""}
-
   CREATE TABLE IF NOT EXISTS approach_steps (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -242,7 +229,8 @@ function initializeDatabase() {
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 `);
-if (insightsAvailable()) migrateInsightsSchema(db);
+runExtensionMigrations(enabledModules, "preSchema", db);
+runExtensionMigrations(enabledModules, "schema", db);
 
 // Migrate columns added after the tables were first created (CREATE TABLE
 // IF NOT EXISTS above only applies to brand-new databases).
@@ -322,14 +310,7 @@ addColumnIfMissing("pages", "meta_keywords", "meta_keywords TEXT NOT NULL DEFAUL
 addColumnIfMissing("pages", "canonical_url", "canonical_url TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("pages", "og_image", "og_image TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("pages", "no_index", "no_index INTEGER NOT NULL DEFAULT 0");
-if (servicesAvailable()) {
-addColumnIfMissing("service_items", "card_size", "card_size TEXT NOT NULL DEFAULT 'standard'");
-addColumnIfMissing("service_items", "template_key", "template_key TEXT NOT NULL DEFAULT ''");
-addColumnIfMissing("service_items", "hero_lead", "hero_lead TEXT NOT NULL DEFAULT ''");
-addColumnIfMissing("service_items", "hero_description", "hero_description TEXT NOT NULL DEFAULT ''");
-addColumnIfMissing("service_items", "section_content", "section_content TEXT NOT NULL DEFAULT '{}'");
-addColumnIfMissing("service_items", "section_settings", "section_settings TEXT NOT NULL DEFAULT '{}'");
-}
+runExtensionMigrations(enabledModules, "afterCoreSchema", db);
 addColumnIfMissing("submissions", "blocked", "blocked INTEGER NOT NULL DEFAULT 0");
 addColumnIfMissing("pages", "nav_label", "nav_label TEXT NOT NULL DEFAULT ''");
 addColumnIfMissing("pages", "position", "position INTEGER NOT NULL DEFAULT 0");
@@ -681,72 +662,7 @@ if (!getSettingStmt.get("_migrated_single_identity_hero_ctas")) {
   insertSettingStmt.run("_migrated_single_identity_hero_ctas", "1");
 }
 
-// Services shown on the homepage's Services section and listed on the
-// /services page — an admin-editable list instead of a static file, same
-// pattern as case studies. show_on_homepage controls whether a given
-// service also appears in the homepage grid.
-const SEED_SERVICE_ITEMS = [
-  {
-    slug: "design-systems",
-    icon: "/assets/mark-design-systems.svg",
-    title: "Design Systems",
-    description: "Scalable systems that create consistency and accelerate teams.",
-  },
-  {
-    slug: "product-architecture",
-    icon: "/assets/mark-product-architecture.svg",
-    title: "Product Architecture",
-    description: "Information, flows and structures that enable clarity and growth.",
-  },
-  {
-    slug: "ai-enabled-design-operations",
-    icon: "/assets/mark-ai-design-ops.svg",
-    title: "AI-Enabled Design Operations",
-    description:
-      "Integrating AI into workflows to unlock efficiency without losing quality.",
-  },
-  {
-    slug: "governance-scale",
-    icon: "/assets/mark-governance-scale.svg",
-    title: "Governance & Scale",
-    description: "Rules, processes and alignment that keep systems healthy over time.",
-  },
-  {
-    slug: "collaboration-alignment",
-    icon: "/assets/mark-collaboration-alignment.svg",
-    title: "Collaboration & Alignment",
-    description:
-      "Bringing design, engineering and product together around shared foundations.",
-  },
-];
-if (servicesAvailable()) {
-const insertServiceItemStmt = db.prepare(
-  `INSERT INTO service_items (slug, title, description, icon, show_on_homepage, position, published)
-   VALUES (?, ?, ?, ?, 1, ?, 1)`
-);
-const getServiceItemStmt = db.prepare(
-  "SELECT slug FROM service_items WHERE slug = ?"
-);
-// Seed the built-in services only for a genuinely empty database. Re-adding
-// any missing seed row on every app start makes an intentional admin deletion
-// appear to undo itself after a restart or hot reload.
-const serviceCount = db
-  .prepare("SELECT COUNT(*) AS count FROM service_items")
-  .get() as { count: number };
-if (serviceCount.count === 0 && !db.prepare("SELECT 1 FROM settings WHERE key = ?").get("shared_categories_v1")) {
-  SEED_SERVICE_ITEMS.forEach((item, index) => {
-    if (!getServiceItemStmt.get(item.slug)) {
-      insertServiceItemStmt.run(
-        item.slug,
-        item.title,
-        item.description,
-        item.icon,
-        index
-      );
-    }
-  });
-}
-}
+runExtensionMigrations(enabledModules, "beforeCategories", db);
 
 // Approach steps shown on the homepage's Approach section and listed on
 // the /approach page — same admin-editable pattern as services.
@@ -996,8 +912,7 @@ for (const article of db
 }
 
     migrateCategoryFoundation(db);
-    if (insightsAvailable()) migrateInsightsCategories(db);
-    if (servicesAvailable()) migrateServiceCategories(db);
+    runExtensionMigrations(enabledModules, "afterCategories", db);
     db.exec("COMMIT;");
   } catch (error) {
     try {
