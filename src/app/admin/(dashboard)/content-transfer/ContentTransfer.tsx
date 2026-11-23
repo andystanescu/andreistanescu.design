@@ -41,13 +41,15 @@ export default function ContentTransfer({ servicesEnabled, insightsEnabled }: { 
       const params = new URLSearchParams({ content: exportSelection.content.join(","), images: exportSelection.images.join(",") });
       const response = await fetch(`/api/admin/content-export?${params}`);
       if (!response.ok) throw new Error("Export failed.");
-      const blob = await response.blob();
       const suggestedName = `content-export-${new Date().toISOString().slice(0, 10)}.json`;
-      const picker = (window as Window & { showSaveFilePicker?: (options?: unknown) => Promise<{ createWritable: () => Promise<{ write: (data: Blob) => Promise<void>; close: () => Promise<void> }> }> }).showSaveFilePicker;
+      const picker = (window as Window & { showSaveFilePicker?: (options?: unknown) => Promise<{ createWritable: () => Promise<WritableStream<Uint8Array>> }> }).showSaveFilePicker;
       if (picker) {
         const handle = await picker({ suggestedName, types: [{ description: "JSON content export", accept: { "application/json": [".json"] } }] });
-        const writable = await handle.createWritable(); await writable.write(blob); await writable.close();
+        if (!response.body) throw new Error("The export could not be read.");
+        const writable = await handle.createWritable();
+        await response.body.pipeTo(writable);
       } else {
+        const blob = await response.blob();
         const url = URL.createObjectURL(blob); const anchor = document.createElement("a"); anchor.href = url; anchor.download = suggestedName; anchor.click(); URL.revokeObjectURL(url);
       }
       setMessage("Content export saved.");

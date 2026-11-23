@@ -25,8 +25,16 @@ export function transferGroupSource(payload: Record<string, unknown>, key: Trans
 }
 
 export function uploadFilenames(value: unknown): Set<string> {
-  const source = JSON.stringify(value ?? "").replace(/%2Fuploads%2F/gi, "/uploads/");
-  return new Set([...source.matchAll(/\/uploads\/([^"'?#%/\\]+)/g)].map((match) => match[1]).filter(Boolean));
+  const names = new Set<string>();
+  const visit = (item: unknown): void => {
+    if (typeof item === "string") {
+      const source = item.replace(/%2Fuploads%2F/gi, "/uploads/");
+      for (const match of source.matchAll(/\/uploads\/([^"'?#%/\\]+)/g)) names.add(match[1]);
+    } else if (Array.isArray(item)) item.forEach(visit);
+    else if (item && typeof item === "object") Object.values(item).forEach(visit);
+  };
+  visit(value);
+  return names;
 }
 
 export function parseTransferSelection(value: string | null): Set<TransferKey> {
