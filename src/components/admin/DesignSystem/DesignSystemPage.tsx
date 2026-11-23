@@ -13,7 +13,7 @@ export function DesignSystemPage({ section }: { section?: string }) {
   const palettes = theme?.palettes ?? { primary: generateThemePalette(anchors.primary), secondary: generateThemePalette(anchors.secondary), accent: generateThemePalette(anchors.accent), neutral: generateThemePalette(anchors.neutral) };
   const icons = readdirSync(join(process.cwd(), "public", "assets", "lattice")).filter((name) => name.endsWith(".svg")).map((name) => name.slice(0, -4)).sort();
   const sources = (DESIGN_SYSTEM_FILES[section ?? ""] ?? []).map((path) => {
-    try { return { path, code: readFileSync(join(process.cwd(), path), "utf8") }; }
+    try { return { path, code: readFileSync(join(/*turbopackIgnore: true*/ process.cwd(), path), "utf8") }; }
     catch { return { path, code: "", unavailable: true }; }
   });
   const iconSources = section === "icons" ? Object.fromEntries(icons.map((name) => [name, readFileSync(join(process.cwd(), "public", "assets", "lattice", `${name}.svg`), "utf8")])) : {};

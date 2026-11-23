@@ -7,7 +7,7 @@ const contentImportMaxBodySize: SizeLimit = configuredImportLimit && /^\d+(?:\.\
 
 const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
-    "/admin/design-system/*": ["./src/components/**/*.{tsx,css}", "./src/app/globals.css", "./src/app/admin/**/admin.module.css", "./src/lib/themePalette.ts", "./public/assets/lattice/*.svg"],
+    "/admin/design-system/*": ["./src/components/**/*.{ts,tsx,css}", "./src/app/**/*.{ts,tsx,css}", "./src/lib/themePalette.ts", "./public/assets/lattice/*.svg"],
     "/admin/design-system": ["./public/assets/lattice/*.svg"],
   },
   experimental: {

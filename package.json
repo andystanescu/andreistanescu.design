@@ -9,6 +9,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --experimental-sqlite --test",
     "test:theme": "node --experimental-strip-types --experimental-sqlite --test tests/themePalette.test.mjs"
   },
   "dependencies": {
