@@ -42,11 +42,23 @@ function App() {
   useEffect(() => {
     if (!node.current || !input) return;
     const element = node.current;
-    const measure = () => report("height", { height: Math.max(1, Math.ceil(element.getBoundingClientRect().height), Math.ceil(element.scrollHeight)) });
-    const observer = new ResizeObserver(measure); observer.observe(element);
-    const mutations = new MutationObserver(measure); mutations.observe(element, { subtree: true, childList: true, attributes: true, characterData: true });
-    measure();
-    return () => { observer.disconnect(); mutations.disconnect(); };
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const bounds = element.getBoundingClientRect();
+      let bottom = bounds.bottom;
+      for (const child of element.children) bottom = Math.max(bottom, child.getBoundingClientRect().bottom);
+      // Round up fractional layout measurements without growing viewport-sized content.
+      report("height", { height: Math.max(1, Math.ceil(bounds.height), Math.ceil(element.scrollHeight), Math.ceil(bottom - bounds.top)) });
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(measure); };
+    const observer = new ResizeObserver(schedule); observer.observe(element);
+    const mutations = new MutationObserver(schedule); mutations.observe(element, { subtree: true, childList: true, attributes: true, characterData: true });
+    element.addEventListener("load", schedule, true);
+    window.addEventListener("resize", schedule);
+    document.fonts?.ready.then(schedule).catch(() => {});
+    schedule();
+    return () => { observer.disconnect(); mutations.disconnect(); element.removeEventListener("load", schedule, true); window.removeEventListener("resize", schedule); if (frame) cancelAnimationFrame(frame); };
   }, [input, report]);
   return React.createElement("div", { ref: node, "data-live-wrapper": "", style: { display: "flow-root", width: "100%" } }, input && React.createElement(Boundary, { key: input.code, report }, React.createElement(LiveProvider, { code: prepare(input.code), scope, noInline: true, language: "tsx", enableTypeScript: true }, React.createElement(Result, { report }))));
 }
