@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
   if (!insightsAvailable()) selected.delete("insights");
   const imageGroups = hasSelection ? parseTransferSelection(request.nextUrl.searchParams.get("images")) : new Set(includeAssets ? selected : []);
   if (!selected.size) return Response.json({ error: "Select at least one content type." }, { status: 400 });
+  const testimonials = selected.has("testimonials") ? db.prepare("SELECT testimonial, name, title_company, source, published, position FROM testimonials ORDER BY position, id").all() : [];
   const caseStudies = selected.has("caseStudies") ? (db
     .prepare(
       `SELECT slug, eyebrow, title, description, tags, position, published, in_progress,
@@ -106,6 +107,7 @@ export async function GET(request: NextRequest) {
         format: "conscept-content",
         version: 1,
         exportedAt: new Date().toISOString(),
+        ...(selected.has("testimonials") ? { testimonials } : {}),
         ...(selected.has("caseStudies") ? { caseStudies } : {}),
         ...(selected.has("insights") ? { insights } : {}),
         ...(selected.has("pages") ? { pages: pageContent, experiences } : {}),

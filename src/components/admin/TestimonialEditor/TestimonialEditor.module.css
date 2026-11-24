@@ -1,0 +1,6 @@
+.form{display:flex;flex-direction:column;gap:var(--space-300);width:100%}
+.preview{padding:var(--space-400);background:var(--bg-canvas);border:1px solid var(--border-default)}
+.inline{display:block;width:100%;min-width:0;min-height:1lh;field-sizing:content;padding:0;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;line-height:inherit;resize:vertical;overflow-wrap:anywhere}
+.inline::placeholder{color:var(--text-tertiary);opacity:1}
+.inline:focus-visible{outline:2px solid var(--focus-ring);outline-offset:4px}
+@media(max-width:767px){.preview{padding:var(--space-300)}}

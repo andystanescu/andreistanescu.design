@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
       pageConfiguration?: ContentRecord[];
       experiences?: ContentRecord[];
       analyticsEvents?: ContentRecord[];
+      testimonials?: ContentRecord[];
       assets?: { filename?: string; content?: string }[];
       configuration?: {
         categories?: ContentRecord[];
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
         : [];
     const experiences = Array.isArray(payload.experiences) ? payload.experiences : [];
     const analyticsEvents = Array.isArray(payload.analyticsEvents) ? payload.analyticsEvents : [];
+    const testimonials = Array.isArray(payload.testimonials) ? payload.testimonials : [];
     const configuration = payload.configuration ?? {};
     if (!insightsAvailable() && insights.length) return NextResponse.json({ error: "This file contains articles. Enable Insights before importing it; no content was imported." }, { status: 400 });
     if (!servicesAvailable() && Array.isArray(configuration.services) && configuration.services.length) return NextResponse.json({ error: "This file contains service content. Enable Services before importing it; no content was imported." }, { status: 400 });
@@ -391,6 +393,15 @@ export async function POST(request: NextRequest) {
           text(record, "company_name"), text(record, "business_profile"),
           text(record, "description"), integer(record, "position"), integer(record, "published", 1)
         );
+      }
+
+      const findTestimonial = db.prepare("SELECT id FROM testimonials WHERE name = ? AND testimonial = ?");
+      const insertTestimonial = db.prepare("INSERT INTO testimonials(testimonial, name, title_company, source, published, position) VALUES (?, ?, ?, ?, ?, ?)");
+      for (const record of testimonials) {
+        const name = text(record, "name").trim();
+        const quote = text(record, "testimonial").trim();
+        if (!name || !quote || findTestimonial.get(name, quote)) continue;
+        insertTestimonial.run(quote, name, text(record, "title_company"), text(record, "source"), integer(record, "published"), integer(record, "position"));
       }
 
       const importAnalyticsEvent = db.prepare(`INSERT OR IGNORE INTO analytics_events

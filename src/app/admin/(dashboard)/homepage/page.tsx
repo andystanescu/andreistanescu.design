@@ -1,3 +1,4 @@
+import { Testimonials } from "@/components/Testimonials/Testimonials";
 import { getAllSections } from "@/lib/homepage";
 import Link from "next/link";
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
@@ -20,6 +21,7 @@ import { insightsAvailable, servicesAvailable } from "@/lib/features";
 export const dynamic = "force-dynamic";
 
 const LABELS: Record<string, string> = {
+  testimonials: "Testimonials",
   hero: "Hero",
   value: "The Value I Bring",
   services: "Services",
@@ -38,7 +40,7 @@ export default async function AdminHomepagePage({
   const settings = getSettings();
   const fixedSections = sections.filter((s) => s.fixed);
   const reorderable = sections.filter((s) => !s.fixed);
-  const previews: Record<string, React.ReactNode> = { hero: <Hero preview />, value: <Value />, services: <Services />, approach: <Approach />, selected_impact: <SelectedImpact />, latest_insights: <LatestInsights /> };
+  const previews: Record<string, React.ReactNode> = { testimonials: <Testimonials page="homepage" preview />, hero: <Hero preview />, value: <Value />, services: <Services />, approach: <Approach />, selected_impact: <SelectedImpact />, latest_insights: <LatestInsights /> };
 
   return (
     <>

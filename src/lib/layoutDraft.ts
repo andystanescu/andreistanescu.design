@@ -1,6 +1,6 @@
 export const LAYOUT_SECTIONS = {
-  homepage: { hero: "Hero", value: "The Value I Bring", services: "Services", approach: "Approach", selected_impact: "Selected Impact", latest_insights: "Latest Insights" },
-  about: { hero: "Hero", drives_me: "What Drives Me", philosophy: "Philosophy", highlights: "Highlights", latest_insights: "Latest Insights", before_conscept: "Before ConScept" },
+  homepage: { testimonials: "Testimonials", hero: "Hero", value: "The Value I Bring", services: "Services", approach: "Approach", selected_impact: "Selected Impact", latest_insights: "Latest Insights" },
+  about: { testimonials: "Testimonials", hero: "Hero", drives_me: "What Drives Me", philosophy: "Philosophy", highlights: "Highlights", latest_insights: "Latest Insights", before_conscept: "Before ConScept" },
 };
 export type LayoutPage = keyof typeof LAYOUT_SECTIONS;
 export type LayoutSection = { key: string; label: string; visible: boolean; fixed: boolean };

@@ -1,3 +1,4 @@
+import { Testimonials } from "@/components/Testimonials/Testimonials";
 import { getAllSections } from "@/lib/about";
 import { AdminIcon } from "@/components/admin/AdminIcon/AdminIcon";
 import { LayoutEditor } from "@/components/admin/LayoutEditor/LayoutEditor";
@@ -18,6 +19,7 @@ import { insightsAvailable } from "@/lib/features";
 export const dynamic = "force-dynamic";
 
 const LABELS: Record<string, string> = {
+  testimonials: "Testimonials",
   hero: "Hero",
   drives_me: "What Drives Me",
   philosophy: "Philosophy",
@@ -32,6 +34,7 @@ export default async function AdminAboutPage({ searchParams }: { searchParams: P
   const fixedSections = sections.filter((s) => s.fixed);
   const reorderable = sections.filter((s) => !s.fixed);
   const previews: Record<string, React.ReactNode> = {
+    testimonials: <Testimonials page="about" preview />,
     hero: <AboutHero preview />, drives_me: <AboutDrivesMe />, philosophy: <AboutPhilosophy />,
     highlights: <AboutHighlights />, latest_insights: <AboutLatestInsights />, before_conscept: <AboutBeforeConScept preview />,
   };

@@ -175,6 +175,16 @@ function initializeDatabase() {
     cta_secondary_href TEXT NOT NULL DEFAULT ''
   );
 
+  CREATE TABLE IF NOT EXISTS testimonials (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    testimonial TEXT NOT NULL,
+    name TEXT NOT NULL,
+    title_company TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT '',
+    published INTEGER NOT NULL DEFAULT 0,
+    position INTEGER NOT NULL DEFAULT 0
+  );
+
   CREATE TABLE IF NOT EXISTS approach_steps (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -775,6 +785,12 @@ for (const section of SEED_ABOUT_SECTIONS) {
       section.fixed
     );
   }
+}
+// Add the shared testimonial section without changing existing page order.
+for (const table of ["homepage_sections", "about_sections"]) {
+  db.exec(`INSERT INTO ${table} (key, eyebrow, headline, description, position, fixed, visible)
+    SELECT 'testimonials', 'Testimonials', 'What people say.', '', COALESCE(MAX(position), -1) + 1, 0, 0
+    FROM ${table} HAVING NOT EXISTS (SELECT 1 FROM ${table} WHERE key = 'testimonials')`);
 }
 if (!getAboutSectionStmt.get("before_conscept")) {
   insertAboutSectionStmt.run(

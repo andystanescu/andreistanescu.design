@@ -41,7 +41,7 @@ export default function WorkPage() {
         ) : (
           <WorkListing categories={getCategories().map(({ id, name }) => ({ id, name }))} studies={CASE_STUDIES.map((study) => ({
             slug: study.slug, title: study.title, description: study.description,
-            thumbnail_image: study.thumbnail_image, category: study.category,
+            thumbnail_image: study.thumbnail_image, cover_image: study.cover_image, hero_code: study.hero_code, category: study.category,
             eyebrow: study.eyebrow, year: study.year, in_progress: study.in_progress,
             password_required: study.password_required, categoryIds: getCaseStudyCategoryIds(study.id),
           }))} />

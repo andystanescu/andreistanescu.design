@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowIcon } from "@/components/Icon/ArrowIcon";
+import { ThumbnailMotion } from "@/components/work/ThumbnailMotion/ThumbnailMotion";
 import styles from "./ArticleCard.module.css";
 
 type ArticleCardProps = {
@@ -7,6 +8,7 @@ type ArticleCardProps = {
   title: string;
   excerpt: string;
   thumbnail?: string;
+  heroCode?: string;
   className?: string;
   variant?: "default" | "caseStudy";
   category?: string;
@@ -20,7 +22,7 @@ type ArticleCardProps = {
 // excerpt, "Read article" link. Used for an insight article's "More
 // articles" grid; kept separate from the homepage's larger featured-card
 // layout (LatestInsights), which has its own hover treatment.
-export function ArticleCard({ slug, title, excerpt, thumbnail, className, variant = "default", category = "", meta = "", showThumbnail = true, previewOnly = false }: ArticleCardProps) {
+export function ArticleCard({ slug, title, excerpt, thumbnail, heroCode, className, variant = "default", category = "", meta = "", showThumbnail = true, previewOnly = false }: ArticleCardProps) {
   const isCaseStudy = variant === "caseStudy";
   return (
     <Link href={previewOnly ? "#" : `${isCaseStudy ? "/work" : "/insights"}/${slug}`} className={`${styles.card} ${isCaseStudy ? styles.caseStudy : ""}${className ? ` ${className}` : ""}`}>
@@ -28,7 +30,7 @@ export function ArticleCard({ slug, title, excerpt, thumbnail, className, varian
         className={styles.thumb}
         style={thumbnail ? { backgroundImage: `url(${thumbnail})` } : undefined}
         aria-hidden="true"
-      />}
+      >{isCaseStudy && <ThumbnailMotion code={heroCode} />}</div>}
       <div className={styles.body}>
         {(category || meta) && <div className={styles.meta}><span>{category}</span>{meta && <span className={styles.metaSecondary}>{meta}</span>}</div>}
         <h3 className={`heading-03 ${styles.title}`}>{title}</h3>

@@ -1,3 +1,4 @@
+import { Testimonials } from "@/components/Testimonials/Testimonials";
 import { Fragment, type ComponentType } from "react";
 import { Nav } from "@/components/Nav/Nav";
 import { Hero } from "@/components/home/Hero/Hero";
@@ -23,6 +24,7 @@ export function generateMetadata(): Metadata {
 }
 
 const SECTION_COMPONENTS: Record<string, ComponentType> = {
+  testimonials: () => <Testimonials page="homepage" />,
   value: Value,
   services: Services,
   approach: Approach,

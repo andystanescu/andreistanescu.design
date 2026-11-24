@@ -1,4 +1,5 @@
 export const TRANSFER_GROUPS = [
+  { key: "testimonials", label: "Testimonials", description: "Testimonial quotes, attribution, source, publication status and order.", images: false },
   { key: "caseStudies", label: "Case studies", description: "Published and draft projects, assessments, metadata and category assignments.", images: true },
   { key: "categories", label: "Categories", description: "Category names, descriptions, order and case-study assignments.", images: false },
   { key: "insights", label: "Articles", description: "Published, scheduled and draft articles, including tags and metadata.", images: true },

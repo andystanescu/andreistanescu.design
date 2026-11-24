@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowIcon } from "@/components/Icon/ArrowIcon";
+import { ThumbnailMotion } from "@/components/work/ThumbnailMotion/ThumbnailMotion";
 import styles from "./ProjectCard.module.css";
 
 type ProjectCardProps = {
@@ -7,6 +8,7 @@ type ProjectCardProps = {
   title: string;
   description: string;
   thumbnail?: string;
+  heroCode?: string;
   category?: string;
   index: number;
   year?: string;
@@ -18,7 +20,7 @@ type ProjectCardProps = {
   className?: string;
 };
 
-export function ProjectCard({ slug, title, description, thumbnail, category = "Case study", index, year, inProgress = false, protectedStudy = false, featured = false, mediaTreatment = featured ? "feature" : "standard", headingLevel = "h3", className = "" }: ProjectCardProps) {
+export function ProjectCard({ slug, title, description, thumbnail, heroCode, category = "Case study", index, year, inProgress = false, protectedStudy = false, featured = false, mediaTreatment = featured ? "feature" : "standard", headingLevel = "h3", className = "" }: ProjectCardProps) {
   const Heading = headingLevel;
   const statuses = [inProgress ? "In progress" : "", protectedStudy ? "Protected" : ""].filter(Boolean);
   return (
@@ -26,7 +28,7 @@ export function ProjectCard({ slug, title, description, thumbnail, category = "C
       <p className={`label-eyebrow ${styles.kicker}`}>{category || "Case study"} / {String(index).padStart(2, "0")}</p>
       <Heading className={`${featured ? "heading-01" : "heading-03"} ${styles.title}`}>{title}</Heading>
       <p className={`body-small ${styles.description}`}>{description}</p>
-      <div className={`${styles.media} ${mediaTreatment === "feature" ? styles.featureMedia : styles.standardMedia}`} style={thumbnail ? { backgroundImage: `url(${thumbnail})` } : undefined} aria-hidden="true" />
+      <div className={`${styles.media} ${mediaTreatment === "feature" ? styles.featureMedia : styles.standardMedia}`} style={thumbnail ? { backgroundImage: `url(${thumbnail})` } : undefined} aria-hidden="true"><ThumbnailMotion code={heroCode} /></div>
       {(year || statuses.length > 0) && <div className={styles.metadata}>{year && <span>{year}</span>}{statuses.map((status) => <span key={status}>{status}</span>)}</div>}
       <span className={styles.action}>View case study <ArrowIcon size={16} /></span>
     </Link>

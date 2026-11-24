@@ -1,3 +1,4 @@
+import { Testimonials } from "@/components/Testimonials/Testimonials";
 import type { ComponentType } from "react";
 import { notFound } from "next/navigation";
 import { Nav } from "@/components/Nav/Nav";
@@ -25,6 +26,7 @@ export function generateMetadata(): Metadata {
 }
 
 const SECTION_COMPONENTS: Record<string, ComponentType> = {
+  testimonials: () => <Testimonials page="about" />,
   drives_me: AboutDrivesMe,
   philosophy: AboutPhilosophy,
   highlights: AboutHighlights,
