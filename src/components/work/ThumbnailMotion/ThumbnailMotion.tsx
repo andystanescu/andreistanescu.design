@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { HeroInteractiveVisual } from "@/components/work/CaseStudyHero/HeroInteractiveVisual";
 import styles from "./ThumbnailMotion.module.css";
 
-/** Treat the hero as a decorative 16:10 canvas and crop it like an image. */
+/** Scale a centred 16:9 hero canvas to cover the thumbnail without distortion. */
 export function ThumbnailMotion({ code }: { code?: string }) {
   const host = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
@@ -13,7 +13,7 @@ export function ThumbnailMotion({ code }: { code?: string }) {
     const element = host.current;
     if (!element || !code?.trim()) return;
     const resize = new ResizeObserver(([entry]) => {
-      if (entry) setScale(Math.max(entry.contentRect.width / 960, entry.contentRect.height / 600));
+      if (entry) setScale(Math.max(entry.contentRect.width / 960, entry.contentRect.height / 540));
     });
     const intersection = new IntersectionObserver(([entry]) => setActive(Boolean(entry?.isIntersecting)), { rootMargin: "200px" });
     resize.observe(element);

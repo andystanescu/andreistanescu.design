@@ -1,2 +1,2 @@
 .host{position:absolute;inset:0;overflow:hidden;pointer-events:none}
-.canvas{position:absolute;left:50%;top:50%;width:960px;height:600px;transform-origin:center;pointer-events:none}
+.canvas{position:absolute;left:50%;top:50%;width:960px;height:540px;transform-origin:center;pointer-events:none}
